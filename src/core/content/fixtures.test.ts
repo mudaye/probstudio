@@ -10,14 +10,16 @@ import {
   CONCEPT_C000005,
   CONCEPT_C000006,
   CONCEPT_C000007,
+  CONCEPT_C000008,
+  CONCEPT_C000009,
   ALL_EXERCISES,
   getExercisesByModule,
   getExerciseById,
 } from './fixtures';
 
-describe('Concept Content Fixtures - Modules M01, M02, and M04 (A-005 Compliance)', () => {
-  it('contains authored concepts for Module M01, M02, and M04', () => {
-    expect(ALL_CONCEPTS.length).toBe(7);
+describe('Concept Content Fixtures - Modules M01, M02, M04, and M05 (A-005 Compliance)', () => {
+  it('contains authored concepts for Module M01, M02, M04, and M05', () => {
+    expect(ALL_CONCEPTS.length).toBe(9);
     const m01Concepts = getConceptsByModule('M01');
     expect(m01Concepts.length).toBe(3);
     expect(m01Concepts.map((c) => c.id)).toEqual(['C-000001', 'C-000002', 'C-000003']);
@@ -29,6 +31,10 @@ describe('Concept Content Fixtures - Modules M01, M02, and M04 (A-005 Compliance
     const m04Concepts = getConceptsByModule('M04');
     expect(m04Concepts.length).toBe(2);
     expect(m04Concepts.map((c) => c.id)).toEqual(['C-000006', 'C-000007']);
+
+    const m05Concepts = getConceptsByModule('M05');
+    expect(m05Concepts.length).toBe(2);
+    expect(m05Concepts.map((c) => c.id)).toEqual(['C-000008', 'C-000009']);
   });
 
   it('verifies C-000001: Sample Spaces and Events', () => {
@@ -63,7 +69,7 @@ describe('Concept Content Fixtures - Modules M01, M02, and M04 (A-005 Compliance
   });
 
   it('ensures all concepts have valid classification and non-empty intuition', () => {
-    for (const c of [CONCEPT_C000001, CONCEPT_C000002, CONCEPT_C000003, CONCEPT_C000004, CONCEPT_C000005, CONCEPT_C000006, CONCEPT_C000007]) {
+    for (const c of [CONCEPT_C000001, CONCEPT_C000002, CONCEPT_C000003, CONCEPT_C000004, CONCEPT_C000005, CONCEPT_C000006, CONCEPT_C000007, CONCEPT_C000008, CONCEPT_C000009]) {
       expect(c.classification).toBe('source_derived');
       expect(c.intuition.length).toBeGreaterThan(20);
       expect(c.formalDefinition.length).toBeGreaterThan(20);
@@ -107,9 +113,27 @@ describe('Concept Content Fixtures - Modules M01, M02, and M04 (A-005 Compliance
     expect(c?.formalDefinitionLatex).toContain('Conditional');
   });
 
-  describe('Exercise Content Fixtures - Modules M01, M02, and M04', () => {
-    it('contains authored exercises for Modules M01, M02, and M04', () => {
-      expect(ALL_EXERCISES.length).toBe(6);
+  it('verifies C-000008: Random Variables as Real-Valued Functions', () => {
+    const c = getConceptById('C-000008');
+    expect(c).toBeDefined();
+    expect(c?.title).toContain('Random Variables');
+    expect(c?.moduleId).toBe('M05');
+    expect(c?.formalDefinitionLatex).toContain('X: \\Omega \\to \\mathbb{R}');
+    expect(c?.properties.some((p) => p.includes('Deterministic Mapping'))).toBe(true);
+  });
+
+  it('verifies C-000009: Induced Probability Measures & Discrete PMFs', () => {
+    const c = getConceptById('C-000009');
+    expect(c).toBeDefined();
+    expect(c?.title).toContain('Induced Probability Measures');
+    expect(c?.moduleId).toBe('M05');
+    expect(c?.formalDefinitionLatex).toContain('p_X(x)');
+    expect(c?.formalDefinitionLatex).toContain('\\sum');
+  });
+
+  describe('Exercise Content Fixtures - Modules M01, M02, M04, and M05', () => {
+    it('contains authored exercises for Modules M01, M02, M04, and M05', () => {
+      expect(ALL_EXERCISES.length).toBe(8);
       const m01Ex = getExercisesByModule('M01');
       expect(m01Ex.length).toBe(3);
       expect(m01Ex.map((e) => e.id)).toEqual(['EX-000001', 'EX-000002', 'EX-000003']);
@@ -122,17 +146,21 @@ describe('Concept Content Fixtures - Modules M01, M02, and M04 (A-005 Compliance
       expect(m04Ex.length).toBe(2);
       expect(m04Ex.map((e) => e.id)).toEqual(['EX-000005', 'EX-000006']);
 
-      const ex5 = getExerciseById('EX-000005');
-      expect(ex5?.title).toContain('Independent Events');
-      expect(ex5?.expectedRational.num).toBe(1n);
-      expect(ex5?.expectedRational.den).toBe(4n);
-      expect(ex5?.moduleId).toBe('M04');
+      const m05Ex = getExercisesByModule('M05');
+      expect(m05Ex.length).toBe(2);
+      expect(m05Ex.map((e) => e.id)).toEqual(['EX-000007', 'EX-000008']);
 
-      const ex6 = getExerciseById('EX-000006');
-      expect(ex6?.title).toContain('Conditional Probability Under Independence');
-      expect(ex6?.expectedRational.num).toBe(1n);
-      expect(ex6?.expectedRational.den).toBe(5n);
-      expect(ex6?.moduleId).toBe('M04');
+      const ex7 = getExerciseById('EX-000007');
+      expect(ex7?.title).toContain('Induced PMF');
+      expect(ex7?.expectedRational.num).toBe(3n);
+      expect(ex7?.expectedRational.den).toBe(8n);
+      expect(ex7?.moduleId).toBe('M05');
+
+      const ex8 = getExerciseById('EX-000008');
+      expect(ex8?.title).toContain('Net Payoff');
+      expect(ex8?.expectedRational.num).toBe(3n);
+      expect(ex8?.expectedRational.den).toBe(4n);
+      expect(ex8?.moduleId).toBe('M05');
     });
   });
 });

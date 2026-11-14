@@ -93,9 +93,9 @@ export const MODULES: readonly ModuleInfo[] = [
     partId: 'P1',
     title: 'Random Variables and Induced Probability Measures',
     summary: 'Random variables as mappings from sample space to real numbers.',
-    status: 'planned',
-    conceptCount: 0,
-    exerciseCount: 0,
+    status: 'active',
+    conceptCount: 2,
+    exerciseCount: 2,
     labAssociation: 'PL-04',
   },
   {

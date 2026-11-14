@@ -227,6 +227,56 @@ export const CONCEPT_C000007: ConceptContent = {
   classification: 'source_derived',
 };
 
+export const CONCEPT_C000008: ConceptContent = {
+  id: 'C-000008',
+  title: 'Random Variables as Real-Valued Functions',
+  moduleId: 'M05',
+  intuition:
+    'A random variable is neither "random" nor a "variable": it is a deterministic mathematical function mapping abstract experimental outcomes to real numbers. Multiple distinct random variables can be defined on the very same probability space.',
+  formalDefinition:
+    'Let (Ω, F, P) be a probability space. A real-valued random variable X is a deterministic function X: Ω → ℝ such that for every Borel set B ⊆ ℝ, the pre-image X⁻¹(B) = {ω ∈ Ω : X(ω) ∈ B} is an event in F.',
+  formalDefinitionLatex:
+    'X: \\Omega \\to \\mathbb{R}, \\quad X^{-1}(B) = \\{\\omega \\in \\Omega : X(\\omega) \\in B\\} \\in \\mathcal{F}',
+  properties: [
+    'Deterministic Mapping: The numerical value X(ω) is completely determined once the outcome ω is realized.',
+    'Pre-Image Sets (Fibers): Events on the real number line correspond to fiber subsets in the underlying sample space.',
+    'Multiple Mappings on One Space: Multiple random variables (e.g. heads count, net payoff, score difference) can operate simultaneously on the same Ω.',
+  ],
+  sourceRef: {
+    id: 'SRC-P1-CH06-001',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 6: Random variables',
+    note: 'Definition of random variables as mappings from sample space to real numbers.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000009: ConceptContent = {
+  id: 'C-000009',
+  title: 'Induced Probability Measures & Discrete PMFs',
+  moduleId: 'M05',
+  intuition:
+    'A random variable transfers probability mass from abstract outcomes in Ω onto the real number line ℝ. For discrete random variables, the probability mass function (PMF) aggregates the masses of all outcomes that map to each specific value.',
+  formalDefinition:
+    'The random variable X induces a new probability space (ℝ, B, P_X), where the induced probability measure is defined by P_X(B) = P(X ∈ B) = P(X⁻¹(B)).\nFor a discrete random variable taking values in support S_X, the Probability Mass Function (PMF) is:\np_X(x) = P(X = x) = Σ_{ω: X(ω)=x} p(ω).',
+  formalDefinitionLatex:
+    '\\begin{aligned} P_X(B) &= P(X^{-1}(B)) = P(\\{\\omega \\in \\Omega : X(\\omega) \\in B\\}) \\\\[4pt] p_X(x) &= P(X = x) = \\sum_{\\omega \\in \\Omega : X(\\omega) = x} p(\\omega) \\end{aligned}',
+  properties: [
+    'Axiom Preservation: The induced measure P_X satisfies all Kolmogorov axioms on the real line.',
+    'PMF Normalization: For any discrete random variable, p_X(x) ≥ 0 for all x and Σ_{x ∈ S_X} p_X(x) = 1.',
+    'Fiber Aggregation: When multiple outcomes map to the same numerical value, their masses sum additively.',
+  ],
+  sourceRef: {
+    id: 'SRC-P1-CH06-002',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 6: Random variables',
+    note: 'Induced probability measure and discrete PMF definition.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000001,
   CONCEPT_C000002,
@@ -235,6 +285,8 @@ export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000005,
   CONCEPT_C000006,
   CONCEPT_C000007,
+  CONCEPT_C000008,
+  CONCEPT_C000009,
 ];
 
 export function getConceptById(id: string): ConceptContent | undefined {
@@ -397,6 +449,56 @@ export const EXERCISE_EX000006: ExerciseContent = {
   classification: 'supplementary',
 };
 
+export const EXERCISE_EX000007: ExerciseContent = {
+  id: 'EX-000007',
+  title: 'Induced PMF of Heads Count in Three Coin Tosses',
+  moduleId: 'M05',
+  category: 'numerical',
+  linkedConceptIds: ['C-000008', 'C-000009'],
+  prompt:
+    'Consider three independent tosses of a fair coin, with sample space Ω = {HHH, HHT, HTH, HTT, THH, THT, TTH, TTT} and equal mass 1/8 each. Let random variable X: Ω → ℝ denote the total number of Heads observed. Calculate the induced probability P(X = 2).',
+  promptLatex:
+    '\\Omega = \\{HHH, HHT, HTH, HTT, THH, THT, TTH, TTT\\}, \\quad p(\\omega) = \\frac{1}{8}.\\newline X(\\omega) = \\text{number of heads in } \\omega.\\newline \\text{Find } P(X = 2).',
+  expectedRational: { num: 3n, den: 8n },
+  explanation:
+    'The pre-image of value 2 under mapping X is the event containing exactly two Heads: X⁻¹({2}) = {HHT, HTH, THH}. Since each outcome has mass 1/8, the induced probability is P(X = 2) = p(HHT) + p(HTH) + p(THH) = 1/8 + 1/8 + 1/8 = 3/8.',
+  explanationLatex:
+    'P(X = 2) = \\sum_{\\omega: X(\\omega) = 2} p(\\omega) = p(HHT) + p(HTH) + p(THH) = \\frac{3}{8}',
+  sourceRef: {
+    id: 'SRC-P1-CH06-003',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 6: Random variables',
+    note: 'Three-coin toss heads count distribution.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000008: ExerciseContent = {
+  id: 'EX-000008',
+  title: 'Net Payoff Random Variable in Coin Toss Game',
+  moduleId: 'M05',
+  category: 'numerical',
+  linkedConceptIds: ['C-000008', 'C-000009'],
+  prompt:
+    'In a two-coin toss game (Ω = {HH, HT, TH, TT}, mass 1/4 each), a player defines net payoff random variable Y: Y(HH) = 2, Y(HT) = 0, Y(TH) = 0, and Y(TT) = -3. Calculate the probability of breaking even or winning, P(Y ≥ 0).',
+  promptLatex:
+    '\\begin{aligned} &Y(HH) = 2, \\quad Y(HT) = 0, \\quad Y(TH) = 0, \\quad Y(TT) = -3 \\\\[4pt] &p(\\omega) = \\frac{1}{4} \\quad \\forall \\omega \\in \\Omega. \\quad \\text{Find } P(Y \\ge 0). \\end{aligned}',
+  expectedRational: { num: 3n, den: 4n },
+  explanation:
+    'The event {Y ≥ 0} corresponds to outcomes with non-negative payoff: Y⁻¹([0, ∞)) = {HH, HT, TH}. Summing the masses of these 3 outcomes yields P(Y ≥ 0) = 1/4 + 1/4 + 1/4 = 3/4 (or 0.75).',
+  explanationLatex:
+    'P(Y \\ge 0) = p(HH) + p(HT) + p(TH) = \\frac{1}{4} + \\frac{1}{4} + \\frac{1}{4} = \\frac{3}{4} = 0.75',
+  sourceRef: {
+    id: 'SRC-P1-CH06-004',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 6: Random variables',
+    note: 'Payoff mapping example on finite sample space.',
+  },
+  classification: 'supplementary',
+};
+
 export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000001,
   EXERCISE_EX000002,
@@ -404,6 +506,8 @@ export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000004,
   EXERCISE_EX000005,
   EXERCISE_EX000006,
+  EXERCISE_EX000007,
+  EXERCISE_EX000008,
 ];
 
 export function getExerciseById(id: string): ExerciseContent | undefined {

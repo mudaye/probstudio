@@ -163,4 +163,48 @@ describe('Assessment Checker - Prototype Rational Inputs', () => {
       expect(res.status).toBe('incorrect');
     });
   });
+
+  describe('EX-000007: Induced PMF Evaluation', () => {
+    const expHeads = createRational(3n, 8n);
+    const explanationLatex = 'P(X = 2) = 3/8 = 0.375';
+
+    it('accepts fraction "3/8"', () => {
+      const res = checkExactRationalAnswer('3/8', expHeads, explanationLatex);
+      expect(res.status).toBe('correct');
+      expect(res.parsedInput?.num).toBe(3n);
+      expect(res.parsedInput?.den).toBe(8n);
+    });
+
+    it('accepts equivalent decimal "0.375"', () => {
+      const res = checkExactRationalAnswer('0.375', expHeads, explanationLatex);
+      expect(res.status).toBe('correct');
+    });
+
+    it('evaluates incorrect response "1/8" as incorrect', () => {
+      const res = checkExactRationalAnswer('1/8', expHeads, explanationLatex);
+      expect(res.status).toBe('incorrect');
+    });
+  });
+
+  describe('EX-000008: Non-Negative Payoff Probability Evaluation', () => {
+    const expPayoff = createRational(3n, 4n);
+    const explanationLatex = 'P(Y ≥ 0) = 3/4 = 0.75';
+
+    it('accepts fraction "3/4"', () => {
+      const res = checkExactRationalAnswer('3/4', expPayoff, explanationLatex);
+      expect(res.status).toBe('correct');
+      expect(res.parsedInput?.num).toBe(3n);
+      expect(res.parsedInput?.den).toBe(4n);
+    });
+
+    it('accepts equivalent decimal "0.75"', () => {
+      const res = checkExactRationalAnswer('0.75', expPayoff, explanationLatex);
+      expect(res.status).toBe('correct');
+    });
+
+    it('evaluates incorrect response "1/2" as incorrect', () => {
+      const res = checkExactRationalAnswer('1/2', expPayoff, explanationLatex);
+      expect(res.status).toBe('incorrect');
+    });
+  });
 });
