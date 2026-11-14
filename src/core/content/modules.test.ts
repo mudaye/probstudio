@@ -1,0 +1,43 @@
+import { describe, it, expect } from 'vitest';
+import { PARTS, MODULES, getModulesByPart, getModuleById } from './modules';
+
+describe('Module Catalog (A-001 §4.1 Integrity)', () => {
+  it('contains exactly 3 parts: P1, P2, P3', () => {
+    expect(PARTS.length).toBe(3);
+    expect(PARTS.map((p) => p.id)).toEqual(['P1', 'P2', 'P3']);
+  });
+
+  it('contains exactly 22 modules M01 through M22', () => {
+    expect(MODULES.length).toBe(22);
+    const expectedIds = Array.from({ length: 22 }, (_, i) => {
+      const num = (i + 1).toString().padStart(2, '0');
+      return `M${num}`;
+    });
+    expect(MODULES.map((m) => m.id)).toEqual(expectedIds);
+  });
+
+  it('correctly maps modules to Part 1 (8 modules), Part 2 (7 modules), Part 3 (7 modules)', () => {
+    const p1Mods = getModulesByPart('P1');
+    const p2Mods = getModulesByPart('P2');
+    const p3Mods = getModulesByPart('P3');
+
+    expect(p1Mods.length).toBe(8);
+    expect(p2Mods.length).toBe(7);
+    expect(p3Mods.length).toBe(7);
+
+    expect(p1Mods[0].id).toBe('M01');
+    expect(p1Mods[7].id).toBe('M08');
+    expect(p2Mods[0].id).toBe('M09');
+    expect(p2Mods[6].id).toBe('M15');
+    expect(p3Mods[0].id).toBe('M16');
+    expect(p3Mods[6].id).toBe('M22');
+  });
+
+  it('retrieves individual modules by ID', () => {
+    const m01 = getModuleById('M01');
+    expect(m01).toBeDefined();
+    expect(m01?.title).toBe('Probability Foundations');
+    expect(m01?.partId).toBe('P1');
+    expect(m01?.status).toBe('active');
+  });
+});

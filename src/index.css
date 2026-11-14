@@ -268,3 +268,260 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   font-weight: 700;
   color: var(--text-muted);
 }
+
+/* Two-column Drawer Layout (Concept Atlas & Practice Gym) */
+.drawer-layout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  position: relative;
+}
+
+.drawer-layout-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Module Navigation Drawer */
+.module-drawer {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  transition: width 0.2s ease;
+  flex-shrink: 0;
+}
+
+.module-drawer.open {
+  width: 320px;
+}
+
+.module-drawer.collapsed {
+  width: 48px;
+  overflow: hidden;
+}
+
+.drawer-header {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.drawer-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.drawer-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.drawer-close-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.drawer-close-btn:hover {
+  background: #e2e8f0;
+  color: var(--text);
+}
+
+.drawer-content {
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+}
+
+.all-modules-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: left;
+}
+
+.all-modules-btn:hover {
+  background: #e2e8f0;
+}
+
+.all-modules-btn.selected {
+  background: var(--primary-light);
+  border-color: #bfdbfe;
+  color: var(--primary);
+}
+
+.active-dot {
+  font-size: 1.25rem;
+  color: var(--primary);
+  line-height: 0;
+}
+
+.parts-list {
+  padding: 0.5rem 0;
+}
+
+.part-accordion-item {
+  border-bottom: 1px solid var(--border);
+}
+
+.part-accordion-item:last-child {
+  border-bottom: none;
+}
+
+.part-header-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  background: transparent;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-align: left;
+}
+
+.part-header-btn:hover {
+  background: #f8fafc;
+  color: var(--text);
+}
+
+.part-header-btn.has-active {
+  color: var(--primary);
+}
+
+.part-header-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 210px;
+}
+
+.accordion-arrow {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.part-badge {
+  font-size: 0.7rem;
+  background: #e2e8f0;
+  color: #475569;
+  padding: 0.1rem 0.4rem;
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+.part-modules-list {
+  list-style: none;
+  padding: 0.25rem 0.5rem 0.65rem;
+}
+
+.module-item-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.6rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  color: var(--text);
+  text-align: left;
+  margin-bottom: 0.15rem;
+}
+
+.module-item-btn:hover {
+  background: #f1f5f9;
+}
+
+.module-item-btn.active {
+  background: var(--primary-light);
+  border-color: #bfdbfe;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.mod-id-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+}
+
+.mod-id-badge.active {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.mod-id-badge.planned {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.mod-title-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.status-indicator {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-indicator.active {
+  background: var(--success);
+}
+
+.status-indicator.planned {
+  background: #cbd5e1;
+}
+
+/* Mobile drawer backdrop */
+.drawer-backdrop {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .drawer-layout {
+    flex-direction: column;
+  }
+
+  .module-drawer {
+    width: 100% !important;
+  }
+
+  .drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 998;
+  }
+}
+

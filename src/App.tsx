@@ -74,12 +74,14 @@ export const App: React.FC = () => {
             onNavigate={navigateTo}
             savedInput={practiceInput}
             onSaveInput={setPracticeInput}
+            initialModuleId={routeParams.moduleId}
           />
         )}
         {currentRoute === 'atlas' && (
           <ConceptScreen
             onNavigate={navigateTo}
             returnTo={routeParams.returnTo}
+            initialModuleId={routeParams.moduleId}
           />
         )}
         {currentRoute === 'playground' && <PlaygroundScreen />}
