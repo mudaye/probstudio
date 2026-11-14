@@ -108,6 +108,15 @@ export function compareRational(a: Rational, b: Rational): number {
   return 0;
 }
 
+export function rationalToDecimal(r: Rational, precision?: number): number {
+  const val = Number(r.num) / Number(r.den);
+  if (precision !== undefined) {
+    const factor = 10 ** precision;
+    return Math.round(val * factor) / factor;
+  }
+  return val;
+}
+
 export function rationalToDecimalString(r: Rational, maxDecimals = 6): string {
   const sign = r.num < 0n ? '-' : '';
   const n = r.num < 0n ? -r.num : r.num;

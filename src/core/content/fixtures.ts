@@ -126,10 +126,63 @@ export const CONCEPT_C000003: ConceptContent = {
   classification: 'source_derived',
 };
 
+export const CONCEPT_C000004: ConceptContent = {
+  id: 'C-000004',
+  title: 'Conditional Probability & Sample Space Reduction',
+  moduleId: 'M02',
+  intuition:
+    'When partial information arrives—such as learning that an event B has occurred—the effective universe of possibilities shrinks from Ω to B. Any outcome outside B is now impossible, and probabilities within B are scaled up proportionally by dividing by P(B).',
+  formalDefinition:
+    'For any events A and B in a probability space (Ω, F, P) with P(B) > 0, the conditional probability of A given B is defined as:\n\nP(A | B) = P(A ∩ B) / P(B).\n\nIf P(B) = 0, P(A | B) is undefined (E-COND-ZERO).',
+  formalDefinitionLatex:
+    'P(A \\mid B) = \\frac{P(A \\cap B)}{P(B)}, \\quad \\text{defined for } P(B) > 0',
+  properties: [
+    'Sample Space Restriction: Conditioning on B restricts the effective sample space to B.',
+    'Certainty of Condition: P(B | B) = P(B ∩ B) / P(B) = 1.',
+    'Disjoint Conditioning: If A and B are mutually exclusive (A ∩ B = ∅) and P(B) > 0, then P(A | B) = 0.',
+    'Probability Range: For any event A, 0 ≤ P(A | B) ≤ 1.',
+  ],
+  sourceRef: {
+    id: 'SRC-P1-CH03-001',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 3: Conditional probability',
+    note: 'Definition of conditional probability and reduced sample space.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000005: ConceptContent = {
+  id: 'C-000005',
+  title: 'Multiplication Rule & Bayes Theorem',
+  moduleId: 'M02',
+  intuition:
+    'Rearranging the conditional probability definition yields the multiplication rule, allowing sequential calculation of joint probabilities. Furthermore, dividing sample space into exhaustive non-overlapping slices allows computing total probability and updating prior beliefs into posterior probabilities via Bayes\' Rule.',
+  formalDefinition:
+    '1. Multiplication Rule: P(A ∩ B) = P(A | B)P(B) = P(B | A)P(A).\n2. Law of Total Probability: For a finite partition {B_1, ..., B_n} of Ω with P(B_i) > 0:\nP(A) = Σ P(A | B_i)P(B_i).\n3. Bayes\' Rule: P(B_j | A) = (P(A | B_j)P(B_j)) / (Σ P(A | B_i)P(B_i)).',
+  formalDefinitionLatex:
+    '\\begin{aligned} P(A \\cap B) &= P(A \\mid B) P(B) \\\\[4pt] P(A) &= \\sum_{i=1}^n P(A \\mid B_i) P(B_i) \\\\[4pt] P(B_j \\mid A) &= \\frac{P(A \\mid B_j) P(B_j)}{\\sum_{i=1}^n P(A \\mid B_i) P(B_i)} \\end{aligned}',
+  properties: [
+    'Conditional Probability Measure: For any fixed B with P(B) > 0, P(· | B) satisfies all three Kolmogorov axioms.',
+    'Sequential Chain Rule: P(A ∩ B ∩ C) = P(A) P(B | A) P(C | A ∩ B).',
+    'Prior to Posterior: Bayes\' rule updates the prior belief P(B_j) into the posterior belief P(B_j | A) upon observing evidence A.',
+  ],
+  sourceRef: {
+    id: 'SRC-P1-CH03-002',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 3 & 4: Conditional probability and Bayes',
+    note: 'The multiplication rule, law of total probability, and Bayes rule.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000001,
   CONCEPT_C000002,
   CONCEPT_C000003,
+  CONCEPT_C000004,
+  CONCEPT_C000005,
 ];
 
 export function getConceptById(id: string): ConceptContent | undefined {
@@ -217,10 +270,36 @@ export const EXERCISE_EX000003: ExerciseContent = {
   classification: 'supplementary',
 };
 
+export const EXERCISE_EX000004: ExerciseContent = {
+  id: 'EX-000004',
+  title: 'Posterior Probability in Medical Diagnostic Screening',
+  moduleId: 'M02',
+  category: 'numerical',
+  linkedConceptIds: ['C-000004', 'C-000005'],
+  prompt:
+    'A rare medical condition D has a prevalence of P(D) = 0.01 (1/100). A diagnostic test T has sensitivity P(T⁺ | D) = 0.99 (99/100) and specificity P(T⁻ | Dᶜ) = 0.95 (95/100), meaning the false-positive rate is P(T⁺ | Dᶜ) = 0.05 (5/100). If a randomly selected individual tests positive (T⁺), what is the posterior probability P(D | T⁺) that the individual actually has the condition? Express your answer as a simplified fraction or decimal.',
+  promptLatex:
+    '\\begin{aligned} &P(D) = \\frac{1}{100}, \\quad P(D^c) = \\frac{99}{100} \\\\[4pt] &P(T^+ \\mid D) = \\frac{99}{100}, \\quad P(T^+ \\mid D^c) = 1 - \\frac{95}{100} = \\frac{5}{100} \\\\[4pt] &\\text{Find } P(D \\mid T^+). \\end{aligned}',
+  expectedRational: { num: 1n, den: 6n },
+  explanation:
+    'Using Bayes\' Rule and the Law of Total Probability: P(T⁺) = P(T⁺ | D)P(D) + P(T⁺ | Dᶜ)P(Dᶜ) = (99/100)(1/100) + (5/100)(99/100) = 99/10000 + 495/10000 = 594/10000 = 297/5000 (0.0594). Then P(D | T⁺) = P(T⁺ | D)P(D) / P(T⁺) = (99/10000) / (594/10000) = 99 / 594 = 1/6 (≈ 0.1667).',
+  explanationLatex:
+    '\\begin{aligned} P(T^+) &= P(T^+ \\mid D)P(D) + P(T^+ \\mid D^c)P(D^c) \\\\[4pt] &= \\left(\\frac{99}{100}\\right)\\left(\\frac{1}{100}\\right) + \\left(\\frac{5}{100}\\right)\\left(\\frac{99}{100}\\right) = \\frac{99 + 495}{10000} = \\frac{594}{10000} \\\\[6pt] P(D \\mid T^+) &= \\frac{P(T^+ \\mid D)P(D)}{P(T^+)} = \\frac{\\frac{99}{10000}}{\\frac{594}{10000}} = \\frac{99}{594} = \\frac{1}{6} \\end{aligned}',
+  sourceRef: {
+    id: 'SRC-P1-CH04-001',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 4: Bayes theorem and diagnostic tests',
+    note: 'Standard diagnostic testing paradigm from Bayes rule discussion.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000001,
   EXERCISE_EX000002,
   EXERCISE_EX000003,
+  EXERCISE_EX000004,
 ];
 
 export function getExerciseById(id: string): ExerciseContent | undefined {

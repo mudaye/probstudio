@@ -91,4 +91,32 @@ describe('Assessment Checker - Prototype Rational Inputs', () => {
       expect(res.status).toBe('incorrect');
     });
   });
+
+  describe('EX-000004: Diagnostic Screening Bayes Posterior Evaluation', () => {
+    const expPosterior = createRational(1n, 6n);
+    const explanationLatex = 'P(D | T^+) = 99 / 594 = 1/6';
+
+    it('accepts simplified rational "1/6"', () => {
+      const res = checkExactRationalAnswer('1/6', expPosterior, explanationLatex);
+      expect(res.status).toBe('correct');
+      expect(res.parsedInput?.num).toBe(1n);
+      expect(res.parsedInput?.den).toBe(6n);
+    });
+
+    it('accepts unsimplified rational "99/594"', () => {
+      const res = checkExactRationalAnswer('99/594', expPosterior, explanationLatex);
+      expect(res.status).toBe('correct');
+    });
+
+    it('accepts unsimplified rational "594/3564"', () => {
+      const res = checkExactRationalAnswer('594/3564', expPosterior, explanationLatex);
+      expect(res.status).toBe('correct');
+    });
+
+    it('evaluates incorrect response "0.99" (sensitivity mistake) as incorrect', () => {
+      const res = checkExactRationalAnswer('0.99', expPosterior, explanationLatex);
+      expect(res.status).toBe('incorrect');
+      expect(res.message).toContain('expected probability is 1/6');
+    });
+  });
 });

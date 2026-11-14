@@ -63,9 +63,9 @@ export const MODULES: readonly ModuleInfo[] = [
     partId: 'P1',
     title: 'Conditional Probability',
     summary: 'Definition of conditional probability, conditioning on events, multiplication rule.',
-    status: 'planned',
-    conceptCount: 0,
-    exerciseCount: 0,
+    status: 'active',
+    conceptCount: 2,
+    exerciseCount: 1,
     labAssociation: 'PL-02',
   },
   {

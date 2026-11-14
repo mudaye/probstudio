@@ -39,5 +39,13 @@ describe('Module Catalog (A-001 §4.1 Integrity)', () => {
     expect(m01?.title).toBe('Probability Foundations');
     expect(m01?.partId).toBe('P1');
     expect(m01?.status).toBe('active');
+
+    const m02 = getModuleById('M02');
+    expect(m02).toBeDefined();
+    expect(m02?.title).toBe('Conditional Probability');
+    expect(m02?.status).toBe('active');
+    expect(m02?.conceptCount).toBe(2);
+    expect(m02?.exerciseCount).toBe(1);
+    expect(m02?.labAssociation).toBe('PL-02');
   });
 });
