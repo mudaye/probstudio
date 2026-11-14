@@ -380,6 +380,106 @@ export const CONCEPT_C000013: ConceptContent = {
   classification: 'source_derived',
 };
 
+export const CONCEPT_C000014: ConceptContent = {
+  id: 'C-000014',
+  title: 'Law of Total Probability & Finite Partitions',
+  moduleId: 'M03',
+  intuition:
+    'When direct calculation of an event A is difficult, we can divide the universe of possibilities into mutually exclusive and exhaustive scenarios (a partition {B_1, ..., B_n}). By computing the conditional probability of A under each scenario weighted by that scenario\'s likelihood, we recover the total probability P(A).',
+  formalDefinition:
+    'Let {B_1, B_2, ..., B_n} be a finite partition of the sample space Ω, such that B_i ∩ B_j = ∅ for i ≠ j, ∪_{i=1}^n B_i = Ω, and P(B_i) > 0 for each i. Then for any event A ⊆ Ω:\nP(A) = Σ_{i=1}^n P(A ∩ B_i) = Σ_{i=1}^n P(A | B_i) P(B_i).',
+  formalDefinitionLatex:
+    '\\bigcup_{i=1}^n B_i = \\Omega, \\quad B_i \\cap B_j = \\emptyset \\; (i \\ne j) \\implies P(A) = \\sum_{i=1}^n P(A \\mid B_i) P(B_i)',
+  properties: [
+    'Exhaustive Partition: Every possible outcome in Ω must belong to exactly one scenario partition block B_i.',
+    'Scenario Weighting: P(A) is a weighted arithmetic mean of conditional probabilities P(A | B_i) with weights P(B_i).',
+    'Non-zero Conditioning: Requires P(B_i) > 0 for all conditioning blocks to avoid zero-conditioning error E-COND-ZERO.',
+  ],
+  sourceRef: {
+    id: 'SRC-P1-CH03-002',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 3: Total probability and partitions',
+    note: 'Partition definition and Law of Total Probability formula.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000015: ConceptContent = {
+  id: 'C-000015',
+  title: 'Bayes\' Rule & Inverse Probability Updating',
+  moduleId: 'M03',
+  intuition:
+    'Bayes\' Rule allows us to invert conditioning: given that an effect or evidence A has been observed, what is the probability that a specific underlying cause B_j was responsible? It updates our prior belief P(B_j) into a posterior belief P(B_j | A) using evidence likelihoods.',
+  formalDefinition:
+    'Let {B_1, ..., B_n} be a partition of Ω with P(B_i) > 0, and let A be an observed event with P(A) > 0. For any partition element B_j:\nP(B_j | A) = (P(A | B_j) P(B_j)) / P(A) = (P(A | B_j) P(B_j)) / (Σ_{i=1}^n P(A | B_i) P(B_i)).',
+  formalDefinitionLatex:
+    'P(B_j \\mid A) = \\frac{P(A \\mid B_j) P(B_j)}{\\sum_{i=1}^n P(A \\mid B_i) P(B_i)}',
+  properties: [
+    'Prior to Posterior: Prior probability P(B_j) is updated to posterior P(B_j | A) in light of evidence A.',
+    'Likelihood Weighting: Hypotheses that predict evidence A with higher likelihood receive a proportional posterior boost.',
+    'Denominator as Total Evidence: The normalizing denominator is P(A) evaluated via the Law of Total Probability.',
+  ],
+  sourceRef: {
+    id: 'SRC-P1-CH04-002',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 4: Bayes theorem and diagnostic tests',
+    note: 'Bayes rule for partitions and posterior computation.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000016: ConceptContent = {
+  id: 'C-000016',
+  title: 'Discrete Probability Mass Functions & Support',
+  moduleId: 'M07',
+  intuition:
+    'A random variable X is discrete if its set of possible values (its support S_X) is finite or countably infinite. The Probability Mass Function assigns an exact probability mass to each value in this support.',
+  formalDefinition:
+    'Let X: Ω → ℝ be a discrete random variable with countable support S_X = {x_1, x_2, ...}. The Probability Mass Function (PMF) p_X: ℝ → [0, 1] is defined by:\np_X(x) = P(X = x) = P({ω ∈ Ω : X(ω) = x}).\nIt satisfies two fundamental conditions:\n1. Non-negativity: p_X(x) ≥ 0 for all x ∈ ℝ (and p_X(x) = 0 for x ∉ S_X).\n2. Total Mass Normalization: Σ_{x ∈ S_X} p_X(x) = 1.',
+  formalDefinitionLatex:
+    'p_X(x) = P(X = x), \\quad p_X(x) \\ge 0, \\quad \\sum_{x \\in S_X} p_X(x) = 1',
+  properties: [
+    'Countable Support: Discrete random variables can take at most countably many values (either finite or countably infinite like ℕ).',
+    'Point Probabilities: Unlike continuous random variables where point probabilities are zero, discrete random variables place positive mass on individual points.',
+    'Normalization Requirement: Any valid PMF must sum to exactly 1 over its entire support.',
+  ],
+  sourceRef: {
+    id: 'SRC-P1-CH08-005',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 8: Discrete random variables',
+    note: 'Definition of discrete random variables and PMF normalization conditions.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000017: ConceptContent = {
+  id: 'C-000017',
+  title: 'The Bridge Between PMF and CDF: Summations & Differences',
+  moduleId: 'M07',
+  intuition:
+    'The PMF and CDF are two equivalent ways of characterizing a discrete random variable. You can build the CDF from the PMF by summing masses from left to right (running sum). Conversely, you can recover the PMF from the CDF by measuring the vertical jump discontinuity at each support point.',
+  formalDefinition:
+    'For discrete random variable X with PMF p_X(x) and support S_X:\nForward Bridge (PMF to CDF): F_X(x) = Σ_{t ≤ x, t ∈ S_X} p_X(t).\nInverse Bridge (CDF to PMF): p_X(x_k) = F_X(x_k) - F_X(x_k⁻) = F_X(x_k) - lim_{t ↑ x_k} F_X(t).\nInterval Bridge: P(a < X ≤ b) = F_X(b) - F_X(a).',
+  formalDefinitionLatex:
+    '\\begin{aligned} F_X(x) &= \\sum_{t \\le x} p_X(t) \\\\[4pt] p_X(x_k) &= F_X(x_k) - F_X(x_k^-) \\\\[4pt] P(a < X \\le b) &= F_X(b) - F_X(a) \\end{aligned}',
+  properties: [
+    'Bidirectional Equivalence: Knowing all values of the PMF completely determines the CDF, and knowing the CDF completely determines the PMF.',
+    'Jump Discontinuities: The CDF of a discrete random variable is discontinuous exactly at the points where PMF mass is positive, with jump size equal to the mass.',
+    'Interval Arithmetic: Standard half-open intervals (a, b] evaluate cleanly as F(b) - F(a) without endpoint corrections.',
+  ],
+  sourceRef: {
+    id: 'SRC-P1-CH07-005',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 7: Cumulative distribution function',
+    note: 'Interchangeability between discrete PMF and CDF.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000001,
   CONCEPT_C000002,
@@ -394,6 +494,10 @@ export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000011,
   CONCEPT_C000012,
   CONCEPT_C000013,
+  CONCEPT_C000014,
+  CONCEPT_C000015,
+  CONCEPT_C000016,
+  CONCEPT_C000017,
 ];
 
 export function getConceptById(id: string): ConceptContent | undefined {
@@ -706,6 +810,106 @@ export const EXERCISE_EX000012: ExerciseContent = {
   classification: 'source_derived',
 };
 
+export const EXERCISE_EX000013: ExerciseContent = {
+  id: 'EX-000013',
+  title: 'Total Probability Across Factory Production Lines',
+  moduleId: 'M03',
+  category: 'numerical',
+  linkedConceptIds: ['C-000014'],
+  prompt:
+    'A factory produces computer microchips using three manufacturing lines: M₁, M₂, and M₃, which manufacture 50% (1/2), 30% (3/10), and 20% (1/5) of total factory output respectively. The defect rates for the three lines are P(D | M₁) = 1/100 (0.01), P(D | M₂) = 2/100 (0.02), and P(D | M₃) = 5/100 (0.05). Using the Law of Total Probability, calculate the overall probability P(D) that a randomly chosen microchip from the factory is defective. Express your answer as a simplified fraction or decimal.',
+  promptLatex:
+    '\\begin{aligned} &P(M_1) = \\frac{1}{2}, \\quad P(M_2) = \\frac{3}{10}, \\quad P(M_3) = \\frac{1}{5} \\\\[4pt] &P(D \\mid M_1) = \\frac{1}{100}, \\quad P(D \\mid M_2) = \\frac{2}{100}, \\quad P(D \\mid M_3) = \\frac{5}{100} \\\\[4pt] &\\text{Find } P(D) = \\sum_{i=1}^3 P(D \\mid M_i) P(M_i). \\end{aligned}',
+  expectedRational: { num: 21n, den: 1000n },
+  explanation:
+    'By the Law of Total Probability: P(D) = P(D | M₁)P(M₁) + P(D | M₂)P(M₂) + P(D | M₃)P(M₃) = (1/100)(1/2) + (2/100)(3/10) + (5/100)(1/5) = 5/1000 + 6/1000 + 10/1000 = 21/1000 (0.021).',
+  explanationLatex:
+    'P(D) = \\left(\\frac{1}{100}\\right)\\left(\\frac{1}{2}\\right) + \\left(\\frac{2}{100}\\right)\\left(\\frac{3}{10}\\right) + \\left(\\frac{5}{100}\\right)\\left(\\frac{1}{5}\\right) = \\frac{5 + 6 + 10}{1000} = \\frac{21}{1000} = 0.021',
+  sourceRef: {
+    id: 'SRC-P1-CH03-003',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 3: Total probability and partitions',
+    note: 'Standard 3-partition production defect application of total probability.',
+  },
+  classification: 'supplementary',
+};
+
+export const EXERCISE_EX000014: ExerciseContent = {
+  id: 'EX-000014',
+  title: 'Posterior Line Attribution via Bayes\' Rule',
+  moduleId: 'M03',
+  category: 'numerical',
+  linkedConceptIds: ['C-000014', 'C-000015'],
+  prompt:
+    'Continuing from the factory scenario with lines M₁, M₂, and M₃: an inspector tests a randomly selected chip and finds it is defective (event D). Calculate the posterior probability P(M₃ | D) that this defective chip came from line M₃. Express your answer as a simplified fraction.',
+  promptLatex:
+    'P(D \\mid M_3) = \\frac{5}{100}, \\quad P(M_3) = \\frac{1}{5}, \\quad P(D) = \\frac{21}{1000}. \\quad \\text{Find } P(M_3 \\mid D).',
+  expectedRational: { num: 10n, den: 21n },
+  explanation:
+    'Using Bayes\' Rule: P(M₃ | D) = P(D | M₃)P(M₃) / P(D). The numerator is (5/100) * (1/5) = 1/100 = 10/1000. The denominator is P(D) = 21/1000. Therefore, P(M₃ | D) = (10/1000) / (21/1000) = 10/21 (≈ 0.4762).',
+  explanationLatex:
+    'P(M_3 \\mid D) = \\frac{P(D \\mid M_3)P(M_3)}{P(D)} = \\frac{\\frac{1}{100}}{\\frac{21}{1000}} = \\frac{10}{21} \\approx 0.4762',
+  sourceRef: {
+    id: 'SRC-P1-CH04-003',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 4: Bayes theorem and diagnostic tests',
+    note: 'Posterior probability calculation for partition branch.',
+  },
+  classification: 'supplementary',
+};
+
+export const EXERCISE_EX000015: ExerciseContent = {
+  id: 'EX-000015',
+  title: 'PMF Normalization Constant & Tail Probability',
+  moduleId: 'M07',
+  category: 'numerical',
+  linkedConceptIds: ['C-000016'],
+  prompt:
+    'A discrete random variable X has support S_X = {1, 2, 3, 4} with PMF given by p_X(k) = c · k for k ∈ {1, 2, 3, 4}, where c is a positive normalizing constant. Calculate the tail probability P(X ≥ 3). Express your answer as a simplified fraction or decimal.',
+  promptLatex:
+    'S_X = \\{1, 2, 3, 4\\}, \\quad p_X(k) = c \\cdot k. \\quad \\text{Find } P(X \\ge 3).',
+  expectedRational: { num: 7n, den: 10n },
+  explanation:
+    'First find normalizing constant c: Σ_{k=1}^4 p_X(k) = c(1 + 2 + 3 + 4) = 10c = 1, so c = 1/10. The individual masses are p(1) = 1/10, p(2) = 2/10, p(3) = 3/10, and p(4) = 4/10. Then P(X ≥ 3) = p(3) + p(4) = 3/10 + 4/10 = 7/10 (or 0.70).',
+  explanationLatex:
+    '\\sum_{k=1}^4 c k = 10 c = 1 \\implies c = \\frac{1}{10}. \\quad P(X \\ge 3) = p(3) + p(4) = \\frac{3}{10} + \\frac{4}{10} = \\frac{7}{10} = 0.70',
+  sourceRef: {
+    id: 'SRC-P1-CH08-006',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 8: Discrete random variables',
+    note: 'Linear discrete PMF normalization and tail probability.',
+  },
+  classification: 'supplementary',
+};
+
+export const EXERCISE_EX000016: ExerciseContent = {
+  id: 'EX-000016',
+  title: 'Inverse Bridge: Extracting PMF Mass from CDF Steps',
+  moduleId: 'M07',
+  category: 'numerical',
+  linkedConceptIds: ['C-000016', 'C-000017'],
+  prompt:
+    'A discrete random variable X has staircase CDF F(x) specified as follows: F(x) = 0 for x < 0; F(x) = 1/5 (0.20) for 0 ≤ x < 2; F(x) = 13/20 (0.65) for 2 ≤ x < 5; and F(x) = 1 for x ≥ 5. Using the jump discontinuity formula p_X(x) = F(x) - F(x⁻), calculate the exact point mass P(X = 2). Express your answer as a simplified fraction.',
+  promptLatex:
+    'F(x) = \\begin{cases} 0 & x < 0 \\\\ \\frac{1}{5} & 0 \\le x < 2 \\\\ \\frac{13}{20} & 2 \\le x < 5 \\\\ 1 & x \\ge 5 \\end{cases} \\quad \\text{Find } P(X = 2).',
+  expectedRational: { num: 9n, den: 20n },
+  explanation:
+    'The point mass at x = 2 is the vertical step in the CDF at that point: P(X = 2) = F(2) - F(2⁻). Here F(2) = 13/20 and F(2⁻) = lim_{t ↑ 2} F(t) = 1/5 = 4/20. Thus P(X = 2) = 13/20 - 4/20 = 9/20 (or 0.45).',
+  explanationLatex:
+    'P(X = 2) = F(2) - F(2^-) = \\frac{13}{20} - \\frac{1}{5} = \\frac{13}{20} - \\frac{4}{20} = \\frac{9}{20} = 0.45',
+  sourceRef: {
+    id: 'SRC-P1-CH07-006',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 7: Cumulative distribution function',
+    note: 'Extracting discrete PMF masses from jump sizes in CDF.',
+  },
+  classification: 'supplementary',
+};
+
 export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000001,
   EXERCISE_EX000002,
@@ -719,6 +923,10 @@ export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000010,
   EXERCISE_EX000011,
   EXERCISE_EX000012,
+  EXERCISE_EX000013,
+  EXERCISE_EX000014,
+  EXERCISE_EX000015,
+  EXERCISE_EX000016,
 ];
 
 export function getExerciseById(id: string): ExerciseContent | undefined {

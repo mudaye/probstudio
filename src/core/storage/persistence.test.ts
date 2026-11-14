@@ -54,4 +54,50 @@ describe('LocalPersistenceService', () => {
     expect(loaded?.operation).toBe('intersection');
     expect(loaded?.schema_version).toBe('1.0.0');
   });
+
+  it('exports and imports full learner state JSON with merge and integrity checks', () => {
+    // Record attempts and activities
+    LocalPersistenceService.recordAttempt({
+      exercise_id: 'EX-000001',
+      raw_response: '1/2',
+      outcome: 'correct',
+      calculation_id: 'CAL-EVENT-001',
+      feedback_summary: 'Correct',
+    });
+    LocalPersistenceService.recordAttempt({
+      exercise_id: 'EX-000002',
+      raw_response: '0.97',
+      outcome: 'correct',
+      calculation_id: 'CAL-EVENT-002',
+      feedback_summary: 'Correct',
+    });
+    LocalPersistenceService.recordActivity({
+      target_id: 'M01',
+      activity_type: 'concept_view',
+      description: 'Viewed M01 concept',
+    });
+
+    const exportedJson = LocalPersistenceService.exportLearnerStateJson();
+    expect(exportedJson).toBeDefined();
+
+    const parsed = JSON.parse(exportedJson);
+    expect(parsed.export_version).toBe('1.0.0');
+    expect(parsed.attempts.length).toBe(2);
+    expect(parsed.statistics.totalAttempts).toBe(2);
+    expect(parsed.statistics.correctAttempts).toBe(2);
+    expect(parsed.statistics.accuracy).toBe(1.0);
+    expect(parsed.statistics.uniqueExercisesAttempted).toBe(2);
+
+    // Clear state
+    LocalPersistenceService.clearAll();
+    expect(LocalPersistenceService.getAttempts().length).toBe(0);
+
+    // Import state back
+    const importRes = LocalPersistenceService.importLearnerStateJson(exportedJson);
+    expect(importRes.success).toBe(true);
+    expect(importRes.importedAttempts).toBe(2);
+
+    const reloadedAttempts = LocalPersistenceService.getAttempts();
+    expect(reloadedAttempts.length).toBe(2);
+  });
 });

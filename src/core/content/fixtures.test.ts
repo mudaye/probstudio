@@ -16,16 +16,24 @@ import {
   CONCEPT_C000011,
   CONCEPT_C000012,
   CONCEPT_C000013,
+  CONCEPT_C000014,
+  CONCEPT_C000015,
+  CONCEPT_C000016,
+  CONCEPT_C000017,
   ALL_EXERCISES,
   getExercisesByModule,
   getExerciseById,
   EXERCISE_EX000011,
   EXERCISE_EX000012,
+  EXERCISE_EX000013,
+  EXERCISE_EX000014,
+  EXERCISE_EX000015,
+  EXERCISE_EX000016,
 } from './fixtures';
 
-describe('Concept Content Fixtures - Modules M01, M02, M04, M05, M06, and M08 (A-005 Compliance)', () => {
-  it('contains authored concepts for Module M01, M02, M04, M05, M06, and M08', () => {
-    expect(ALL_CONCEPTS.length).toBe(13);
+describe('Concept Content Fixtures - Modules M01 through M08 (A-005 Compliance)', () => {
+  it('contains authored concepts for all Part 1 active modules', () => {
+    expect(ALL_CONCEPTS.length).toBe(17);
     const m01Concepts = getConceptsByModule('M01');
     expect(m01Concepts.length).toBe(3);
     expect(m01Concepts.map((c) => c.id)).toEqual(['C-000001', 'C-000002', 'C-000003']);
@@ -33,6 +41,10 @@ describe('Concept Content Fixtures - Modules M01, M02, M04, M05, M06, and M08 (A
     const m02Concepts = getConceptsByModule('M02');
     expect(m02Concepts.length).toBe(2);
     expect(m02Concepts.map((c) => c.id)).toEqual(['C-000004', 'C-000005']);
+
+    const m03Concepts = getConceptsByModule('M03');
+    expect(m03Concepts.length).toBe(2);
+    expect(m03Concepts.map((c) => c.id)).toEqual(['C-000014', 'C-000015']);
 
     const m04Concepts = getConceptsByModule('M04');
     expect(m04Concepts.length).toBe(2);
@@ -45,6 +57,10 @@ describe('Concept Content Fixtures - Modules M01, M02, M04, M05, M06, and M08 (A
     const m06Concepts = getConceptsByModule('M06');
     expect(m06Concepts.length).toBe(2);
     expect(m06Concepts.map((c) => c.id)).toEqual(['C-000010', 'C-000011']);
+
+    const m07Concepts = getConceptsByModule('M07');
+    expect(m07Concepts.length).toBe(2);
+    expect(m07Concepts.map((c) => c.id)).toEqual(['C-000016', 'C-000017']);
 
     const m08Concepts = getConceptsByModule('M08');
     expect(m08Concepts.length).toBe(2);
@@ -97,6 +113,10 @@ describe('Concept Content Fixtures - Modules M01, M02, M04, M05, M06, and M08 (A
       CONCEPT_C000011,
       CONCEPT_C000012,
       CONCEPT_C000013,
+      CONCEPT_C000014,
+      CONCEPT_C000015,
+      CONCEPT_C000016,
+      CONCEPT_C000017,
     ]) {
       expect(c.classification).toBe('source_derived');
       expect(c.intuition.length).toBeGreaterThan(20);
@@ -196,9 +216,41 @@ describe('Concept Content Fixtures - Modules M01, M02, M04, M05, M06, and M08 (A
     expect(c?.properties.some((p) => p.includes('starts at k = 1'))).toBe(true);
   });
 
-  describe('Exercise Content Fixtures - Modules M01, M02, M04, M05, M06, and M08', () => {
-    it('contains authored exercises for Modules M01, M02, M04, M05, M06, and M08', () => {
-      expect(ALL_EXERCISES.length).toBe(12);
+  it('verifies C-000014: Law of Total Probability & Finite Partitions', () => {
+    const c = getConceptById('C-000014');
+    expect(c).toBeDefined();
+    expect(c?.title).toContain('Law of Total Probability');
+    expect(c?.moduleId).toBe('M03');
+    expect(c?.formalDefinitionLatex).toContain('\\sum_{i=1}^n P(A \\mid B_i) P(B_i)');
+  });
+
+  it('verifies C-000015: Bayes\' Rule & Inverse Probability Updating', () => {
+    const c = getConceptById('C-000015');
+    expect(c).toBeDefined();
+    expect(c?.title).toContain('Bayes');
+    expect(c?.moduleId).toBe('M03');
+    expect(c?.formalDefinitionLatex).toContain('P(B_j \\mid A)');
+  });
+
+  it('verifies C-000016: Discrete Probability Mass Functions & Support', () => {
+    const c = getConceptById('C-000016');
+    expect(c).toBeDefined();
+    expect(c?.title).toContain('Discrete Probability Mass');
+    expect(c?.moduleId).toBe('M07');
+    expect(c?.formalDefinitionLatex).toContain('\\sum_{x \\in S_X} p_X(x) = 1');
+  });
+
+  it('verifies C-000017: The Bridge Between PMF and CDF: Summations & Differences', () => {
+    const c = getConceptById('C-000017');
+    expect(c).toBeDefined();
+    expect(c?.title).toContain('Bridge Between PMF and CDF');
+    expect(c?.moduleId).toBe('M07');
+    expect(c?.formalDefinitionLatex).toContain('p_X(x_k) &= F_X(x_k) - F_X(x_k^-)');
+  });
+
+  describe('Exercise Content Fixtures - Modules M01 through M08', () => {
+    it('contains authored exercises for all active modules in Part 1', () => {
+      expect(ALL_EXERCISES.length).toBe(16);
       const m01Ex = getExercisesByModule('M01');
       expect(m01Ex.length).toBe(3);
       expect(m01Ex.map((e) => e.id)).toEqual(['EX-000001', 'EX-000002', 'EX-000003']);
@@ -206,6 +258,10 @@ describe('Concept Content Fixtures - Modules M01, M02, M04, M05, M06, and M08 (A
       const m02Ex = getExercisesByModule('M02');
       expect(m02Ex.length).toBe(1);
       expect(m02Ex.map((e) => e.id)).toEqual(['EX-000004']);
+
+      const m03Ex = getExercisesByModule('M03');
+      expect(m03Ex.length).toBe(2);
+      expect(m03Ex.map((e) => e.id)).toEqual(['EX-000013', 'EX-000014']);
 
       const m04Ex = getExercisesByModule('M04');
       expect(m04Ex.length).toBe(2);
@@ -218,6 +274,10 @@ describe('Concept Content Fixtures - Modules M01, M02, M04, M05, M06, and M08 (A
       const m06Ex = getExercisesByModule('M06');
       expect(m06Ex.length).toBe(2);
       expect(m06Ex.map((e) => e.id)).toEqual(['EX-000009', 'EX-000010']);
+
+      const m07Ex = getExercisesByModule('M07');
+      expect(m07Ex.length).toBe(2);
+      expect(m07Ex.map((e) => e.id)).toEqual(['EX-000015', 'EX-000016']);
 
       const m08Ex = getExercisesByModule('M08');
       expect(m08Ex.length).toBe(2);
@@ -236,6 +296,34 @@ describe('Concept Content Fixtures - Modules M01, M02, M04, M05, M06, and M08 (A
       expect(ex12?.expectedRational.num).toBe(9n);
       expect(ex12?.expectedRational.den).toBe(64n);
       expect(ex12?.moduleId).toBe('M08');
+
+      const ex13 = getExerciseById('EX-000013');
+      expect(ex13).toBe(EXERCISE_EX000013);
+      expect(ex13?.title).toContain('Total Probability');
+      expect(ex13?.expectedRational.num).toBe(21n);
+      expect(ex13?.expectedRational.den).toBe(1000n);
+      expect(ex13?.moduleId).toBe('M03');
+
+      const ex14 = getExerciseById('EX-000014');
+      expect(ex14).toBe(EXERCISE_EX000014);
+      expect(ex14?.title).toContain('Posterior Line Attribution');
+      expect(ex14?.expectedRational.num).toBe(10n);
+      expect(ex14?.expectedRational.den).toBe(21n);
+      expect(ex14?.moduleId).toBe('M03');
+
+      const ex15 = getExerciseById('EX-000015');
+      expect(ex15).toBe(EXERCISE_EX000015);
+      expect(ex15?.title).toContain('PMF Normalization');
+      expect(ex15?.expectedRational.num).toBe(7n);
+      expect(ex15?.expectedRational.den).toBe(10n);
+      expect(ex15?.moduleId).toBe('M07');
+
+      const ex16 = getExerciseById('EX-000016');
+      expect(ex16).toBe(EXERCISE_EX000016);
+      expect(ex16?.title).toContain('Inverse Bridge');
+      expect(ex16?.expectedRational.num).toBe(9n);
+      expect(ex16?.expectedRational.den).toBe(20n);
+      expect(ex16?.moduleId).toBe('M07');
     });
   });
 });

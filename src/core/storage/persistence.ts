@@ -36,6 +36,20 @@ export interface LabResumePayload {
   readonly schema_version: string;
 }
 
+export interface LearnerStateExport {
+  readonly export_version: string;
+  readonly exported_at: string;
+  readonly attempts: readonly StoredAttempt[];
+  readonly activities: readonly ActivityEvent[];
+  readonly labResumes: Readonly<Record<string, LabResumePayload>>;
+  readonly statistics: {
+    readonly totalAttempts: number;
+    readonly correctAttempts: number;
+    readonly accuracy: number;
+    readonly uniqueExercisesAttempted: number;
+  };
+}
+
 const STORAGE_PREFIX = 'prs_storage_v1_';
 const ATTEMPTS_KEY = `${STORAGE_PREFIX}attempts`;
 const ACTIVITIES_KEY = `${STORAGE_PREFIX}activities`;
@@ -166,6 +180,105 @@ export class LocalPersistenceService {
       return raw ? JSON.parse(raw) : null;
     } catch {
       return null;
+    }
+  }
+
+  static exportLearnerState(): LearnerStateExport {
+    const attempts = this.getAttempts();
+    const activities = this.getActivities();
+
+    const labResumes: Record<string, LabResumePayload> = {};
+    for (const labId of ['PL-01', 'PL-02', 'PL-03', 'PL-04', 'PL-05', 'PL-06']) {
+      const res = this.getLabResume(labId);
+      if (res) {
+        labResumes[labId] = res;
+      }
+    }
+
+    const totalAttempts = attempts.length;
+    const correctAttempts = attempts.filter((a) => a.outcome === 'correct').length;
+    const accuracy = totalAttempts > 0 ? correctAttempts / totalAttempts : 0;
+    const uniqueExercises = new Set(attempts.map((a) => a.exercise_id)).size;
+
+    return {
+      export_version: '1.0.0',
+      exported_at: new Date().toISOString(),
+      attempts,
+      activities,
+      labResumes,
+      statistics: {
+        totalAttempts,
+        correctAttempts,
+        accuracy,
+        uniqueExercisesAttempted: uniqueExercises,
+      },
+    };
+  }
+
+  static exportLearnerStateJson(): string {
+    return JSON.stringify(this.exportLearnerState(), null, 2);
+  }
+
+  static importLearnerStateJson(
+    jsonString: string
+  ): { success: boolean; importedAttempts: number; importedActivities: number; error?: string } {
+    try {
+      const parsed = JSON.parse(jsonString);
+      if (!parsed || typeof parsed !== 'object') {
+        return { success: false, importedAttempts: 0, importedActivities: 0, error: 'Invalid JSON payload.' };
+      }
+
+      if (!Array.isArray(parsed.attempts) || !Array.isArray(parsed.activities)) {
+        return { success: false, importedAttempts: 0, importedActivities: 0, error: 'Malformed export format: missing attempts or activities array.' };
+      }
+
+      // Merge attempts
+      const currentAttempts = this.getAttempts();
+      const existingIds = new Set(currentAttempts.map((a) => a.attempt_id));
+      const newAttempts: StoredAttempt[] = [];
+      for (const att of parsed.attempts) {
+        if (att && att.attempt_id && !existingIds.has(att.attempt_id)) {
+          newAttempts.push(att);
+          existingIds.add(att.attempt_id);
+        }
+      }
+      const mergedAttempts = [...newAttempts, ...currentAttempts];
+      setItem(ATTEMPTS_KEY, JSON.stringify(mergedAttempts));
+
+      // Merge activities
+      const currentActivities = this.getActivities();
+      const existingActIds = new Set(currentActivities.map((a) => a.event_id));
+      const newActivities: ActivityEvent[] = [];
+      for (const act of parsed.activities) {
+        if (act && act.event_id && !existingActIds.has(act.event_id)) {
+          newActivities.push(act);
+          existingActIds.add(act.event_id);
+        }
+      }
+      const mergedActivities = [...newActivities, ...currentActivities].slice(0, 100);
+      setItem(ACTIVITIES_KEY, JSON.stringify(mergedActivities));
+
+      // Restore lab resumes
+      if (parsed.labResumes && typeof parsed.labResumes === 'object') {
+        for (const [labId, resumePayload] of Object.entries(parsed.labResumes)) {
+          if (resumePayload && typeof resumePayload === 'object') {
+            setItem(`${LAB_RESUME_KEY_PREFIX}${labId}`, JSON.stringify(resumePayload));
+          }
+        }
+      }
+
+      return {
+        success: true,
+        importedAttempts: newAttempts.length,
+        importedActivities: newActivities.length,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        importedAttempts: 0,
+        importedActivities: 0,
+        error: err instanceof Error ? err.message : 'Unknown parsing error.',
+      };
     }
   }
 

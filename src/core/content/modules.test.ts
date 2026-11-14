@@ -48,6 +48,14 @@ describe('Module Catalog (A-001 §4.1 Integrity)', () => {
     expect(m02?.exerciseCount).toBe(1);
     expect(m02?.labAssociation).toBe('PL-02');
 
+    const m03 = getModuleById('M03');
+    expect(m03).toBeDefined();
+    expect(m03?.title).toContain('Total Probability');
+    expect(m03?.status).toBe('active');
+    expect(m03?.conceptCount).toBe(2);
+    expect(m03?.exerciseCount).toBe(2);
+    expect(m03?.labAssociation).toBe('PL-02');
+
     const m04 = getModuleById('M04');
     expect(m04).toBeDefined();
     expect(m04?.title).toBe('Event Independence');
@@ -71,6 +79,14 @@ describe('Module Catalog (A-001 §4.1 Integrity)', () => {
     expect(m06?.conceptCount).toBe(2);
     expect(m06?.exerciseCount).toBe(2);
     expect(m06?.labAssociation).toBe('PL-05');
+
+    const m07 = getModuleById('M07');
+    expect(m07).toBeDefined();
+    expect(m07?.title).toContain('Discrete Random Variables');
+    expect(m07?.status).toBe('active');
+    expect(m07?.conceptCount).toBe(2);
+    expect(m07?.exerciseCount).toBe(2);
+    expect(m07?.labAssociation).toBe('PL-05');
 
     const m08 = getModuleById('M08');
     expect(m08).toBeDefined();
