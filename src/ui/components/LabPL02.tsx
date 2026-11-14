@@ -13,26 +13,25 @@ import {
   BayesInputPartition,
 } from '../../core/math/conditional';
 import { MathView } from './MathView';
-import { LocalPersistenceService } from '../../core/storage/persistence';
+import { LabShell } from './LabShell';
+import { LocalPersistenceService, LabComparisonSnapshot } from '../../core/storage/persistence';
 
-interface PL02Snapshot {
-  timestamp: string;
-  prevalence: string;
-  sensitivity: string;
-  specificity: string;
-  evidence: 'positive' | 'negative';
-  evidenceProbStr: string;
-  posteriorStr: string;
-  posteriorPct: string;
+interface LabPL02Props {
+  initialPreset?: string;
+  onNavigate?: (route: string, params?: Record<string, string>) => void;
 }
 
-export const LabPL02: React.FC = () => {
+export const LabPL02: React.FC<LabPL02Props> = ({ initialPreset, onNavigate }) => {
   // Input parameters stored as rational-compatible decimal strings
   const [prevalenceInput, setPrevalenceInput] = useState<string>('0.01'); // P(D)
   const [sensitivityInput, setSensitivityInput] = useState<string>('0.99'); // P(T+ | D)
   const [specificityInput, setSpecificityInput] = useState<string>('0.95'); // P(T- | D^c)
   const [evidence, setEvidence] = useState<'positive' | 'negative'>('positive');
-  const [snapshot, setSnapshot] = useState<PL02Snapshot | null>(null);
+
+  const [snapshotName, setSnapshotName] = useState<string>('Rare Disease Positive');
+  const [savedSnapshot, setSavedSnapshot] = useState<LabComparisonSnapshot | null>(() => {
+    return LocalPersistenceService.getLabSnapshot('PL-02');
+  });
 
   useEffect(() => {
     LocalPersistenceService.recordActivity({
@@ -41,6 +40,23 @@ export const LabPL02: React.FC = () => {
       description: 'Opened Guided Lab PL-02: Conditional Probability and Bayes Rule',
     });
   }, []);
+
+  // Handle preset deep linking
+  useEffect(() => {
+    if (initialPreset === 'rare' || initialPreset === 'rare_disease') {
+      handlePreset('0.01', '0.99', '0.95', 'positive');
+      setSnapshotName('Rare Disease Preset');
+    } else if (initialPreset === 'common') {
+      handlePreset('0.20', '0.90', '0.90', 'positive');
+      setSnapshotName('Common Condition Preset');
+    } else if (initialPreset === 'perfect') {
+      handlePreset('0.05', '1.00', '1.00', 'positive');
+      setSnapshotName('Perfect Test Preset');
+    } else if (initialPreset === 'zero_evidence') {
+      handlePreset('0', '0', '1', 'positive');
+      setSnapshotName('Zero Evidence E-COND-ZERO');
+    }
+  }, [initialPreset]);
 
   // Parse inputs safely
   const parsedParams = useMemo(() => {
@@ -142,7 +158,7 @@ export const LabPL02: React.FC = () => {
     setEvidence(ev);
   };
 
-  const handleTakeSnapshot = () => {
+  const handleSaveSnapshot = () => {
     if (!calculation) return;
     const evProb = calculation.bayesResult.evidenceTotalProbability;
     const post = calculation.bayesResult.posteriorProbability;
@@ -154,71 +170,118 @@ export const LabPL02: React.FC = () => {
       posteriorPct = (rationalToDecimal(post.exact_rational, 4) * 100).toFixed(2) + '%';
     }
 
-    setSnapshot({
-      timestamp: new Date().toLocaleTimeString(),
-      prevalence: prevalenceInput,
-      sensitivity: sensitivityInput,
-      specificity: specificityInput,
-      evidence,
-      evidenceProbStr: evProb.exact_rational ? rationalToString(evProb.exact_rational) : '0',
-      posteriorStr,
-      posteriorPct,
-    });
+    const snap: LabComparisonSnapshot = {
+      lab_id: 'PL-02',
+      snapshot_id: `snap_pl02_${Date.now()}`,
+      name: snapshotName.trim() || 'PL-02 Snapshot',
+      timestamp: new Date().toLocaleString(),
+      settings: {
+        prevalence: prevalenceInput,
+        sensitivity: sensitivityInput,
+        specificity: specificityInput,
+        evidence,
+      },
+      theoreticalOutputs: {
+        evidenceProbStr: evProb.exact_rational ? rationalToString(evProb.exact_rational) : '0',
+        posteriorStr,
+        posteriorPct,
+      },
+    };
+    LocalPersistenceService.saveLabSnapshot(snap);
+    setSavedSnapshot(snap);
+  };
+
+  const handleRestoreSnapshot = () => {
+    if (!savedSnapshot) return;
+    const s = savedSnapshot.settings;
+    if (s.prevalence) setPrevalenceInput(s.prevalence);
+    if (s.sensitivity) setSensitivityInput(s.sensitivity);
+    if (s.specificity) setSpecificityInput(s.specificity);
+    if (s.evidence) setEvidence(s.evidence);
+  };
+
+  const handleDeleteSnapshot = () => {
+    LocalPersistenceService.deleteLabSnapshot('PL-02');
+    setSavedSnapshot(null);
+  };
+
+  const handleResetDefaults = () => {
+    handlePreset('0.01', '0.99', '0.95', 'positive');
+    setSnapshotName('Rare Disease Default');
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Intro Header */}
-      <div
-        style={{
-          padding: '16px 20px',
-          background: 'var(--surface, #ffffff)',
-          borderRadius: '8px',
-          border: '1px solid var(--border, #e2e8f0)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
-          <div>
-            <h2 style={{ margin: '0 0 6px 0', fontSize: '1.25rem', color: 'var(--text-primary, #1e293b)' }}>
-              Guided Lab PL-02: Conditional Probability & Bayes' Rule
-            </h2>
-            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary, #64748b)' }}>
-              Investigate the mathematics of diagnostic screening, joint event intersections, the Law of Total Probability, and how prior evidence updates belief into posterior probabilities.
-            </p>
+    <LabShell
+      labId="PL-02"
+      labTitle="Conditional Probability & Bayes' Rule"
+      labSubtitle="Investigate the mathematics of diagnostic screening, joint event intersections, the Law of Total Probability, and how prior evidence updates belief into posterior probabilities."
+      sourceAttribution={{
+        part: 'Part 1',
+        chapter: 'Chapters 3–4: Conditioning & Bayes',
+        isIllustrative: false,
+      }}
+      linkedModuleIds={['M02', 'M03']}
+      linkedConceptIds={['C-000008', 'C-000010', 'C-000011']}
+      isStale={!parsedParams.valid || calculation?.bayesResult.posteriorProbability.status !== 'valid'}
+      errorCode={!parsedParams.valid ? 'E-PARAM-DOMAIN' : (calculation?.bayesResult.posteriorProbability.error_code || undefined)}
+      errorMessage={parsedParams.error || calculation?.bayesResult.posteriorProbability.message || undefined}
+      snapshotName={snapshotName}
+      onSnapshotNameChange={setSnapshotName}
+      savedSnapshot={savedSnapshot}
+      onSaveSnapshot={handleSaveSnapshot}
+      onRestoreSnapshot={handleRestoreSnapshot}
+      onDeleteSnapshot={handleDeleteSnapshot}
+      onReset={handleResetDefaults}
+      onNavigate={onNavigate}
+      renderSnapshotComparison={(saved) => (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+          <div style={{ border: '1px solid #bfdbfe', borderRadius: '6px', padding: '1rem', background: '#eff6ff' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#1d4ed8' }}>Active Configuration</h4>
+            <div>Prevalence P(D): <strong>{prevalenceInput}</strong></div>
+            <div>Sensitivity P(T+|D): <strong>{sensitivityInput}</strong></div>
+            <div>Specificity P(T-|D^c): <strong>{specificityInput}</strong></div>
+            <div>Evidence: <strong>{evidence}</strong></div>
+            {calculation && (
+              <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #dbeafe' }}>
+                <div>Posterior P(D|T): <strong>
+                  {calculation.bayesResult.posteriorProbability.status === 'valid' && calculation.bayesResult.posteriorProbability.exact_rational
+                    ? rationalToString(calculation.bayesResult.posteriorProbability.exact_rational)
+                    : 'Undefined'}
+                </strong></div>
+              </div>
+            )}
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={() => handlePreset('0.01', '0.99', '0.95', 'positive')}
-              style={{
-                padding: '6px 12px',
-                fontSize: '0.8rem',
-                borderRadius: '6px',
-                border: '1px solid var(--border, #cbd5e1)',
-                background: '#f8fafc',
-                cursor: 'pointer',
-              }}
-            >
-              Reset to Defaults
-            </button>
+          <div style={{ border: '1px solid #e9d5ff', borderRadius: '6px', padding: '1rem', background: '#faf5ff' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#7e22ce' }}>Saved: "{saved.name}"</h4>
+            <div>Prevalence: <strong>{saved.settings.prevalence}</strong></div>
+            <div>Sensitivity: <strong>{saved.settings.sensitivity}</strong></div>
+            <div>Specificity: <strong>{saved.settings.specificity}</strong></div>
+            <div>Evidence: <strong>{saved.settings.evidence}</strong></div>
+            {saved.theoreticalOutputs && (
+              <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #f3e8ff' }}>
+                <div>Posterior: <strong>{saved.theoreticalOutputs.posteriorStr} ({saved.theoreticalOutputs.posteriorPct})</strong></div>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Preset Selector */}
-        <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary, #475569)' }}>Presets:</span>
-          <button
-            onClick={() => handlePreset('0.01', '0.99', '0.95', 'positive')}
-            style={{
-              padding: '4px 10px',
-              fontSize: '0.78rem',
-              borderRadius: '4px',
-              border: '1px solid #94a3b8',
-              background: '#f1f5f9',
-              cursor: 'pointer',
-            }}
-          >
-            Rare Disease (0.01, 0.99, 0.95)
-          </button>
+      )}
+    >
+      {/* Preset Selector */}
+      <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary, #475569)' }}>Presets:</span>
+        <button
+          onClick={() => handlePreset('0.01', '0.99', '0.95', 'positive')}
+          style={{
+            padding: '4px 10px',
+            fontSize: '0.78rem',
+            borderRadius: '4px',
+            border: '1px solid #94a3b8',
+            background: '#f1f5f9',
+            cursor: 'pointer',
+          }}
+        >
+          Rare Disease (0.01, 0.99, 0.95)
+        </button>
           <button
             onClick={() => handlePreset('0.20', '0.90', '0.90', 'positive')}
             style={{
@@ -273,7 +336,6 @@ export const LabPL02: React.FC = () => {
             Zero Evidence (E-COND-ZERO)
           </button>
         </div>
-      </div>
 
       {/* Main Grid: Controls & Calculations */}
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 380px) 1fr', gap: '20px', alignItems: 'start' }}>
@@ -452,7 +514,7 @@ export const LabPL02: React.FC = () => {
 
           {/* Snapshot Button */}
           <button
-            onClick={handleTakeSnapshot}
+            onClick={handleSaveSnapshot}
             disabled={!calculation}
             style={{
               marginTop: '4px',
@@ -881,63 +943,8 @@ export const LabPL02: React.FC = () => {
             </p>
           </div>
 
-          {/* Snapshot Comparison Panel */}
-          {snapshot && (
-            <div
-              style={{
-                background: 'var(--surface, #ffffff)',
-                padding: '16px',
-                borderRadius: '8px',
-                border: '1px solid var(--border, #e2e8f0)',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#1e293b' }}>
-                  Snapshot Comparison (Saved at {snapshot.timestamp})
-                </h4>
-                <button
-                  onClick={() => setSnapshot(null)}
-                  style={{
-                    padding: '2px 8px',
-                    fontSize: '0.75rem',
-                    border: '1px solid #cbd5e1',
-                    background: '#f8fafc',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Clear
-                </button>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.82rem' }}>
-                <div style={{ background: '#f8fafc', padding: '10px', borderRadius: '6px' }}>
-                  <div style={{ fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Snapshot Config</div>
-                  <div>Prevalence: {snapshot.prevalence}</div>
-                  <div>Sensitivity: {snapshot.sensitivity}</div>
-                  <div>Specificity: {snapshot.specificity}</div>
-                  <div>Evidence: {snapshot.evidence}</div>
-                  <div style={{ marginTop: '4px', fontWeight: 600, color: '#0369a1' }}>
-                    Posterior: {snapshot.posteriorPct} ({snapshot.posteriorStr})
-                  </div>
-                </div>
-                <div style={{ background: '#eff6ff', padding: '10px', borderRadius: '6px' }}>
-                  <div style={{ fontWeight: 600, color: '#1e40af', marginBottom: '4px' }}>Current Live Config</div>
-                  <div>Prevalence: {prevalenceInput}</div>
-                  <div>Sensitivity: {sensitivityInput}</div>
-                  <div>Specificity: {specificityInput}</div>
-                  <div>Evidence: {evidence}</div>
-                  <div style={{ marginTop: '4px', fontWeight: 600, color: '#166534' }}>
-                    Posterior:{' '}
-                    {calculation?.bayesResult.posteriorProbability.status === 'valid'
-                      ? `${(rationalToDecimal(calculation.bayesResult.posteriorProbability.exact_rational!, 4) * 100).toFixed(2)}% (${rationalToString(calculation.bayesResult.posteriorProbability.exact_rational!)})`
-                      : 'Undefined'}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
-    </div>
+    </LabShell>
   );
 };

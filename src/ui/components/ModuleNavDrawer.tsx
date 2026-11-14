@@ -8,6 +8,7 @@ interface ModuleNavDrawerProps {
   onSelectModule: (moduleId: string | null) => void;
   title?: string;
   subtitle?: string;
+  onNavigate?: (route: string, params?: Record<string, string>) => void;
 }
 
 export const ModuleNavDrawer: React.FC<ModuleNavDrawerProps> = ({
@@ -17,6 +18,7 @@ export const ModuleNavDrawer: React.FC<ModuleNavDrawerProps> = ({
   onSelectModule,
   title = 'Curriculum Modules',
   subtitle = 'Optional filter & index',
+  onNavigate,
 }) => {
   // Accordion state: by default, Part 1 is expanded
   const [expandedParts, setExpandedParts] = useState<Record<string, boolean>>({
@@ -128,6 +130,27 @@ export const ModuleNavDrawer: React.FC<ModuleNavDrawerProps> = ({
                                   </span>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                  {mod.labAssociation && onNavigate && (
+                                    <span
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onNavigate('playground', { labId: mod.labAssociation! });
+                                      }}
+                                      title={`Launch Laboratory ${mod.labAssociation}`}
+                                      style={{
+                                        fontSize: '0.7rem',
+                                        fontWeight: 700,
+                                        background: '#faf5ff',
+                                        color: '#7c3aed',
+                                        border: '1px solid #d8b4fe',
+                                        padding: '1px 5px',
+                                        borderRadius: '3px',
+                                        cursor: 'pointer',
+                                      }}
+                                    >
+                                      🧪 {mod.labAssociation}
+                                    </span>
+                                  )}
                                   {mod.status === 'active' ? (
                                     <span className="status-indicator active" title="Active content available" />
                                   ) : (

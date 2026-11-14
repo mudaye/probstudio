@@ -4,6 +4,9 @@ import {
   parseRational,
   rationalToString,
   rationalToLatex,
+  addRational,
+  divRational,
+  compareRational,
   Rational,
 } from '../../core/math/rational';
 import {
@@ -18,29 +21,30 @@ import {
 } from '../../core/math/events';
 import { MathView } from './MathView';
 import { VennDiagram } from './VennDiagram';
-import { LocalPersistenceService } from '../../core/storage/persistence';
+import { LabShell } from './LabShell';
+import { LocalPersistenceService, LabComparisonSnapshot } from '../../core/storage/persistence';
 
 const DEFAULT_OUTCOMES = ['HH', 'HT', 'TH', 'TT'];
 const DEFAULT_MASSES_STR = ['1/4', '1/4', '1/4', '1/4'];
 const DEFAULT_EVENT_A = ['HH', 'HT'];
 const DEFAULT_EVENT_B = ['HH', 'TH'];
 
-interface Snapshot {
-  name: string;
-  timestamp: string;
-  operation: SetOperation;
-  resultEvent: readonly string[];
-  probDisplay: string;
-  probLatex: string;
+interface LabPL01Props {
+  initialPreset?: string;
+  onNavigate?: (route: string, params?: Record<string, string>) => void;
 }
 
-export const LabPL01: React.FC = () => {
+export const LabPL01: React.FC<LabPL01Props> = ({ initialPreset, onNavigate }) => {
   const [outcomes] = useState<string[]>(DEFAULT_OUTCOMES);
   const [massesInput, setMassesInput] = useState<string[]>(DEFAULT_MASSES_STR);
   const [eventA, setEventA] = useState<string[]>(DEFAULT_EVENT_A);
   const [eventB, setEventB] = useState<string[]>(DEFAULT_EVENT_B);
   const [operation, setOperation] = useState<SetOperation>('intersection');
-  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+
+  const [snapshotName, setSnapshotName] = useState<string>('Fair Coins Intersection');
+  const [savedSnapshot, setSavedSnapshot] = useState<LabComparisonSnapshot | null>(() => {
+    return LocalPersistenceService.getLabSnapshot('PL-01');
+  });
 
   useEffect(() => {
     LocalPersistenceService.recordActivity({
@@ -49,6 +53,51 @@ export const LabPL01: React.FC = () => {
       description: 'Opened Guided Lab PL-01: Event and Probability Builder',
     });
   }, []);
+
+  // Handle deep-linked presets
+  useEffect(() => {
+    if (initialPreset === 'biased') {
+      setMassesInput(['1/2', '1/4', '1/8', '1/8']);
+      setSnapshotName('Biased Toss Preset');
+    } else if (initialPreset === 'disjoint') {
+      setEventA(['HH']);
+      setEventB(['TT']);
+      setOperation('intersection');
+      setSnapshotName('Disjoint Events Preset');
+    }
+  }, [initialPreset]);
+
+  // Normalization check & repair preview
+  const repairInfo = useMemo(() => {
+    let sum = createRational(0n, 1n);
+    let allNonNeg = true;
+    const parsed: Rational[] = [];
+    for (const mStr of massesInput) {
+      const r = parseRational(mStr);
+      if (!r || r.num < 0n) {
+        allNonNeg = false;
+        break;
+      }
+      parsed.push(r);
+      sum = addRational(sum, r);
+    }
+    const isSumOne = allNonNeg && compareRational(sum, createRational(1n, 1n)) === 0;
+    const eligible = allNonNeg && !isSumOne && sum.num > 0n;
+    const preview = eligible
+      ? parsed.map((m, i) => ({
+          label: outcomes[i],
+          oldVal: massesInput[i],
+          newVal: rationalToString(divRational(m, sum)),
+        }))
+      : [];
+    return { eligible, sum, preview, parsed };
+  }, [massesInput, outcomes]);
+
+  const handleApplyRepair = () => {
+    if (!repairInfo.eligible) return;
+    const newMasses = repairInfo.parsed.map((m) => rationalToString(divRational(m, repairInfo.sum)));
+    setMassesInput(newMasses);
+  };
 
   // Parse sample space
   const parsedSpaceResult = useMemo(() => {
@@ -92,10 +141,15 @@ export const LabPL01: React.FC = () => {
     return calculateEventOperation(initialSpace, DEFAULT_EVENT_A, DEFAULT_EVENT_B, 'intersection');
   });
 
+  useEffect(() => {
+    if (parsedSpaceResult.valid && parsedSpaceResult.space) {
+      setLastValidResult(calculateEventOperation(parsedSpaceResult.space, eventA, eventB, operation));
+    }
+  }, [parsedSpaceResult, eventA, eventB, operation]);
+
   const [activeResult, isStale] = useMemo(() => {
     if (parsedSpaceResult.valid && parsedSpaceResult.space) {
       const res = calculateEventOperation(parsedSpaceResult.space, eventA, eventB, operation);
-      setLastValidResult(res);
       return [res, false] as const;
     }
     return [lastValidResult, true] as const;
@@ -126,19 +180,46 @@ export const LabPL01: React.FC = () => {
     setEventA(DEFAULT_EVENT_A);
     setEventB(DEFAULT_EVENT_B);
     setOperation('intersection');
-    setSnapshot(null);
+    setSnapshotName('Fair Coins Default');
   };
 
   const handleSaveSnapshot = () => {
     if (!activeResult || !activeResult.probabilityResult.value) return;
-    setSnapshot({
-      name: `Snapshot (${operation})`,
-      timestamp: new Date().toLocaleTimeString(),
-      operation,
-      resultEvent: activeResult.resultEvent,
-      probDisplay: rationalToString(activeResult.probabilityResult.value),
-      probLatex: rationalToLatex(activeResult.probabilityResult.value),
-    });
+    const snap: LabComparisonSnapshot = {
+      lab_id: 'PL-01',
+      snapshot_id: `snap_pl01_${Date.now()}`,
+      name: snapshotName.trim() || 'PL-01 Snapshot',
+      timestamp: new Date().toLocaleString(),
+      settings: {
+        outcomes,
+        massesInput,
+        eventA,
+        eventB,
+        operation,
+      },
+      theoreticalOutputs: {
+        operation,
+        resultEvent: activeResult.resultEvent,
+        probStr: rationalToString(activeResult.probabilityResult.value),
+        probLatex: rationalToLatex(activeResult.probabilityResult.value),
+      },
+    };
+    LocalPersistenceService.saveLabSnapshot(snap);
+    setSavedSnapshot(snap);
+  };
+
+  const handleRestoreSnapshot = () => {
+    if (!savedSnapshot) return;
+    const s = savedSnapshot.settings;
+    if (s.massesInput) setMassesInput(s.massesInput);
+    if (s.eventA) setEventA(s.eventA);
+    if (s.eventB) setEventB(s.eventB);
+    if (s.operation) setOperation(s.operation);
+  };
+
+  const handleDeleteSnapshot = () => {
+    LocalPersistenceService.deleteLabSnapshot('PL-01');
+    setSavedSnapshot(null);
   };
 
   const opSymbols: Record<SetOperation, string> = {
@@ -149,46 +230,60 @@ export const LabPL01: React.FC = () => {
   };
 
   return (
-    <div className="playground-view">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <div>
-          <span className="tag-label">Playground &bull; Guided Lab PL-01</span>
-          <h2 className="card-title" style={{ marginTop: '0.25rem' }}>Event and Probability Builder</h2>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <span className="badge" style={{ background: '#e0f2fe', color: '#0369a1' }}>
-            A-003 Approved Lab
-          </span>
-          <button className="btn-secondary btn-sm" onClick={handleResetDefaults}>
-            ↺ Reset Defaults
-          </button>
-        </div>
-      </div>
-
-      <div className="card" style={{ marginBottom: '1rem' }}>
-        <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)' }}>
-          <strong>Learning question:</strong> How do events relate to outcomes, and how do event operations and valid probability assignments affect event probabilities?
-        </p>
-      </div>
-
-      {/* Validation warning if invalid masses */}
-      {!parsedSpaceResult.valid && (
-        <div className="alert alert-warning" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <strong>Invalid probability assignment:</strong> {parsedSpaceResult.error}
-            <div style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>
-              Showing results from the <em>last valid settings</em> (Stale Result).
-            </div>
+    <LabShell
+      labId="PL-01"
+      labTitle="Event and Probability Builder"
+      labSubtitle="How do events relate to outcomes, and how do event operations and valid probability assignments affect event probabilities?"
+      sourceAttribution={{
+        part: 'Part 1',
+        chapter: 'Chapters 1–2: Sample Spaces & Axioms',
+        isIllustrative: true,
+      }}
+      linkedModuleIds={['M01']}
+      linkedConceptIds={['C-000001', 'C-000002', 'C-000003', 'C-000004']}
+      isStale={isStale}
+      errorCode={parsedSpaceResult.valid ? undefined : 'E-PROB-SUM'}
+      errorMessage={parsedSpaceResult.error ?? undefined}
+      repairEligible={repairInfo.eligible}
+      repairPreview={repairInfo.preview}
+      onApplyRepair={handleApplyRepair}
+      snapshotName={snapshotName}
+      onSnapshotNameChange={setSnapshotName}
+      savedSnapshot={savedSnapshot}
+      onSaveSnapshot={handleSaveSnapshot}
+      onRestoreSnapshot={handleRestoreSnapshot}
+      onDeleteSnapshot={handleDeleteSnapshot}
+      onReset={handleResetDefaults}
+      onNavigate={onNavigate}
+      renderSnapshotComparison={(saved) => (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+          <div style={{ border: '1px solid #bfdbfe', borderRadius: '6px', padding: '1rem', background: '#eff6ff' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#1d4ed8' }}>Active Configuration</h4>
+            <div>Operation: <strong>{operation.toUpperCase()}</strong></div>
+            <div>Event A: <code>&#123;{eventA.join(', ') || '∅'}&#125;</code></div>
+            <div>Event B: <code>&#123;{eventB.join(', ') || '∅'}&#125;</code></div>
+            {activeResult && activeResult.probabilityResult.value && (
+              <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #dbeafe' }}>
+                <div>Result: <code>&#123;{activeResult.resultEvent.join(', ') || '∅'}&#125;</code></div>
+                <div>Probability: <strong>{rationalToString(activeResult.probabilityResult.value)}</strong></div>
+              </div>
+            )}
           </div>
-          <button
-            className="btn-secondary btn-sm"
-            onClick={() => setMassesInput(DEFAULT_MASSES_STR)}
-          >
-            Apply Fair 1/4 Each
-          </button>
+          <div style={{ border: '1px solid #e9d5ff', borderRadius: '6px', padding: '1rem', background: '#faf5ff' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#7e22ce' }}>Saved: "{saved.name}"</h4>
+            <div>Operation: <strong>{saved.settings.operation?.toUpperCase()}</strong></div>
+            <div>Event A: <code>&#123;{saved.settings.eventA?.join(', ') || '∅'}&#125;</code></div>
+            <div>Event B: <code>&#123;{saved.settings.eventB?.join(', ') || '∅'}&#125;</code></div>
+            {saved.theoreticalOutputs && (
+              <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #f3e8ff' }}>
+                <div>Result: <code>&#123;{saved.theoreticalOutputs.resultEvent?.join(', ') || '∅'}&#125;</code></div>
+                <div>Probability: <strong>{saved.theoreticalOutputs.probStr}</strong></div>
+              </div>
+            )}
+          </div>
         </div>
       )}
-
+    >
       {/* Main Grid: Left Controls, Right Real-Time Results */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
         {/* Left Column: Sample Space & Events */}
@@ -356,18 +451,6 @@ export const LabPL01: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            {/* Snapshot Actions */}
-            <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <button className="btn-secondary btn-sm" onClick={handleSaveSnapshot}>
-                📸 Save Comparison Snapshot
-              </button>
-              {snapshot && (
-                <button className="btn-secondary btn-sm" onClick={() => setSnapshot(null)}>
-                  Clear Snapshot
-                </button>
-              )}
-            </div>
           </div>
 
           {/* Interactive SVG Venn Diagram */}
@@ -389,26 +472,8 @@ export const LabPL01: React.FC = () => {
               />
             </div>
           )}
-
-          {/* Comparison Snapshot Card */}
-          {snapshot && (
-            <div className="card" style={{ background: '#faf5ff', borderColor: '#e9d5ff' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#6b21a8' }}>
-                  {snapshot.name}
-                </h4>
-                <span style={{ fontSize: '0.8rem', color: '#9333ea' }}>{snapshot.timestamp}</span>
-              </div>
-              <p style={{ fontSize: '0.85rem', color: '#581c87' }}>
-                Outcomes: <code>&#123;{snapshot.resultEvent.join(', ') || '∅'}&#125;</code>
-              </p>
-              <div style={{ marginTop: '0.5rem' }}>
-                <MathView math={`P(${opSymbols[snapshot.operation]}) = ${snapshot.probLatex}`} />
-              </div>
-            </div>
-          )}
         </div>
       </div>
-    </div>
+    </LabShell>
   );
 };

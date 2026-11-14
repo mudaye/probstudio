@@ -11,6 +11,7 @@ import { LabPL09 } from '../components/LabPL09';
 import { LabPL10 } from '../components/LabPL10';
 import { LabPL11 } from '../components/LabPL11';
 import { CustomExperimentBuilder } from '../components/CustomExperimentBuilder';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { LocalPersistenceService } from '../../core/storage/persistence';
 
 export type LabTabId =
@@ -29,6 +30,7 @@ export type LabTabId =
 
 interface PlaygroundScreenProps {
   initialLabId?: string;
+  initialPreset?: string;
   onNavigate?: (route: string, params?: Record<string, string>) => void;
 }
 
@@ -49,14 +51,28 @@ const LABS_METADATA: { id: LabTabId; badge: string; title: string; part: string 
 
 export const PlaygroundScreen: React.FC<PlaygroundScreenProps> = ({
   initialLabId = 'PL-01',
+  initialPreset,
   onNavigate,
 }) => {
   const [activeLab, setActiveLab] = useState<LabTabId>(() => {
+    if (typeof window !== 'undefined') {
+      const match = window.location.hash.match(/#\/playground\/([A-Za-z0-9_-]+)/);
+      if (match && LABS_METADATA.some((m) => m.id === match[1])) {
+        return match[1] as LabTabId;
+      }
+    }
     if (LABS_METADATA.some((m) => m.id === initialLabId)) {
       return initialLabId as LabTabId;
     }
     return 'PL-01';
   });
+
+  const handleSelectLab = (id: LabTabId) => {
+    setActiveLab(id);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', `#/playground/${id}`);
+    }
+  };
 
   const [importStatus, setImportStatus] = useState<string | null>(null);
 
@@ -65,6 +81,17 @@ export const PlaygroundScreen: React.FC<PlaygroundScreenProps> = ({
       setActiveLab(initialLabId as LabTabId);
     }
   }, [initialLabId]);
+
+  useEffect(() => {
+    const handleHash = () => {
+      const match = window.location.hash.match(/#\/playground\/([A-Za-z0-9_-]+)/);
+      if (match && LABS_METADATA.some((m) => m.id === match[1])) {
+        setActiveLab(match[1] as LabTabId);
+      }
+    };
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
 
   // Export all snapshots & learner data to downloadable JSON
   const handleExportAll = () => {
@@ -178,7 +205,7 @@ export const PlaygroundScreen: React.FC<PlaygroundScreenProps> = ({
           return (
             <button
               key={lab.id}
-              onClick={() => setActiveLab(lab.id)}
+              onClick={() => handleSelectLab(lab.id)}
               style={{
                 padding: '6px 12px',
                 fontSize: '0.82rem',
@@ -220,18 +247,20 @@ export const PlaygroundScreen: React.FC<PlaygroundScreenProps> = ({
       </div>
 
       {/* Render Active Lab */}
-      {activeLab === 'PL-01' && <LabPL01 />}
-      {activeLab === 'PL-02' && <LabPL02 />}
-      {activeLab === 'PL-03' && <LabPL03 />}
-      {activeLab === 'PL-04' && <LabPL04 />}
-      {activeLab === 'PL-05' && <LabPL05 />}
-      {activeLab === 'PL-06' && <LabPL06 />}
-      {activeLab === 'PL-07' && <LabPL07 />}
-      {activeLab === 'PL-08' && <LabPL08 />}
-      {activeLab === 'PL-09' && <LabPL09 />}
-      {activeLab === 'PL-10' && <LabPL10 />}
-      {activeLab === 'PL-11' && <LabPL11 onNavigate={onNavigate} />}
-      {activeLab === 'EXP-BUILDER' && <CustomExperimentBuilder onNavigate={onNavigate} />}
+      <ErrorBoundary key={activeLab} fallbackTitle={`Lab ${activeLab} encountered an unexpected issue`}>
+        {activeLab === 'PL-01' && <LabPL01 initialPreset={initialPreset} onNavigate={onNavigate} />}
+        {activeLab === 'PL-02' && <LabPL02 initialPreset={initialPreset} onNavigate={onNavigate} />}
+        {activeLab === 'PL-03' && <LabPL03 />}
+        {activeLab === 'PL-04' && <LabPL04 />}
+        {activeLab === 'PL-05' && <LabPL05 />}
+        {activeLab === 'PL-06' && <LabPL06 />}
+        {activeLab === 'PL-07' && <LabPL07 />}
+        {activeLab === 'PL-08' && <LabPL08 />}
+        {activeLab === 'PL-09' && <LabPL09 />}
+        {activeLab === 'PL-10' && <LabPL10 />}
+        {activeLab === 'PL-11' && <LabPL11 onNavigate={onNavigate} />}
+        {activeLab === 'EXP-BUILDER' && <CustomExperimentBuilder onNavigate={onNavigate} />}
+      </ErrorBoundary>
     </div>
   );
 };

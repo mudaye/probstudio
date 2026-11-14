@@ -119,6 +119,7 @@ export const ConceptScreen: React.FC<ConceptScreenProps> = ({
           onSelectModule={handleSelectModule}
           title="Concept Atlas"
           subtitle="Curriculum Index"
+          onNavigate={onNavigate}
         />
 
         {/* Main Content Area */}

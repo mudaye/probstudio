@@ -47,25 +47,14 @@ export const LabPL10: React.FC = () => {
   // Snapshot & Stale state
   const [snapshot, setSnapshot] = useState<PL10Snapshot | null>(null);
   const [snapshotName, setSnapshotName] = useState<string>('My PL-10 Snapshot');
-  const [isStale, setIsStale] = useState<boolean>(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
 
   // --- Math Calculations ---
-  const conditionalResult: TriangularConditionalResult | null = useMemo(() => {
-    const res = calculateTriangularConditionalDensity(givenAxis, givenValue, queryCutoff, queryDirection);
-    if (res.status === 'valid') {
-      setIsStale(false);
-      setValidationError(null);
-      return res.value;
-    } else {
-      setIsStale(true);
-      setValidationError(res.message || 'Domain violation in conditional distribution.');
-      return null;
-    }
+  const conditionalCalc = useMemo(() => {
+    return calculateTriangularConditionalDensity(givenAxis, givenValue, queryCutoff, queryDirection);
   }, [givenAxis, givenValue, queryCutoff, queryDirection]);
 
-  const channelResult: CommunicationChannelResult | null = useMemo(() => {
-    const res = calculateCommunicationChannel({
+  const channelCalc = useMemo(() => {
+    return calculateCommunicationChannel({
       bit0Voltage,
       bit1Voltage,
       priorBit1,
@@ -73,29 +62,35 @@ export const LabPL10: React.FC = () => {
       noiseParam,
       threshold,
     });
-    if (res.status === 'valid') {
-      setIsStale(false);
-      setValidationError(null);
-      return res.value;
-    } else {
-      setIsStale(true);
-      setValidationError(res.message || 'Invalid channel configuration.');
-      return null;
-    }
   }, [bit0Voltage, bit1Voltage, priorBit1, noiseType, noiseParam, threshold]);
 
-  const jacobianResult: JacobianTransformResult | null = useMemo(() => {
-    const res = calculateJacobianLinearTransform(a11, a12, a21, a22);
-    if (res.status === 'valid') {
-      setIsStale(false);
-      setValidationError(null);
-      return res.value;
-    } else {
-      setIsStale(true);
-      setValidationError(res.message || 'Singular transformation matrix.');
-      return null;
-    }
+  const jacobianCalc = useMemo(() => {
+    return calculateJacobianLinearTransform(a11, a12, a21, a22);
   }, [a11, a12, a21, a22]);
+
+  const conditionalResult: TriangularConditionalResult | null =
+    conditionalCalc.status === 'valid' ? conditionalCalc.value : null;
+
+  const channelResult: CommunicationChannelResult | null =
+    channelCalc.status === 'valid' ? channelCalc.value : null;
+
+  const jacobianResult: JacobianTransformResult | null =
+    jacobianCalc.status === 'valid' ? jacobianCalc.value : null;
+
+  const validationError: string | null = useMemo(() => {
+    if (activeTab === 'conditional' && conditionalCalc.status !== 'valid') {
+      return conditionalCalc.message || 'Domain violation in conditional distribution.';
+    }
+    if (activeTab === 'channel' && channelCalc.status !== 'valid') {
+      return channelCalc.message || 'Invalid channel configuration.';
+    }
+    if (activeTab === 'transform' && jacobianCalc.status !== 'valid') {
+      return jacobianCalc.message || 'Singular transformation matrix.';
+    }
+    return null;
+  }, [activeTab, conditionalCalc, channelCalc, jacobianCalc]);
+
+  const isStale = validationError !== null;
 
   // Load saved snapshot on mount
   useEffect(() => {
@@ -172,9 +167,6 @@ export const LabPL10: React.FC = () => {
     setA12(1);
     setA21(1);
     setA22(-1);
-
-    setIsStale(false);
-    setValidationError(null);
   };
 
   return (

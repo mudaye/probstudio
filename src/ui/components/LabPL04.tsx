@@ -112,12 +112,20 @@ export const LabPL04: React.FC = () => {
 
     const res = calculateInducedDistribution(parsedSpaceResult.space, mappingInput);
     if (res.status === 'valid' && res.value) {
-      setLastValidResult(res.value);
       return [res.value, false, null] as const;
     } else {
       return [lastValidResult, true, res.message || 'Mapping is incomplete or invalid.'] as const;
     }
   }, [parsedSpaceResult, mappingInput, lastValidResult]);
+
+  useEffect(() => {
+    if (parsedSpaceResult.valid && parsedSpaceResult.space) {
+      const res = calculateInducedDistribution(parsedSpaceResult.space, mappingInput);
+      if (res.status === 'valid' && res.value) {
+        setLastValidResult(res.value);
+      }
+    }
+  }, [parsedSpaceResult, mappingInput]);
 
   const handleMappingChange = (outcome: string, val: string) => {
     setMappingInput((prev) => ({

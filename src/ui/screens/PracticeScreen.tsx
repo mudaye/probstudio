@@ -166,6 +166,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
           onSelectModule={handleSelectModule}
           title="Exercise Filters"
           subtitle="Filter by curriculum module"
+          onNavigate={onNavigate}
         />
 
         {/* Practice Problem Workspace */}
