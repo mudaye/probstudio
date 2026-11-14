@@ -6,6 +6,9 @@ import {
   CONCEPT_C000001,
   CONCEPT_C000002,
   CONCEPT_C000003,
+  ALL_EXERCISES,
+  getExercisesByModule,
+  getExerciseById,
 } from './fixtures';
 
 describe('Concept Content Fixtures - Module M01 (A-005 Compliance)', () => {
@@ -54,5 +57,24 @@ describe('Concept Content Fixtures - Module M01 (A-005 Compliance)', () => {
       expect(c.formalDefinition.length).toBeGreaterThan(20);
       expect(c.properties.length).toBeGreaterThanOrEqual(3);
     }
+  });
+
+  describe('Exercise Content Fixtures - Module M01', () => {
+    it('contains exactly 3 authored exercises for Module M01', () => {
+      expect(ALL_EXERCISES.length).toBe(3);
+      const m01Ex = getExercisesByModule('M01');
+      expect(m01Ex.length).toBe(3);
+      expect(m01Ex.map((e) => e.id)).toEqual(['EX-000001', 'EX-000002', 'EX-000003']);
+
+      const ex2 = getExerciseById('EX-000002');
+      expect(ex2?.title).toContain('Complement Rule');
+      expect(ex2?.expectedRational.num).toBe(97n);
+      expect(ex2?.expectedRational.den).toBe(100n);
+
+      const ex3 = getExerciseById('EX-000003');
+      expect(ex3?.title).toContain('Finite Additivity');
+      expect(ex3?.expectedRational.num).toBe(2n);
+      expect(ex3?.expectedRational.den).toBe(3n);
+    });
   });
 });

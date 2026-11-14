@@ -47,4 +47,48 @@ describe('Assessment Checker - Prototype Rational Inputs', () => {
     const res = checkExactRationalAnswer('', expected, explanation);
     expect(res.status).toBe('invalid_input');
   });
+
+  describe('EX-000002: Complement Rule Evaluation', () => {
+    const expComplement = createRational(97n, 100n);
+    const explanationLatex = 'P(A^c) = 1 - 3/100 = 97/100';
+
+    it('accepts fraction "97/100"', () => {
+      const res = checkExactRationalAnswer('97/100', expComplement, explanationLatex);
+      expect(res.status).toBe('correct');
+      expect(res.parsedInput?.num).toBe(97n);
+      expect(res.parsedInput?.den).toBe(100n);
+    });
+
+    it('accepts equivalent decimal "0.97"', () => {
+      const res = checkExactRationalAnswer('0.97', expComplement, explanationLatex);
+      expect(res.status).toBe('correct');
+      expect(res.parsedInput?.num).toBe(97n);
+      expect(res.parsedInput?.den).toBe(100n);
+    });
+
+    it('evaluates incorrect response "3/100" as incorrect', () => {
+      const res = checkExactRationalAnswer('3/100', expComplement, explanationLatex);
+      expect(res.status).toBe('incorrect');
+    });
+  });
+
+  describe('EX-000003: Disjoint Event Union Evaluation', () => {
+    const expUnion = createRational(2n, 3n);
+    const explanationLatex = 'P(A ∪ B) = 2/6 + 2/6 = 4/6 = 2/3';
+
+    it('accepts simplified rational "2/3"', () => {
+      const res = checkExactRationalAnswer('2/3', expUnion, explanationLatex);
+      expect(res.status).toBe('correct');
+    });
+
+    it('accepts unsimplified rational "4/6"', () => {
+      const res = checkExactRationalAnswer('4/6', expUnion, explanationLatex);
+      expect(res.status).toBe('correct');
+    });
+
+    it('evaluates incorrect response "1/6" as incorrect', () => {
+      const res = checkExactRationalAnswer('1/6', expUnion, explanationLatex);
+      expect(res.status).toBe('incorrect');
+    });
+  });
 });

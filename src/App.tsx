@@ -75,6 +75,7 @@ export const App: React.FC = () => {
             savedInput={practiceInput}
             onSaveInput={setPracticeInput}
             initialModuleId={routeParams.moduleId}
+            initialExerciseId={routeParams.exerciseId}
           />
         )}
         {currentRoute === 'atlas' && (

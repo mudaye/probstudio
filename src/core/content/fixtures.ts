@@ -27,10 +27,11 @@ export interface ExerciseContent {
   readonly id: string;
   readonly title: string;
   readonly moduleId: string;
+  readonly category: 'numerical' | 'concept_identification' | 'formula_selection' | 'error_detection';
   readonly linkedConceptIds: readonly string[];
   readonly prompt: string;
   readonly promptLatex: string;
-  readonly sampleSpaceLatex: string;
+  readonly sampleSpaceLatex?: string;
   readonly expectedRational: { num: bigint; den: bigint };
   readonly explanation: string;
   readonly explanationLatex: string;
@@ -143,6 +144,7 @@ export const EXERCISE_EX000001: ExerciseContent = {
   id: 'EX-000001',
   title: 'Event Probability in a Two-Coin Toss',
   moduleId: 'M01',
+  category: 'numerical',
   linkedConceptIds: ['C-000001', 'C-000002'],
   prompt:
     'Consider an experiment where a fair coin is tossed twice. The sample space is Ω = {HH, HT, TH, TT}, where each outcome has equal probability 1/4. Let event A be getting a Head on the first toss: A = {HH, HT}. Calculate P(A).',
@@ -163,3 +165,68 @@ export const EXERCISE_EX000001: ExerciseContent = {
   },
   classification: 'supplementary',
 };
+
+export const EXERCISE_EX000002: ExerciseContent = {
+  id: 'EX-000002',
+  title: 'Applying the Complement Rule',
+  moduleId: 'M01',
+  category: 'numerical',
+  linkedConceptIds: ['C-000002', 'C-000003'],
+  prompt:
+    'In a quality inspection of manufactured microchips, let event A be the event that a randomly tested chip is defective. Historical testing indicates that the probability of a defect is P(A) = 3/100 (or 0.03). Using the Complement Rule, calculate the probability P(A^c) that a randomly selected chip is non-defective.',
+  promptLatex:
+    'P(A) = \\frac{3}{100} = 0.03.\\newline \\text{Using the Complement Rule } P(A^c) = 1 - P(A), \\text{ find } P(A^c).',
+  expectedRational: { num: 97n, den: 100n },
+  explanation:
+    'By the Complement Rule derived from Kolmogorov\'s axioms, the probability of an event and its complement must sum to 1: P(A) + P(A^c) = 1. Therefore, P(A^c) = 1 - P(A) = 1 - 3/100 = 97/100 = 0.97.',
+  explanationLatex:
+    'P(A^c) = 1 - P(A) = 1 - \\frac{3}{100} = \\frac{97}{100} = 0.97',
+  sourceRef: {
+    id: 'SRC-P1-CH02-003',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 2: Probability axioms and space',
+    note: 'Application of the complement rule derived from normalization and additivity.',
+  },
+  classification: 'supplementary',
+};
+
+export const EXERCISE_EX000003: ExerciseContent = {
+  id: 'EX-000003',
+  title: 'Finite Additivity for Disjoint Events',
+  moduleId: 'M01',
+  category: 'numerical',
+  linkedConceptIds: ['C-000001', 'C-000002', 'C-000003'],
+  prompt:
+    'A fair 6-sided die is rolled once, with sample space Ω = {1, 2, 3, 4, 5, 6}, where each outcome has equal mass 1/6. Let event A be rolling a 1 or 2 (A = {1, 2}), and event B be rolling a 5 or 6 (B = {5, 6}). Because A and B share no common outcomes (A ∩ B = ∅), they are mutually exclusive. Calculate P(A ∪ B).',
+  promptLatex:
+    '\\Omega = \\{1, 2, 3, 4, 5, 6\\}, \\quad p(\\omega) = \\frac{1}{6}.\\newline A = \\{1, 2\\}, \\quad B = \\{5, 6\\}, \\quad A \\cap B = \\emptyset.\\newline \\text{Find } P(A \\cup B).',
+  sampleSpaceLatex: '\\Omega = \\{1, 2, 3, 4, 5, 6\\}',
+  expectedRational: { num: 2n, den: 3n },
+  explanation:
+    'Because events A and B are mutually exclusive (disjoint, A ∩ B = ∅), the Additivity Axiom states P(A ∪ B) = P(A) + P(B). Here P(A) = 2/6 = 1/3 and P(B) = 2/6 = 1/3. Therefore, P(A ∪ B) = 2/6 + 2/6 = 4/6 = 2/3.',
+  explanationLatex:
+    'P(A \\cup B) = P(A) + P(B) = \\frac{2}{6} + \\frac{2}{6} = \\frac{4}{6} = \\frac{2}{3}',
+  sourceRef: {
+    id: 'SRC-P1-CH02-004',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 2: Probability axioms and space',
+    note: 'Addition rule for mutually exclusive events.',
+  },
+  classification: 'supplementary',
+};
+
+export const ALL_EXERCISES: readonly ExerciseContent[] = [
+  EXERCISE_EX000001,
+  EXERCISE_EX000002,
+  EXERCISE_EX000003,
+];
+
+export function getExerciseById(id: string): ExerciseContent | undefined {
+  return ALL_EXERCISES.find((e) => e.id === id);
+}
+
+export function getExercisesByModule(moduleId: string): readonly ExerciseContent[] {
+  return ALL_EXERCISES.filter((e) => e.moduleId === moduleId);
+}

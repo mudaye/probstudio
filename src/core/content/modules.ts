@@ -55,7 +55,7 @@ export const MODULES: readonly ModuleInfo[] = [
     summary: 'Sample spaces, outcomes, events, and probability axioms.',
     status: 'active',
     conceptCount: 3,
-    exerciseCount: 1,
+    exerciseCount: 3,
     labAssociation: 'PL-01',
   },
   {
