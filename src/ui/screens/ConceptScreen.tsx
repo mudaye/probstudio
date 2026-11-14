@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { CONCEPT_C000001, MODULE_M01 } from '../../core/content/fixtures';
+import {
+  ALL_CONCEPTS,
+  getConceptById,
+  getConceptsByModule,
+} from '../../core/content/fixtures';
 import { getModuleById } from '../../core/content/modules';
 import { MathView } from '../components/MathView';
 import { LocalPersistenceService } from '../../core/storage/persistence';
@@ -9,25 +13,47 @@ interface ConceptScreenProps {
   onNavigate: (route: string, params?: Record<string, string>) => void;
   returnTo?: string;
   initialModuleId?: string | null;
+  initialConceptId?: string | null;
 }
 
 export const ConceptScreen: React.FC<ConceptScreenProps> = ({
   onNavigate,
   returnTo,
   initialModuleId = null,
+  initialConceptId = null,
 }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(initialModuleId);
+  const [selectedConceptId, setSelectedConceptId] = useState<string>(initialConceptId || 'C-000001');
+
+  // Load available concepts for the active filter
+  const visibleConcepts = selectedModuleId
+    ? getConceptsByModule(selectedModuleId)
+    : ALL_CONCEPTS;
+
+  const activeConcept = getConceptById(selectedConceptId) || visibleConcepts[0] || ALL_CONCEPTS[0];
 
   useEffect(() => {
-    LocalPersistenceService.recordActivity({
-      target_id: CONCEPT_C000001.id,
-      activity_type: 'concept_view',
-      description: `Viewed concept ${CONCEPT_C000001.title} (${CONCEPT_C000001.id})`,
-    });
-  }, []);
+    if (activeConcept) {
+      LocalPersistenceService.recordActivity({
+        target_id: activeConcept.id,
+        activity_type: 'concept_view',
+        description: `Viewed concept ${activeConcept.title} (${activeConcept.id})`,
+      });
+    }
+  }, [activeConcept]);
 
   const selectedModule = selectedModuleId ? getModuleById(selectedModuleId) : null;
+
+  const handleSelectModule = (modId: string | null) => {
+    setSelectedModuleId(modId);
+    if (modId) {
+      const modConcepts = getConceptsByModule(modId);
+      if (modConcepts.length > 0) {
+        setSelectedConceptId(modConcepts[0].id);
+      }
+    }
+  };
 
   return (
     <div className="concept-view">
@@ -64,7 +90,7 @@ export const ConceptScreen: React.FC<ConceptScreenProps> = ({
           isOpen={isDrawerOpen}
           onToggle={() => setIsDrawerOpen((prev) => !prev)}
           selectedModuleId={selectedModuleId}
-          onSelectModule={(id) => setSelectedModuleId(id)}
+          onSelectModule={handleSelectModule}
           title="Concept Atlas"
           subtitle="Curriculum Index"
         />
@@ -86,7 +112,7 @@ export const ConceptScreen: React.FC<ConceptScreenProps> = ({
               }}
             >
               <div style={{ fontSize: '0.9rem' }}>
-                Filtered by <strong>{selectedModule?.id}: {selectedModule?.title}</strong>
+                Filtered by <strong>{selectedModule?.id}: {selectedModule?.title}</strong> ({visibleConcepts.length} concepts)
               </div>
               <button
                 className="btn-secondary btn-sm"
@@ -97,18 +123,51 @@ export const ConceptScreen: React.FC<ConceptScreenProps> = ({
             </div>
           )}
 
-          {/* If selected module is M01 or All: Show M01 Concept */}
-          {(!selectedModuleId || selectedModuleId === 'M01') ? (
+          {visibleConcepts.length > 0 ? (
             <div>
-              {/* Concept Header */}
+              {/* Concept Selector Tabs */}
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '0.5rem',
+                  overflowX: 'auto',
+                  paddingBottom: '0.5rem',
+                  marginBottom: '1.25rem',
+                }}
+                role="tablist"
+                aria-label="Concepts in this section"
+              >
+                {visibleConcepts.map((concept) => {
+                  const isSelected = concept.id === activeConcept.id;
+                  return (
+                    <button
+                      key={concept.id}
+                      role="tab"
+                      aria-selected={isSelected}
+                      className={`pill ${isSelected ? 'selected' : ''}`}
+                      onClick={() => setSelectedConceptId(concept.id)}
+                      style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                    >
+                      <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>{concept.id}</span>
+                      <span>{concept.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Active Concept Details Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <div>
-                  <span className="tag-label">Concept Atlas &bull; {MODULE_M01.id} {MODULE_M01.title}</span>
-                  <h1 className="card-title" style={{ marginTop: '0.25rem' }}>{CONCEPT_C000001.title}</h1>
+                  <span className="tag-label">
+                    Concept Atlas &bull; {activeConcept.moduleId} &bull; {activeConcept.id}
+                  </span>
+                  <h1 className="card-title" style={{ marginTop: '0.25rem' }}>{activeConcept.title}</h1>
                 </div>
-                <span className="badge badge-source">
-                  Source Derived &bull; {CONCEPT_C000001.sourceRef.part}
-                </span>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <span className="badge badge-source">
+                    Source Derived &bull; {activeConcept.sourceRef.part}
+                  </span>
+                </div>
               </div>
 
               {/* Intuition Section */}
@@ -117,33 +176,51 @@ export const ConceptScreen: React.FC<ConceptScreenProps> = ({
                   INTUITIVE EXPLANATION
                 </h3>
                 <p style={{ fontSize: '1.05rem', lineHeight: '1.6' }}>
-                  {CONCEPT_C000001.intuition}
+                  {activeConcept.intuition}
                 </p>
               </div>
 
-              {/* Formal Definition */}
+              {/* Formal Mathematical Definition */}
               <div className="card">
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
                   FORMAL MATHEMATICAL DEFINITION
                 </h3>
-                <p style={{ fontSize: '1rem', marginBottom: '0.75rem' }}>
-                  {CONCEPT_C000001.formalDefinition}
+                <p style={{ fontSize: '1rem', marginBottom: '0.75rem', whiteSpace: 'pre-line' }}>
+                  {activeConcept.formalDefinition}
                 </p>
                 <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border)' }}>
-                  <MathView math={CONCEPT_C000001.formalDefinitionLatex} block />
+                  <MathView math={activeConcept.formalDefinitionLatex} block />
                 </div>
               </div>
 
-              {/* Properties of Events */}
+              {/* Key Properties & Theorems */}
               <div className="card">
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
-                  KEY PROPERTIES & EVENT OPERATIONS
+                  KEY PROPERTIES & THEOREMS
                 </h3>
                 <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.7', fontSize: '0.95rem' }}>
-                  {CONCEPT_C000001.properties.map((prop, idx) => (
-                    <li key={idx} style={{ marginBottom: '0.35rem' }}>{prop}</li>
+                  {activeConcept.properties.map((prop, idx) => (
+                    <li key={idx} style={{ marginBottom: '0.4rem' }}>{prop}</li>
                   ))}
                 </ul>
+              </div>
+
+              {/* Connected Learning Actions */}
+              <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', background: 'var(--primary-light)', borderColor: '#bfdbfe' }}>
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--primary)', fontSize: '0.95rem' }}>
+                    Ready to test your understanding?
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    Solve problems connected to {activeConcept.title} in the Practice Gym.
+                  </div>
+                </div>
+                <button
+                  className="btn-primary btn-sm"
+                  onClick={() => onNavigate('practice', { exerciseId: 'EX-000001' })}
+                >
+                  Go to Practice Exercise &rarr;
+                </button>
               </div>
 
               {/* Source Citation & Traceability */}
@@ -152,9 +229,9 @@ export const ConceptScreen: React.FC<ConceptScreenProps> = ({
                   Source Attribution & Traceability
                 </h4>
                 <div style={{ fontSize: '0.85rem', color: '#475569', marginTop: '0.4rem' }}>
-                  <div><strong>Tutorial Transcript:</strong> <code>{CONCEPT_C000001.sourceRef.transcript_file}</code></div>
-                  <div><strong>Section:</strong> {CONCEPT_C000001.sourceRef.chapter} ({CONCEPT_C000001.sourceRef.id})</div>
-                  <div><strong>Note:</strong> {CONCEPT_C000001.sourceRef.note}</div>
+                  <div><strong>Tutorial Transcript:</strong> <code>{activeConcept.sourceRef.transcript_file}</code></div>
+                  <div><strong>Section:</strong> {activeConcept.sourceRef.chapter} ({activeConcept.sourceRef.id})</div>
+                  <div><strong>Note:</strong> {activeConcept.sourceRef.note}</div>
                 </div>
               </div>
             </div>
@@ -175,7 +252,7 @@ export const ConceptScreen: React.FC<ConceptScreenProps> = ({
               </div>
               <button
                 className="btn-primary btn-sm"
-                onClick={() => setSelectedModuleId('M01')}
+                onClick={() => handleSelectModule('M01')}
               >
                 Go to Active Module M01 (Probability Foundations)
               </button>

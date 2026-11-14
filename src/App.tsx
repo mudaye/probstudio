@@ -82,6 +82,7 @@ export const App: React.FC = () => {
             onNavigate={navigateTo}
             returnTo={routeParams.returnTo}
             initialModuleId={routeParams.moduleId}
+            initialConceptId={routeParams.conceptId}
           />
         )}
         {currentRoute === 'playground' && <PlaygroundScreen />}

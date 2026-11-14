@@ -54,7 +54,7 @@ export const MODULES: readonly ModuleInfo[] = [
     title: 'Probability Foundations',
     summary: 'Sample spaces, outcomes, events, and probability axioms.',
     status: 'active',
-    conceptCount: 1,
+    conceptCount: 3,
     exerciseCount: 1,
     labAssociation: 'PL-01',
   },
