@@ -17,6 +17,7 @@ import {
   SetOperationResult,
 } from '../../core/math/events';
 import { MathView } from '../components/MathView';
+import { VennDiagram } from '../components/VennDiagram';
 import { LocalPersistenceService } from '../../core/storage/persistence';
 
 const DEFAULT_OUTCOMES = ['HH', 'HT', 'TH', 'TT'];
@@ -368,6 +369,26 @@ export const PlaygroundScreen: React.FC = () => {
               )}
             </div>
           </div>
+
+          {/* Interactive SVG Venn Diagram */}
+          {activeResult && (
+            <div className="card">
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '0.25rem' }}>
+                Interactive Venn Diagram
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+                Visual partition of sample space outcomes. Blue border highlights outcomes satisfying the active operation.
+              </p>
+              <VennDiagram
+                outcomes={outcomes}
+                eventA={eventA}
+                eventB={eventB}
+                resultEvent={activeResult.resultEvent}
+                operation={operation}
+                onToggleOutcome={toggleOutcomeInEvent}
+              />
+            </div>
+          )}
 
           {/* Comparison Snapshot Card */}
           {snapshot && (

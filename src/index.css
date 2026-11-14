@@ -502,6 +502,29 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   background: #cbd5e1;
 }
 
+/* Interactive Venn Diagram (PL-01) */
+.venn-diagram-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.venn-svg {
+  width: 100%;
+  height: auto;
+  max-height: 280px;
+  display: block;
+  user-select: none;
+}
+
+.venn-legend-accessible {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
 /* Mobile drawer backdrop */
 .drawer-backdrop {
   display: none;
