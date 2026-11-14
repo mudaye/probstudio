@@ -119,5 +119,37 @@ describe('Module Catalog (A-001 §4.1 Integrity)', () => {
     expect(m11?.conceptCount).toBe(2);
     expect(m11?.exerciseCount).toBe(1);
     expect(m11?.labAssociation).toBe('PL-07');
+
+    const m12 = getModuleById('M12');
+    expect(m12).toBeDefined();
+    expect(m12?.title).toContain('Expectation');
+    expect(m12?.status).toBe('active');
+    expect(m12?.conceptCount).toBe(2);
+    expect(m12?.exerciseCount).toBe(1);
+    expect(m12?.labAssociation).toBe('PL-08');
+
+    const m13 = getModuleById('M13');
+    expect(m13).toBeDefined();
+    expect(m13?.title).toContain('Variance');
+    expect(m13?.status).toBe('active');
+    expect(m13?.conceptCount).toBe(2);
+    expect(m13?.exerciseCount).toBe(1);
+    expect(m13?.labAssociation).toBe('PL-08');
+
+    const m14 = getModuleById('M14');
+    expect(m14).toBeDefined();
+    expect(m14?.title).toContain('Inequalities');
+    expect(m14?.status).toBe('active');
+    expect(m14?.conceptCount).toBe(2);
+    expect(m14?.exerciseCount).toBe(1);
+    expect(m14?.labAssociation).toBe('PL-08');
+
+    const m15 = getModuleById('M15');
+    expect(m15).toBeDefined();
+    expect(m15?.title).toContain('Simulation');
+    expect(m15?.status).toBe('active');
+    expect(m15?.conceptCount).toBe(1);
+    expect(m15?.exerciseCount).toBe(1);
+    expect(m15?.labAssociation).toBe('PL-08');
   });
 });

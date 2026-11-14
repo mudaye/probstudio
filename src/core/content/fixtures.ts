@@ -630,6 +630,181 @@ export const CONCEPT_C000023: ConceptContent = {
   classification: 'source_derived',
 };
 
+export const CONCEPT_C000024: ConceptContent = {
+  id: 'C-000024',
+  title: 'Expectation and the Law of the Unconscious Statistician (LOTUS)',
+  moduleId: 'M12',
+  intuition:
+    'The expectation (or expected value) of a random variable represents its center of mass or probability-weighted average. The Law of the Unconscious Statistician (LOTUS) allows you to compute the expected value of a transformed variable g(X) directly using the original distribution of X, without first finding the distribution of g(X).',
+  formalDefinition:
+    'For a discrete random variable X with PMF p_X(x): E[g(X)] = Σ_{x ∈ S_X} g(x) p_X(x).\nFor a continuous random variable X with PDF f_X(x): E[g(X)] = ∫_{-∞}^∞ g(x) f_X(x) dx.\nPrecondition: Absolute integrability/summability (E[|g(X)|] < ∞).',
+  formalDefinitionLatex:
+    'E[g(X)] = \\sum_{x} g(x) p_X(x) \\quad \\text{(discrete)}, \\qquad E[g(X)] = \\int_{-\\infty}^\\infty g(x) f_X(x) dx \\quad \\text{(continuous)}',
+  properties: [
+    'Direct Evaluation: Bypasses the need to derive the transformed distribution p_Y(y) or f_Y(y).',
+    'Center of Mass: E[X] is a single deterministic scalar, representing the balance point of the probability mass or density.',
+    'Integrability Condition: E[g(X)] exists only when the sum or integral converges absolutely.',
+  ],
+  sourceRef: {
+    id: 'SRC-P2-CH07-001',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 7: Expectation basics & Chapter 8: LOTUS',
+    note: 'Definition of expectation and Law of the Unconscious Statistician.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000025: ConceptContent = {
+  id: 'C-000025',
+  title: 'Linearity of Expectation and Indicator Variables',
+  moduleId: 'M12',
+  intuition:
+    'Expectation is a linear operator: the expectation of a sum is always the sum of the expectations, and constants scale cleanly out. Crucially, linearity holds regardless of whether the variables are independent or dependent.',
+  formalDefinition:
+    'For any random variables X and Y (having finite expectations) and constants a, b, c ∈ ℝ:\n1. Scaling and Shift: E[aX + b] = a E[X] + b.\n2. Linearity of Sums: E[aX + bY + c] = a E[X] + b E[Y] + c.\n3. Indicator Variable Bridge: For an event A with indicator I_A (which equals 1 if A occurs, 0 otherwise): E[I_A] = 1 · P(A) + 0 · P(A^c) = P(A).',
+  formalDefinitionLatex:
+    'E[aX + bY + c] = aE[X] + bE[Y] + c, \\qquad E[I_A] = P(A)',
+  properties: [
+    'Universal Independence Invariance: Linearity holds for dependent and independent variables alike.',
+    'Indicator Trick: Complex counting problems decompose into sums of simple indicator variables: X = Σ I_A_i.',
+    'Constant Invariance: E[c] = c for any deterministic constant c.',
+  ],
+  sourceRef: {
+    id: 'SRC-P2-CH07-002',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 7: Expectation basics',
+    note: 'Linearity of expectation and indicator variable expectations.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000026: ConceptContent = {
+  id: 'C-000026',
+  title: 'Variance, Standard Deviation, and Shift Invariance',
+  moduleId: 'M13',
+  intuition:
+    'Variance measures the expected squared spread or dispersion of a random variable around its mean. Adding a constant shift moves the entire distribution along the axis without altering its spread, meaning variance is completely invariant to constant shifts.',
+  formalDefinition:
+    'The variance of random variable X with finite mean μ = E[X] is defined as:\nVar(X) = E[(X - μ)²] = E[X²] - (E[X])².\nThe standard deviation is σ = SD(X) = √Var(X).\nShift Invariance Property: For any constant c ∈ ℝ: Var(X + c) = Var(X).',
+  formalDefinitionLatex:
+    '\\text{Var}(X) = E[(X - \\mu)^2] = E[X^2] - (E[X])^2, \\qquad \\text{Var}(X + c) = \\text{Var}(X)',
+  properties: [
+    'Non-Negativity: Var(X) ≥ 0, with Var(X) = 0 if and only if X is a constant almost surely.',
+    'Shift Invariance: Adding or subtracting a constant translation does not change the spread around the mean.',
+    'Units: Standard deviation SD(X) is expressed in the same physical units as X, whereas Var(X) is in squared units.',
+  ],
+  sourceRef: {
+    id: 'SRC-P2-CH09-001',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 9: Variance and properties',
+    note: 'Definition of variance as average squared deviation and shift invariance.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000027: ConceptContent = {
+  id: 'C-000027',
+  title: 'Variance Scaling and Quadratic Moment Relationships',
+  moduleId: 'M13',
+  intuition:
+    'When a random variable is scaled by a constant factor a, its spread scales by |a|, and consequently its variance scales quadratically by a². This quadratic relationship leads directly to standardization (z-scores).',
+  formalDefinition:
+    'For constants a, b ∈ ℝ:\nVar(aX + b) = a² Var(X), \\quad SD(aX + b) = |a| SD(X).\nStandardization: The standardized variable Z = (X - μ) / σ has mean E[Z] = 0 and variance Var(Z) = 1.',
+  formalDefinitionLatex:
+    '\\text{Var}(aX + b) = a^2 \\text{Var}(X), \\qquad Z = \\frac{X - \\mu}{\\sigma} \\implies E[Z] = 0, \\; \\text{Var}(Z) = 1',
+  properties: [
+    'Quadratic Multiplier: Negating a variable leaves variance unchanged: Var(-X) = (-1)² Var(X) = Var(X).',
+    'Standardization Invariance: Z-score transformation centers the variable at 0 and scales spread to unit variance.',
+    'Second Moment Bridge: E[X²] = Var(X) + (E[X])².',
+  ],
+  sourceRef: {
+    id: 'SRC-P2-CH09-002',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 9: Variance and properties',
+    note: 'Quadratic scaling of variance under affine transformation.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000028: ConceptContent = {
+  id: 'C-000028',
+  title: "Markov's and Chebyshev's Concentration Inequalities",
+  moduleId: 'M14',
+  intuition:
+    'Concentration inequalities provide rigorous mathematical upper bounds on tail probabilities when only moments (mean and variance) are known, without requiring full knowledge of the distribution.',
+  formalDefinition:
+    "1. Markov's Inequality: For any non-negative random variable X ≥ 0 and threshold a > 0: P(X ≥ a) ≤ E[X] / a.\n2. Chebyshev's Inequality: For any random variable X with finite mean μ and variance σ², and threshold a > 0:\nP(|X - μ| ≥ a) ≤ Var(X) / a².\nIn terms of standard deviations (a = kσ): P(|X - μ| ≥ kσ) ≤ 1 / k².",
+  formalDefinitionLatex:
+    'P(X \\ge a) \\le \\frac{E[X]}{a} \\quad (X \\ge 0), \\qquad P(|X - \\mu| \\ge k\\sigma) \\le \\frac{1}{k^2}',
+  properties: [
+    'Distribution Free: These inequalities hold universally for any distribution satisfying the moment preconditions.',
+    'Precondition Sensitivity: Markov strictly requires X ≥ 0; applying Markov to variables with negative support produces mathematical falsehoods.',
+    'Concentration Guarantee: Chebyshev guarantees that at least 1 - 1/k² of the probability mass lies within k standard deviations of the mean (e.g., at least 75% within 2σ, at least 88.9% within 3σ).',
+  ],
+  sourceRef: {
+    id: 'SRC-P2-CH10-001',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 10: Probability inequalities',
+    note: 'Formulation of Markov and Chebyshev bounds.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000029: ConceptContent = {
+  id: 'C-000029',
+  title: "Jensen's Inequality for Convex Transformations",
+  moduleId: 'M14',
+  intuition:
+    'For any convex function (a curve that bends upward, like a smile), the function of the average is less than or equal to the average of the function. For example, the square of the mean is always less than or equal to the mean of the squares.',
+  formalDefinition:
+    'Let X be an integrable random variable and let φ: ℝ → ℝ be a convex function (such that φ(tx + (1-t)y) ≤ tφ(x) + (1-t)φ(y) for all t ∈ [0, 1]).\nThen: φ(E[X]) ≤ E[φ(X)].\nIf φ is strictly convex and X is not constant, the inequality is strict: φ(E[X]) < E[φ(X)].',
+  formalDefinitionLatex:
+    '\\varphi(E[X]) \\le E[\\varphi(X)] \\quad (\\varphi \\text{ convex})',
+  properties: [
+    'Variance as a Jensen Gap: For φ(t) = t² (which is convex everywhere), Jensen gives (E[X])² ≤ E[X²]. The difference E[X²] - (E[X])² is exactly Var(X) ≥ 0.',
+    'Concave Reversal: For concave functions (such as ln(t)), the inequality reverses: E[ψ(X)] ≤ ψ(E[X]).',
+    'Convexity Verification: A twice-differentiable function is convex on an interval if φ\'\'(t) ≥ 0 everywhere on that interval.',
+  ],
+  sourceRef: {
+    id: 'SRC-P2-CH10-002',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 10: Probability inequalities',
+    note: "Jensen's inequality for convex transformations.",
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000030: ConceptContent = {
+  id: 'C-000030',
+  title: 'Empirical Estimation, Monte Carlo Sampling, and the Law of Large Numbers',
+  moduleId: 'M15',
+  intuition:
+    'Monte Carlo simulation uses pseudo-random numbers to draw independent trials from a probability distribution. By the Law of Large Numbers, empirical sample averages converge to the theoretical expected values as the sample size grows.',
+  formalDefinition:
+    'Weak Law of Large Numbers (WLLN): Let X₁, X₂, ..., Xₙ be independent and identically distributed (i.i.d.) random variables with finite mean μ and variance σ². The sample mean X̄ₙ = (1/n) Σ_{i=1}^n X_i satisfies:\nlim_{n → ∞} P(|X̄ₙ - μ| ≥ ε) = 0 for any ε > 0.\nEmpirical Moment Estimators:\nSample Mean: x̄ = (1/n) Σ x_i\nSample Variance: s² = (1/(n-1)) Σ (x_i - x̄)².',
+  formalDefinitionLatex:
+    '\\lim_{n \\to \\infty} P(|\\bar{X}_n - \\mu| \\ge \\varepsilon) = 0, \\qquad \\bar{X}_n = \\frac{1}{n} \\sum_{i=1}^n X_i',
+  properties: [
+    'Deterministic PRNG Seeds: In computational probability, reproducibility is achieved by pinning the seed of a pseudo-random number generator (such as Mulberry32).',
+    'Rate of Convergence: By Chebyshev, Var(X̄ₙ) = σ²/n. The standard error decays at rate O(1/√n), requiring 100x more samples for a 10x precision improvement.',
+    'Simulation vs Exact: An empirical sample estimate is never authoritative for mathematical proof; it provides numerical empirical verification of analytical theorems.',
+  ],
+  sourceRef: {
+    id: 'SRC-P2-CH11-001',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 11: Simulations and demo',
+    note: 'Monte Carlo simulation and empirical moment convergence.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000001,
   CONCEPT_C000002,
@@ -654,6 +829,13 @@ export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000021,
   CONCEPT_C000022,
   CONCEPT_C000023,
+  CONCEPT_C000024,
+  CONCEPT_C000025,
+  CONCEPT_C000026,
+  CONCEPT_C000027,
+  CONCEPT_C000028,
+  CONCEPT_C000029,
+  CONCEPT_C000030,
 ];
 
 export function getConceptById(id: string): ConceptContent | undefined {
@@ -1166,6 +1348,106 @@ export const EXERCISE_EX000020: ExerciseContent = {
   classification: 'source_derived',
 };
 
+export const EXERCISE_EX000021: ExerciseContent = {
+  id: 'EX-000021',
+  title: 'Expectation Under Affine Transformation',
+  moduleId: 'M12',
+  category: 'numerical',
+  linkedConceptIds: ['C-000024', 'C-000025'],
+  prompt:
+    'Let X be a random variable with expectation E[X] = 5. A new random variable Y is defined by the affine transformation Y = 3X + 4. By linearity of expectation E[aX + b] = aE[X] + b, calculate the expected value E[Y].',
+  promptLatex:
+    'E[X] = 5, \\quad Y = 3X + 4.\\newline \\text{Using linearity of expectation } E[aX + b] = aE[X] + b, \\text{ find } E[Y].',
+  expectedRational: { num: 19n, den: 1n },
+  explanation:
+    'By the linearity property of expectation: E[Y] = E[3X + 4] = 3 · E[X] + 4 = 3(5) + 4 = 15 + 4 = 19.',
+  explanationLatex:
+    'E[Y] = 3 E[X] + 4 = 3(5) + 4 = 15 + 4 = 19',
+  sourceRef: {
+    id: 'SRC-P2-CH07-003',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 7: Expectation basics',
+    note: 'Affine transformation expectation scaling.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000022: ExerciseContent = {
+  id: 'EX-000022',
+  title: 'Variance Scaling Under Affine Transformation',
+  moduleId: 'M13',
+  category: 'numerical',
+  linkedConceptIds: ['C-000026', 'C-000027'],
+  prompt:
+    'Let random variable X have variance Var(X) = 3. A transformed random variable Y is defined by Y = 7 - 2X. Using the quadratic scaling and shift invariance properties of variance Var(aX + b) = a² Var(X), calculate Var(Y).',
+  promptLatex:
+    '\\text{Var}(X) = 3, \\quad Y = 7 - 2X = -2X + 7.\\newline \\text{Using } \\text{Var}(aX + b) = a^2 \\text{Var}(X), \\text{ calculate } \\text{Var}(Y).',
+  expectedRational: { num: 12n, den: 1n },
+  explanation:
+    'Adding a constant shift does not affect variance, and scaling by a factor of a multiplies variance by a²: Var(Y) = Var(-2X + 7) = (-2)² · Var(X) = 4 · 3 = 12.',
+  explanationLatex:
+    '\\text{Var}(Y) = (-2)^2 \\text{Var}(X) = 4 \\times 3 = 12',
+  sourceRef: {
+    id: 'SRC-P2-CH09-003',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 9: Variance and properties',
+    note: 'Quadratic scaling of variance under affine transformation.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000023: ExerciseContent = {
+  id: 'EX-000023',
+  title: 'Chebyshev Concentration Bound Evaluation',
+  moduleId: 'M14',
+  category: 'numerical',
+  linkedConceptIds: ['C-000028'],
+  prompt:
+    'A random variable X has mean μ = 50 and standard deviation σ = 5. Using Chebyshev\'s inequality P(|X - μ| ≥ kσ) ≤ 1/k² with k = 3 (evaluating the deviation P(|X - 50| ≥ 15)), calculate the maximum possible probability of this deviation (the Chebyshev upper bound). Express your answer as a simplified fraction.',
+  promptLatex:
+    '\\mu = 50, \\quad \\sigma = 5, \\quad k = 3 \\; (k\\sigma = 15).\\newline \\text{Using Chebyshev\'s inequality } P(|X - \\mu| \\ge k\\sigma) \\le \\frac{1}{k^2}, \\text{ find the upper bound.}',
+  expectedRational: { num: 1n, den: 9n },
+  explanation:
+    'By Chebyshev\'s inequality, the probability that X deviates from its mean by at least k standard deviations cannot exceed 1/k². With k = 3: P(|X - 50| ≥ 15) ≤ 1/3² = 1/9.',
+  explanationLatex:
+    'P(|X - 50| \\ge 15) \\le \\frac{1}{k^2} = \\frac{1}{3^2} = \\frac{1}{9}',
+  sourceRef: {
+    id: 'SRC-P2-CH10-003',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 10: Probability inequalities',
+    note: 'Chebyshev tail bound evaluation.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000024: ExerciseContent = {
+  id: 'EX-000024',
+  title: 'Empirical Sample Mean Convergence via LOTUS',
+  moduleId: 'M15',
+  category: 'numerical',
+  linkedConceptIds: ['C-000024', 'C-000030'],
+  prompt:
+    'In a Monte Carlo simulation of a fair 6-sided die roll (where X is uniformly distributed on {1, 2, 3, 4, 5, 6} with E[X] = 7/2 = 3.5), suppose a simulation computes the transformation Y = 2X. By the Law of Large Numbers, the sample mean (1/N) Σ y_i converges to the theoretical expectation E[Y]. Calculate the exact theoretical expectation E[Y].',
+  promptLatex:
+    'E[X] = \\frac{7}{2}, \\quad Y = 2X.\\newline \\text{By LOTUS and linearity of expectation, find } E[Y].',
+  expectedRational: { num: 7n, den: 1n },
+  explanation:
+    'By linearity of expectation: E[Y] = E[2X] = 2 E[X] = 2 · (7/2) = 7. By the Law of Large Numbers, as the number of simulated trials N grows, the empirical sample mean approaches 7.',
+  explanationLatex:
+    'E[Y] = 2 E[X] = 2 \\left(\\frac{7}{2}\\right) = 7',
+  sourceRef: {
+    id: 'SRC-P2-CH11-002',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 11: Simulations and demo',
+    note: 'Convergence of Monte Carlo sample mean to theoretical expectation.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000001,
   EXERCISE_EX000002,
@@ -1187,6 +1469,10 @@ export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000018,
   EXERCISE_EX000019,
   EXERCISE_EX000020,
+  EXERCISE_EX000021,
+  EXERCISE_EX000022,
+  EXERCISE_EX000023,
+  EXERCISE_EX000024,
 ];
 
 export function getExerciseById(id: string): ExerciseContent | undefined {

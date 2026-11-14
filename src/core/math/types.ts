@@ -34,7 +34,13 @@ export type CalculationId =
   | 'CAL-CONT-001'
   | 'CAL-CONT-002'
   | 'CAL-CONT-003'
-  | 'CAL-CONT-004';
+  | 'CAL-CONT-004'
+  | 'CAL-MOM-001'
+  | 'CAL-MOM-002'
+  | 'CAL-INEQ-001'
+  | 'CAL-INEQ-002'
+  | 'CAL-INEQ-003'
+  | 'CAL-TRANS-001';
 
 export type ErrorCode =
   | 'E-PROB-RANGE'
