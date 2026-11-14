@@ -11,6 +11,31 @@ import { LocalPersistenceService, StoredAttempt } from '../../core/storage/persi
 import { MathView } from '../components/MathView';
 import { ModuleNavDrawer } from '../components/ModuleNavDrawer';
 
+const MODULE_TO_LAB: Record<string, { labId: string; labTitle: string }> = {
+  M01: { labId: 'PL-01', labTitle: 'PL-01 Event & Probability Builder' },
+  M02: { labId: 'PL-02', labTitle: 'PL-02 Conditional & Bayes Lab' },
+  M03: { labId: 'PL-02', labTitle: 'PL-02 Conditional & Bayes Lab' },
+  M04: { labId: 'PL-03', labTitle: 'PL-03 Independence Laboratory' },
+  M05: { labId: 'PL-04', labTitle: 'PL-04 Random Variable Mapper' },
+  M06: { labId: 'PL-05', labTitle: 'PL-05 CDF & PMF Explorer' },
+  M07: { labId: 'PL-05', labTitle: 'PL-05 CDF & PMF Explorer' },
+  M08: { labId: 'PL-06', labTitle: 'PL-06 Distribution Explorer' },
+  M09: { labId: 'PL-07', labTitle: 'PL-07 Continuous Explorer' },
+  M10: { labId: 'PL-07', labTitle: 'PL-07 Continuous Explorer' },
+  M11: { labId: 'PL-08', labTitle: 'PL-08 Transform & Moments' },
+  M12: { labId: 'PL-08', labTitle: 'PL-08 Transform & Moments' },
+  M13: { labId: 'PL-08', labTitle: 'PL-08 Transform & Moments' },
+  M14: { labId: 'PL-08', labTitle: 'PL-08 Transform & Moments' },
+  M15: { labId: 'PL-11', labTitle: 'PL-11 Central Limit Theorem & IID Sums' },
+  M16: { labId: 'PL-09', labTitle: 'PL-09 Joint & Marginals' },
+  M17: { labId: 'PL-09', labTitle: 'PL-09 Joint & Marginals' },
+  M18: { labId: 'PL-09', labTitle: 'PL-09 Joint & Marginals' },
+  M19: { labId: 'PL-10', labTitle: 'PL-10 Conditionals, Channel & Transforms' },
+  M20: { labId: 'PL-10', labTitle: 'PL-10 Conditionals, Channel & Transforms' },
+  M21: { labId: 'PL-11', labTitle: 'PL-11 Central Limit Theorem & IID Sums' },
+  M22: { labId: 'PL-10', labTitle: 'PL-10 Conditionals, Channel & Transforms' },
+};
+
 interface PracticeScreenProps {
   onNavigate: (route: string, params?: Record<string, string>) => void;
   savedInput?: string;
@@ -265,10 +290,10 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
                   </div>
                 )}
 
-                {/* Linked Concept Cross-Links (Preserving Context) */}
+                {/* Linked Concept & Playground Cross-Links (Preserving Context) */}
                 <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
                   <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                    Need to review theory for this problem?
+                    Need to review theory or experiment?
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                     {activeExercise.linkedConceptIds.map((cid) => {
@@ -283,6 +308,15 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
                         </button>
                       );
                     })}
+                    {MODULE_TO_LAB[activeExercise.moduleId] && (
+                      <button
+                        className="btn-secondary btn-sm"
+                        onClick={() => onNavigate('playground', { labId: MODULE_TO_LAB[activeExercise.moduleId].labId })}
+                        style={{ background: '#faf5ff', borderColor: '#d8b4fe', color: '#7c3aed', fontWeight: 600 }}
+                      >
+                        🧪 {MODULE_TO_LAB[activeExercise.moduleId].labId} Lab &rarr;
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

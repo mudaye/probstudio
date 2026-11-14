@@ -100,4 +100,44 @@ describe('LocalPersistenceService', () => {
     const reloadedAttempts = LocalPersistenceService.getAttempts();
     expect(reloadedAttempts.length).toBe(2);
   });
+
+  it('manages laboratory comparison snapshots (save, retrieve, delete, export/import)', () => {
+    const snap = {
+      lab_id: 'PL-01',
+      snapshot_id: 'snap-1',
+      name: 'Independent Coins',
+      timestamp: new Date().toISOString(),
+      settings: { outcomes: ['HH', 'HT', 'TH', 'TT'], masses: ['1/4', '1/4', '1/4', '1/4'] },
+      theoreticalOutputs: { pA: '1/2', pB: '1/2' },
+    };
+
+    LocalPersistenceService.saveLabSnapshot(snap);
+
+    const loaded = LocalPersistenceService.getLabSnapshot('PL-01');
+    expect(loaded).toBeDefined();
+    expect(loaded?.name).toBe('Independent Coins');
+    expect(loaded?.settings.outcomes).toHaveLength(4);
+
+    const all = LocalPersistenceService.getAllLabSnapshots();
+    expect(all['PL-01']).toBeDefined();
+
+    // Export with snapshot
+    const json = LocalPersistenceService.exportLearnerStateJson();
+    expect(json).toContain('Independent Coins');
+
+    LocalPersistenceService.clearAll();
+    expect(LocalPersistenceService.getLabSnapshot('PL-01')).toBeNull();
+
+    // Re-import
+    const res = LocalPersistenceService.importLearnerStateJson(json);
+    expect(res.success).toBe(true);
+    expect(res.importedSnapshots).toBe(1);
+
+    const reloaded = LocalPersistenceService.getLabSnapshot('PL-01');
+    expect(reloaded?.name).toBe('Independent Coins');
+
+    // Delete snapshot
+    LocalPersistenceService.deleteLabSnapshot('PL-01');
+    expect(LocalPersistenceService.getLabSnapshot('PL-01')).toBeNull();
+  });
 });

@@ -59,7 +59,7 @@ export const App: React.FC = () => {
                 className={`nav-button ${currentRoute === 'playground' ? 'active' : ''}`}
                 onClick={() => navigateTo('playground')}
               >
-                Playground (PL-01)
+                Playground Labs
               </button>
             </li>
           </ul>
@@ -86,7 +86,12 @@ export const App: React.FC = () => {
             initialConceptId={routeParams.conceptId}
           />
         )}
-        {currentRoute === 'playground' && <PlaygroundScreen />}
+        {currentRoute === 'playground' && (
+          <PlaygroundScreen
+            initialLabId={routeParams.labId}
+            onNavigate={navigateTo}
+          />
+        )}
       </main>
 
       {/* Footer */}

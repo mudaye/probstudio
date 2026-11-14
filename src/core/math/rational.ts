@@ -108,6 +108,21 @@ export function compareRational(a: Rational, b: Rational): number {
   return 0;
 }
 
+export function isRationalZero(r: Rational): boolean {
+  return r.num === 0n;
+}
+
+// Plural convenience aliases
+export const addRationals = addRational;
+export const subRationals = subRational;
+export const subtractRationals = subRational;
+export const mulRationals = mulRational;
+export const multiplyRationals = mulRational;
+export const divRationals = divRational;
+export const divideRationals = divRational;
+export const compareRationals = compareRational;
+
+
 export function rationalToDecimal(r: Rational, precision?: number): number {
   const val = Number(r.num) / Number(r.den);
   if (precision !== undefined) {

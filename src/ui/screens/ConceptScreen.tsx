@@ -3,11 +3,37 @@ import {
   ALL_CONCEPTS,
   getConceptById,
   getConceptsByModule,
+  getExercisesByConcept,
 } from '../../core/content/fixtures';
 import { getModuleById } from '../../core/content/modules';
 import { MathView } from '../components/MathView';
 import { LocalPersistenceService } from '../../core/storage/persistence';
 import { ModuleNavDrawer } from '../components/ModuleNavDrawer';
+
+const MODULE_TO_LAB: Record<string, { labId: string; labTitle: string }> = {
+  M01: { labId: 'PL-01', labTitle: 'PL-01 Event & Probability Builder' },
+  M02: { labId: 'PL-02', labTitle: 'PL-02 Conditional & Bayes Lab' },
+  M03: { labId: 'PL-02', labTitle: 'PL-02 Conditional & Bayes Lab' },
+  M04: { labId: 'PL-03', labTitle: 'PL-03 Independence Laboratory' },
+  M05: { labId: 'PL-04', labTitle: 'PL-04 Random Variable Mapper' },
+  M06: { labId: 'PL-05', labTitle: 'PL-05 CDF & PMF Explorer' },
+  M07: { labId: 'PL-05', labTitle: 'PL-05 CDF & PMF Explorer' },
+  M08: { labId: 'PL-06', labTitle: 'PL-06 Distribution Explorer' },
+  M09: { labId: 'PL-07', labTitle: 'PL-07 Continuous Explorer' },
+  M10: { labId: 'PL-07', labTitle: 'PL-07 Continuous Explorer' },
+  M11: { labId: 'PL-08', labTitle: 'PL-08 Transform & Moments' },
+  M12: { labId: 'PL-08', labTitle: 'PL-08 Transform & Moments' },
+  M13: { labId: 'PL-08', labTitle: 'PL-08 Transform & Moments' },
+  M14: { labId: 'PL-08', labTitle: 'PL-08 Transform & Moments' },
+  M15: { labId: 'PL-11', labTitle: 'PL-11 Central Limit Theorem & IID Sums' },
+  M16: { labId: 'PL-09', labTitle: 'PL-09 Joint & Marginals' },
+  M17: { labId: 'PL-09', labTitle: 'PL-09 Joint & Marginals' },
+  M18: { labId: 'PL-09', labTitle: 'PL-09 Joint & Marginals' },
+  M19: { labId: 'PL-10', labTitle: 'PL-10 Conditionals, Channel & Transforms' },
+  M20: { labId: 'PL-10', labTitle: 'PL-10 Conditionals, Channel & Transforms' },
+  M21: { labId: 'PL-11', labTitle: 'PL-11 Central Limit Theorem & IID Sums' },
+  M22: { labId: 'PL-10', labTitle: 'PL-10 Conditionals, Channel & Transforms' },
+};
 
 interface ConceptScreenProps {
   onNavigate: (route: string, params?: Record<string, string>) => void;
@@ -206,22 +232,53 @@ export const ConceptScreen: React.FC<ConceptScreenProps> = ({
               </div>
 
               {/* Connected Learning Actions */}
-              <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', background: 'var(--primary-light)', borderColor: '#bfdbfe' }}>
-                <div>
-                  <div style={{ fontWeight: 600, color: 'var(--primary)', fontSize: '0.95rem' }}>
-                    Ready to test your understanding?
+              {(() => {
+                const connectedExercises = getExercisesByConcept(activeConcept.id);
+                const targetExId = connectedExercises.length > 0 ? connectedExercises[0].id : 'EX-000001';
+                const associatedLab = MODULE_TO_LAB[activeConcept.moduleId];
+
+                return (
+                  <div style={{ display: 'grid', gridTemplateColumns: associatedLab ? '1fr 1fr' : '1fr', gap: '1rem' }}>
+                    <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '0.75rem', background: 'var(--primary-light)', borderColor: '#bfdbfe' }}>
+                      <div>
+                        <div style={{ fontWeight: 700, color: 'var(--primary)', fontSize: '0.95rem' }}>
+                          ✍️ Practice Gym
+                        </div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                          Solve problems directly testing {activeConcept.title}.
+                        </div>
+                      </div>
+                      <button
+                        className="btn-primary btn-sm"
+                        onClick={() => onNavigate('practice', { exerciseId: targetExId })}
+                        style={{ alignSelf: 'flex-start' }}
+                      >
+                        Start Exercise ({targetExId}) &rarr;
+                      </button>
+                    </div>
+
+                    {associatedLab && (
+                      <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '0.75rem', background: '#faf5ff', borderColor: '#e9d5ff' }}>
+                        <div>
+                          <div style={{ fontWeight: 700, color: '#7c3aed', fontSize: '0.95rem' }}>
+                            🧪 Probability Playground
+                          </div>
+                          <div style={{ fontSize: '0.85rem', color: '#6b21a8', marginTop: '4px' }}>
+                            Explore interactively in {associatedLab.labTitle}.
+                          </div>
+                        </div>
+                        <button
+                          className="btn-secondary btn-sm"
+                          onClick={() => onNavigate('playground', { labId: associatedLab.labId })}
+                          style={{ alignSelf: 'flex-start', background: '#ffffff', borderColor: '#d8b4fe', color: '#7c3aed', fontWeight: 600 }}
+                        >
+                          Launch {associatedLab.labId} &rarr;
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                    Solve problems connected to {activeConcept.title} in the Practice Gym.
-                  </div>
-                </div>
-                <button
-                  className="btn-primary btn-sm"
-                  onClick={() => onNavigate('practice', { exerciseId: 'EX-000001' })}
-                >
-                  Go to Practice Exercise &rarr;
-                </button>
-              </div>
+                );
+              })()}
 
               {/* Source Citation & Traceability */}
               <div className="card" style={{ background: '#f8fafc', borderColor: '#e2e8f0' }}>

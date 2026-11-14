@@ -1,6 +1,6 @@
 /**
  * Local Persistence Adapter
- * Conforms to A-005 v0.2 §7 and A-007 v0.1 §5
+ * Conforms to A-005 v0.2 §7, A-007 v0.1 §5, and A-003 v0.4 §2.2
  */
 
 export interface StoredAttempt {
@@ -25,16 +25,46 @@ export interface ActivityEvent {
 export interface LabResumePayload {
   readonly lab_id: string;
   readonly timestamp: string;
-  readonly sample_space: {
+  readonly sample_space?: {
     readonly outcomes: readonly string[];
     readonly masses: readonly string[];
   };
-  readonly event_a: readonly string[];
-  readonly event_b: readonly string[];
-  readonly operation: string;
+  readonly event_a?: readonly string[];
+  readonly event_b?: readonly string[];
+  readonly operation?: string;
   readonly snapshot_name?: string;
+  readonly payload?: Readonly<Record<string, unknown>>;
   readonly schema_version: string;
 }
+
+export interface LabComparisonSnapshot<TSettings = any, TOutput = any, TSim = any> {
+  readonly lab_id: string;
+  readonly snapshot_id: string;
+  readonly name: string;
+  readonly timestamp: string;
+  readonly settings: TSettings;
+  readonly theoreticalOutputs?: TOutput;
+  readonly simulationOutputs?: TSim;
+  readonly metadata?: {
+    readonly calculation_engine_version?: string;
+    readonly schema_version?: string;
+  };
+}
+
+export const ALL_SUPPORTED_LAB_IDS = [
+  'PL-01',
+  'PL-02',
+  'PL-03',
+  'PL-04',
+  'PL-05',
+  'PL-06',
+  'PL-07',
+  'PL-08',
+  'PL-09',
+  'PL-10',
+  'PL-11',
+  'EXP-BUILDER',
+] as const;
 
 export interface LearnerStateExport {
   readonly export_version: string;
@@ -42,6 +72,7 @@ export interface LearnerStateExport {
   readonly attempts: readonly StoredAttempt[];
   readonly activities: readonly ActivityEvent[];
   readonly labResumes: Readonly<Record<string, LabResumePayload>>;
+  readonly snapshots: Readonly<Record<string, LabComparisonSnapshot>>;
   readonly statistics: {
     readonly totalAttempts: number;
     readonly correctAttempts: number;
@@ -54,6 +85,7 @@ const STORAGE_PREFIX = 'prs_storage_v1_';
 const ATTEMPTS_KEY = `${STORAGE_PREFIX}attempts`;
 const ACTIVITIES_KEY = `${STORAGE_PREFIX}activities`;
 const LAB_RESUME_KEY_PREFIX = `${STORAGE_PREFIX}lab_resume_`;
+const LAB_SNAPSHOT_KEY_PREFIX = `${STORAGE_PREFIX}lab_snapshot_`;
 
 // In-memory fallback for environments without window.localStorage (e.g. Node/tests)
 const memoryStore = new Map<string, string>();
@@ -183,17 +215,63 @@ export class LocalPersistenceService {
     }
   }
 
+  /**
+   * Saves comparison snapshot for a given laboratory conforming to A-003 §2.2
+   */
+  static saveLabSnapshot(snapshot: LabComparisonSnapshot): void {
+    try {
+      setItem(`${LAB_SNAPSHOT_KEY_PREFIX}${snapshot.lab_id}`, JSON.stringify(snapshot));
+    } catch (err) {
+      console.error('Storage write error for lab snapshot:', err);
+    }
+  }
+
+  /**
+   * Retrieves saved comparison snapshot for a lab
+   */
+  static getLabSnapshot(labId: string): LabComparisonSnapshot | null {
+    try {
+      const raw = getItem(`${LAB_SNAPSHOT_KEY_PREFIX}${labId}`);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Removes saved comparison snapshot for a lab
+   */
+  static deleteLabSnapshot(labId: string): void {
+    removeItem(`${LAB_SNAPSHOT_KEY_PREFIX}${labId}`);
+  }
+
+  /**
+   * Retrieves all saved comparison snapshots across all labs
+   */
+  static getAllLabSnapshots(): Record<string, LabComparisonSnapshot> {
+    const snapshots: Record<string, LabComparisonSnapshot> = {};
+    for (const labId of ALL_SUPPORTED_LAB_IDS) {
+      const snap = this.getLabSnapshot(labId);
+      if (snap) {
+        snapshots[labId] = snap;
+      }
+    }
+    return snapshots;
+  }
+
   static exportLearnerState(): LearnerStateExport {
     const attempts = this.getAttempts();
     const activities = this.getActivities();
 
     const labResumes: Record<string, LabResumePayload> = {};
-    for (const labId of ['PL-01', 'PL-02', 'PL-03', 'PL-04', 'PL-05', 'PL-06']) {
+    for (const labId of ALL_SUPPORTED_LAB_IDS) {
       const res = this.getLabResume(labId);
       if (res) {
         labResumes[labId] = res;
       }
     }
+
+    const snapshots = this.getAllLabSnapshots();
 
     const totalAttempts = attempts.length;
     const correctAttempts = attempts.filter((a) => a.outcome === 'correct').length;
@@ -206,6 +284,7 @@ export class LocalPersistenceService {
       attempts,
       activities,
       labResumes,
+      snapshots,
       statistics: {
         totalAttempts,
         correctAttempts,
@@ -221,7 +300,7 @@ export class LocalPersistenceService {
 
   static importLearnerStateJson(
     jsonString: string
-  ): { success: boolean; importedAttempts: number; importedActivities: number; error?: string } {
+  ): { success: boolean; importedAttempts: number; importedActivities: number; importedSnapshots?: number; error?: string } {
     try {
       const parsed = JSON.parse(jsonString);
       if (!parsed || typeof parsed !== 'object') {
@@ -267,10 +346,22 @@ export class LocalPersistenceService {
         }
       }
 
+      // Restore snapshots
+      let importedSnapshots = 0;
+      if (parsed.snapshots && typeof parsed.snapshots === 'object') {
+        for (const snap of Object.values(parsed.snapshots)) {
+          if (snap && typeof snap === 'object') {
+            this.saveLabSnapshot(snap as LabComparisonSnapshot);
+            importedSnapshots++;
+          }
+        }
+      }
+
       return {
         success: true,
         importedAttempts: newAttempts.length,
         importedActivities: newActivities.length,
+        importedSnapshots,
       };
     } catch (err) {
       return {

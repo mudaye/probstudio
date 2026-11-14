@@ -61,15 +61,35 @@ See the product specification for the concept-level inventory and source-related
 
 ## Current status
 
-The Stage 0 prototype vertical slice is implemented and verified:
+The Probability Revision Studio vertical slice and playground feature set is active and verified:
 - **Stack:** React 18, Vite, TypeScript, KaTeX, and a versioned local storage persistence adapter.
-- **Deterministic Math Engine:** Pure TypeScript exact rational arithmetic (`Rational`) and operations `CAL-EVENT-001` and `CAL-EVENT-002` verified against A-004 golden vectors with automated tests (`npm test`).
-- **Complete Vertical Journey:**
-  1. Neutral Dashboard entry into all three co-equal environments.
-  2. Practice Gym with Exercise `EX-000001` (fair two-coin toss, find $P(A)$ for $A=\{HH, HT\}$; exact rational response checking and feedback).
-  3. Context-preserving cross-linking into Concept Atlas (`C-000001` Sample Spaces and Events) and back to Practice with active state intact.
-  4. Guided Lab **PL-01 (Event and Probability Builder)** with live exact recalculation, outcome mass editing, event operations ($A \cap B$, $A \cup B$, $A^c$, $A \setminus B$), snapshot comparison, and invalid configuration warnings.
-  5. Versioned local persistence recording attempt outcomes and activity history across browser sessions.
+- **Deterministic Math Engine:** Pure TypeScript exact rational arithmetic (`Rational`), moment calculations, multidimensional joints, discrete convolutions, and PRNG simulations (`CAL-EVENT-001` through `CAL-CLT-002`, `CAL-CUSTOM-EXP-001`) with automated tests (`npm test`).
+- **Complete Feature Journey Across All 3 Environments:**
+  1. **Concept Atlas:** Full curriculum coverage across all 22 modules (M01–M22, 44 concepts) with deep links to corresponding Practice Gym exercises and Playground labs.
+  2. **Practice Gym:** 31 retrieval and problem-solving exercises across Parts 1, 2, and 3 with exact rational response checking, step-by-step mathematical explanations, and cross-links to Atlas and Playground.
+  3. **Probability Playground:**
+     - **11 Active Guided Laboratories (`PL-01` through `PL-11`):**
+       - `PL-01`: Venn Event Workbench (2-event Venn diagram with set operations).
+       - `PL-02`: Conditional & Bayes Workbench (2x2 contingency table, tree diagram, posterior calculator).
+       - `PL-03`: Independence Explorer (Pairwise, mutual, and conditional independence testers).
+       - `PL-04`: Random Variable Mapper (Discrete RV fiber aggregation and induced PMF).
+       - `PL-05`: CDF & PMF Explorer (Staircase CDF generator and jump discontinuity visualizer).
+       - `PL-06`: Discrete Distribution Explorer (Bernoulli, Binomial, Geometric, Poisson with PRNG simulation).
+       - `PL-07`: Continuous Distribution Explorer (Uniform, Exponential, Normal with interval shading and rejection sampling).
+       - `PL-08`: Transform & Moments Workbench (1D continuous transforms $Y=g(X)$, moments, and Chebyshev bounds).
+       - `PL-09`: Joint & Marginals Lab (2D discrete joints, continuous triangular density $f(x,y)=2$, and boundary probabilities).
+       - `PL-10`: Conditionals, Channels & Transforms (Continuous conditional slicing, binary channel signaling, and 2D Jacobian explorer).
+       - `PL-11`: Central Limit Theorem & Sums of IID Variables (Convolution of IID variables $S_n = \sum X_i$, slider $n \in [1, 50]$, and standardized $Z_n$ convergence to $\mathcal{N}(0, 1)$).
+     - **Custom Probability Experiment Builder (`EXP-BUILDER`):**
+       - Author custom finite sample spaces $\Omega$, assign exact rational masses, define arbitrary random variables $X(\omega)$, calculate induced PMFs, staircase CDFs, expectation $E[X]$, and variance $\text{Var}(X)$.
+       - Event operations $A \cup B$, $A \cap B$, and conditional probability $P(A|B)$ with zero-conditioning guard (`E-COND-ZERO`).
+     - **Universal Laboratory Toolbar / Shell (`LabShell`):**
+       - Standard *Orient* $\to$ *Set up* $\to$ *Explore* $\to$ *Explain* $\to$ *Compare* $\to$ *Simulate* $\to$ *Reset* flow.
+       - Persistent snapshot bar (save, side-by-side active vs. saved comparison, restore, delete).
+       - Normative error codes (`E-PARAM-DOMAIN`, `E-PROB-RANGE`, `E-COND-ZERO`, `E-NONFINITE-INPUT`, `E-PROB-SUM`).
+       - Normalization repair workflow banner with preview and commit.
+       - Snapshot and learner state JSON export and import.
+  4. **Cross-Screen Deep-Linking & State Hydration:** Seamless navigation between Concept Atlas, Practice Gym, and specific Playground laboratories with state preserved.
 
 To run the development server:
 ```bash

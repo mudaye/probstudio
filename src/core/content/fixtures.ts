@@ -2028,3 +2028,7 @@ export function getExerciseById(id: string): ExerciseContent | undefined {
 export function getExercisesByModule(moduleId: string): readonly ExerciseContent[] {
   return ALL_EXERCISES.filter((e) => e.moduleId === moduleId);
 }
+
+export function getExercisesByConcept(conceptId: string): readonly ExerciseContent[] {
+  return ALL_EXERCISES.filter((e) => e.linkedConceptIds.includes(conceptId));
+}

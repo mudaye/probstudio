@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LabPL01 } from '../components/LabPL01';
 import { LabPL02 } from '../components/LabPL02';
 import { LabPL03 } from '../components/LabPL03';
@@ -9,228 +9,214 @@ import { LabPL07 } from '../components/LabPL07';
 import { LabPL08 } from '../components/LabPL08';
 import { LabPL09 } from '../components/LabPL09';
 import { LabPL10 } from '../components/LabPL10';
+import { LabPL11 } from '../components/LabPL11';
+import { CustomExperimentBuilder } from '../components/CustomExperimentBuilder';
+import { LocalPersistenceService } from '../../core/storage/persistence';
 
-export type GuidedLabId = 'PL-01' | 'PL-02' | 'PL-03' | 'PL-04' | 'PL-05' | 'PL-06' | 'PL-07' | 'PL-08' | 'PL-09' | 'PL-10';
+export type LabTabId =
+  | 'PL-01'
+  | 'PL-02'
+  | 'PL-03'
+  | 'PL-04'
+  | 'PL-05'
+  | 'PL-06'
+  | 'PL-07'
+  | 'PL-08'
+  | 'PL-09'
+  | 'PL-10'
+  | 'PL-11'
+  | 'EXP-BUILDER';
 
-export const PlaygroundScreen: React.FC = () => {
-  const [activeLab, setActiveLab] = useState<GuidedLabId>('PL-01');
+interface PlaygroundScreenProps {
+  initialLabId?: string;
+  onNavigate?: (route: string, params?: Record<string, string>) => void;
+}
+
+const LABS_METADATA: { id: LabTabId; badge: string; title: string; part: string }[] = [
+  { id: 'PL-01', badge: 'PL-01', title: 'Event & Probability Builder', part: 'P1' },
+  { id: 'PL-02', badge: 'PL-02', title: 'Conditional & Bayes Lab', part: 'P1' },
+  { id: 'PL-03', badge: 'PL-03', title: 'Independence Laboratory', part: 'P1' },
+  { id: 'PL-04', badge: 'PL-04', title: 'Random Variable Mapper', part: 'P1' },
+  { id: 'PL-05', badge: 'PL-05', title: 'CDF & PMF Explorer', part: 'P1' },
+  { id: 'PL-06', badge: 'PL-06', title: 'Distribution Explorer', part: 'P1' },
+  { id: 'PL-07', badge: 'PL-07', title: 'Continuous Explorer', part: 'P2' },
+  { id: 'PL-08', badge: 'PL-08', title: 'Transform & Moments', part: 'P2' },
+  { id: 'PL-09', badge: 'PL-09', title: 'Joint & Marginals', part: 'P3' },
+  { id: 'PL-10', badge: 'PL-10', title: 'Conditionals, Channel & Transforms', part: 'P3' },
+  { id: 'PL-11', badge: 'PL-11', title: 'Central Limit Theorem & IID Sums', part: 'P2/P3' },
+  { id: 'EXP-BUILDER', badge: 'BUILDER', title: 'Custom Experiment Builder', part: 'Universal' },
+];
+
+export const PlaygroundScreen: React.FC<PlaygroundScreenProps> = ({
+  initialLabId = 'PL-01',
+  onNavigate,
+}) => {
+  const [activeLab, setActiveLab] = useState<LabTabId>(() => {
+    if (LABS_METADATA.some((m) => m.id === initialLabId)) {
+      return initialLabId as LabTabId;
+    }
+    return 'PL-01';
+  });
+
+  const [importStatus, setImportStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialLabId && LABS_METADATA.some((m) => m.id === initialLabId)) {
+      setActiveLab(initialLabId as LabTabId);
+    }
+  }, [initialLabId]);
+
+  // Export all snapshots & learner data to downloadable JSON
+  const handleExportAll = () => {
+    const jsonStr = LocalPersistenceService.exportLearnerStateJson();
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `probability_studio_export_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Import snapshots & learner data from file
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const text = evt.target?.result as string;
+        const res = LocalPersistenceService.importLearnerStateJson(text);
+        if (res.success) {
+          setImportStatus(`Successfully restored ${res.importedSnapshots ?? 0} snapshots and ${res.importedAttempts} exercise attempts!`);
+          setTimeout(() => setImportStatus(null), 5000);
+        } else {
+          setImportStatus(`Import failed: ${res.error}`);
+        }
+      } catch (err) {
+        setImportStatus('Invalid JSON file format.');
+      }
+    };
+    reader.readAsText(file);
+  };
 
   return (
     <div className="playground-screen">
+      {/* Top Banner with Lab Selector & Snapshot Backup */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '12px',
+          paddingBottom: '12px',
+          marginBottom: '16px',
+          borderBottom: '1px solid var(--border, #e2e8f0)',
+        }}
+      >
+        <div>
+          <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary, #64748b)' }}>
+            PROBABILITY PLAYGROUND &bull; 11 GUIDED LABORATORIES & EXPERIMENT BUILDER
+          </span>
+          <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '2px' }}>
+            Interactive, deterministic mathematical workbench conforming to A-003 and A-004 specifications.
+          </div>
+        </div>
+
+        {/* Global Persistence Export/Import */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={handleExportAll}
+            className="btn-secondary btn-sm"
+            style={{ padding: '4px 10px', fontSize: '0.78rem' }}
+            title="Export all lab snapshots and attempts to JSON"
+          >
+            💾 Export All Snapshots
+          </button>
+          <label
+            className="btn-secondary btn-sm"
+            style={{ padding: '4px 10px', fontSize: '0.78rem', cursor: 'pointer', margin: 0 }}
+            title="Import lab snapshots and attempts from JSON"
+          >
+            📂 Import State
+            <input type="file" accept=".json" onChange={handleImportFile} style={{ display: 'none' }} />
+          </label>
+        </div>
+      </div>
+
+      {importStatus && (
+        <div
+          style={{
+            background: importStatus.startsWith('Import failed') ? '#fef2f2' : '#f0fdf4',
+            color: importStatus.startsWith('Import failed') ? '#991b1b' : '#166534',
+            border: `1px solid ${importStatus.startsWith('Import failed') ? '#fecaca' : '#bbf7d0'}`,
+            padding: '8px 14px',
+            borderRadius: '6px',
+            fontSize: '0.85rem',
+            marginBottom: '14px',
+          }}
+        >
+          {importStatus}
+        </div>
+      )}
+
       {/* Guided Lab Selector Navigation Bar */}
       <div
         style={{
           display: 'flex',
-          gap: '8px',
+          gap: '6px',
           paddingBottom: '16px',
           marginBottom: '20px',
-          borderBottom: '1px solid var(--border, #e2e8f0)',
           flexWrap: 'wrap',
           alignItems: 'center',
         }}
       >
-        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary, #64748b)', marginRight: '8px' }}>
-          Select Laboratory:
-        </span>
-        <button
-          onClick={() => setActiveLab('PL-01')}
-          style={{
-            padding: '8px 16px',
-            fontSize: '0.88rem',
-            fontWeight: 600,
-            borderRadius: '6px',
-            border: activeLab === 'PL-01' ? '1px solid #2563eb' : '1px solid #cbd5e1',
-            background: activeLab === 'PL-01' ? '#eff6ff' : '#ffffff',
-            color: activeLab === 'PL-01' ? '#1d4ed8' : '#475569',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-        >
-          <span style={{ background: activeLab === 'PL-01' ? '#2563eb' : '#94a3b8', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>PL-01</span>
-          <span>Event & Probability Builder</span>
-        </button>
-
-        <button
-          onClick={() => setActiveLab('PL-02')}
-          style={{
-            padding: '8px 16px',
-            fontSize: '0.88rem',
-            fontWeight: 600,
-            borderRadius: '6px',
-            border: activeLab === 'PL-02' ? '1px solid #2563eb' : '1px solid #cbd5e1',
-            background: activeLab === 'PL-02' ? '#eff6ff' : '#ffffff',
-            color: activeLab === 'PL-02' ? '#1d4ed8' : '#475569',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-        >
-          <span style={{ background: activeLab === 'PL-02' ? '#2563eb' : '#94a3b8', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>PL-02</span>
-          <span>Conditional & Bayes Lab</span>
-        </button>
-
-        <button
-          onClick={() => setActiveLab('PL-03')}
-          style={{
-            padding: '8px 16px',
-            fontSize: '0.88rem',
-            fontWeight: 600,
-            borderRadius: '6px',
-            border: activeLab === 'PL-03' ? '1px solid #2563eb' : '1px solid #cbd5e1',
-            background: activeLab === 'PL-03' ? '#eff6ff' : '#ffffff',
-            color: activeLab === 'PL-03' ? '#1d4ed8' : '#475569',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-        >
-          <span style={{ background: activeLab === 'PL-03' ? '#2563eb' : '#94a3b8', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>PL-03</span>
-          <span>Independence Laboratory</span>
-        </button>
-
-        <button
-          onClick={() => setActiveLab('PL-04')}
-          style={{
-            padding: '8px 16px',
-            fontSize: '0.88rem',
-            fontWeight: 600,
-            borderRadius: '6px',
-            border: activeLab === 'PL-04' ? '1px solid #2563eb' : '1px solid #cbd5e1',
-            background: activeLab === 'PL-04' ? '#eff6ff' : '#ffffff',
-            color: activeLab === 'PL-04' ? '#1d4ed8' : '#475569',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-        >
-          <span style={{ background: activeLab === 'PL-04' ? '#2563eb' : '#94a3b8', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>PL-04</span>
-          <span>Random Variable Mapper</span>
-        </button>
-
-        <button
-          onClick={() => setActiveLab('PL-05')}
-          style={{
-            padding: '8px 16px',
-            fontSize: '0.88rem',
-            fontWeight: 600,
-            borderRadius: '6px',
-            border: activeLab === 'PL-05' ? '1px solid #2563eb' : '1px solid #cbd5e1',
-            background: activeLab === 'PL-05' ? '#eff6ff' : '#ffffff',
-            color: activeLab === 'PL-05' ? '#1d4ed8' : '#475569',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-        >
-          <span style={{ background: activeLab === 'PL-05' ? '#2563eb' : '#94a3b8', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>PL-05</span>
-          <span>CDF & PMF Explorer</span>
-        </button>
-
-        <button
-          onClick={() => setActiveLab('PL-06')}
-          style={{
-            padding: '8px 16px',
-            fontSize: '0.88rem',
-            fontWeight: 600,
-            borderRadius: '6px',
-            border: activeLab === 'PL-06' ? '1px solid #2563eb' : '1px solid #cbd5e1',
-            background: activeLab === 'PL-06' ? '#eff6ff' : '#ffffff',
-            color: activeLab === 'PL-06' ? '#1d4ed8' : '#475569',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-        >
-          <span style={{ background: activeLab === 'PL-06' ? '#2563eb' : '#94a3b8', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>PL-06</span>
-          <span>Distribution Explorer</span>
-        </button>
-
-        <button
-          onClick={() => setActiveLab('PL-07')}
-          style={{
-            padding: '8px 16px',
-            fontSize: '0.88rem',
-            fontWeight: 600,
-            borderRadius: '6px',
-            border: activeLab === 'PL-07' ? '1px solid #2563eb' : '1px solid #cbd5e1',
-            background: activeLab === 'PL-07' ? '#eff6ff' : '#ffffff',
-            color: activeLab === 'PL-07' ? '#1d4ed8' : '#475569',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-        >
-          <span style={{ background: activeLab === 'PL-07' ? '#2563eb' : '#94a3b8', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>PL-07</span>
-          <span>Continuous Explorer</span>
-        </button>
-
-        <button
-          onClick={() => setActiveLab('PL-08')}
-          style={{
-            padding: '8px 16px',
-            fontSize: '0.88rem',
-            fontWeight: 600,
-            borderRadius: '6px',
-            border: activeLab === 'PL-08' ? '1px solid #2563eb' : '1px solid #cbd5e1',
-            background: activeLab === 'PL-08' ? '#eff6ff' : '#ffffff',
-            color: activeLab === 'PL-08' ? '#1d4ed8' : '#475569',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-        >
-          <span style={{ background: activeLab === 'PL-08' ? '#2563eb' : '#94a3b8', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>PL-08</span>
-          <span>Transform & Moments</span>
-        </button>
-
-        <button
-          onClick={() => setActiveLab('PL-09')}
-          style={{
-            padding: '8px 16px',
-            fontSize: '0.88rem',
-            fontWeight: 600,
-            borderRadius: '6px',
-            border: activeLab === 'PL-09' ? '1px solid #2563eb' : '1px solid #cbd5e1',
-            background: activeLab === 'PL-09' ? '#eff6ff' : '#ffffff',
-            color: activeLab === 'PL-09' ? '#1d4ed8' : '#475569',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-        >
-          <span style={{ background: activeLab === 'PL-09' ? '#2563eb' : '#94a3b8', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>PL-09</span>
-          <span>Joint & Marginals</span>
-        </button>
-
-        <button
-          onClick={() => setActiveLab('PL-10')}
-          style={{
-            padding: '8px 16px',
-            fontSize: '0.88rem',
-            fontWeight: 600,
-            borderRadius: '6px',
-            border: activeLab === 'PL-10' ? '1px solid #2563eb' : '1px solid #cbd5e1',
-            background: activeLab === 'PL-10' ? '#eff6ff' : '#ffffff',
-            color: activeLab === 'PL-10' ? '#1d4ed8' : '#475569',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-        >
-          <span style={{ background: activeLab === 'PL-10' ? '#2563eb' : '#94a3b8', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>PL-10</span>
-          <span>Conditionals, Channel & Transforms</span>
-        </button>
+        {LABS_METADATA.map((lab) => {
+          const isActive = activeLab === lab.id;
+          const isBuilder = lab.id === 'EXP-BUILDER';
+          return (
+            <button
+              key={lab.id}
+              onClick={() => setActiveLab(lab.id)}
+              style={{
+                padding: '6px 12px',
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                borderRadius: '6px',
+                border: isActive
+                  ? isBuilder ? '1px solid #7c3aed' : '1px solid #2563eb'
+                  : '1px solid #cbd5e1',
+                background: isActive
+                  ? isBuilder ? '#faf5ff' : '#eff6ff'
+                  : '#ffffff',
+                color: isActive
+                  ? isBuilder ? '#6b21a8' : '#1d4ed8'
+                  : '#475569',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <span
+                style={{
+                  background: isActive
+                    ? isBuilder ? '#7c3aed' : '#2563eb'
+                    : '#94a3b8',
+                  color: '#fff',
+                  padding: '1px 5px',
+                  borderRadius: '3px',
+                  fontSize: '0.72rem',
+                }}
+              >
+                {lab.badge}
+              </span>
+              <span>{lab.title}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Render Active Lab */}
@@ -244,6 +230,8 @@ export const PlaygroundScreen: React.FC = () => {
       {activeLab === 'PL-08' && <LabPL08 />}
       {activeLab === 'PL-09' && <LabPL09 />}
       {activeLab === 'PL-10' && <LabPL10 />}
+      {activeLab === 'PL-11' && <LabPL11 onNavigate={onNavigate} />}
+      {activeLab === 'EXP-BUILDER' && <CustomExperimentBuilder onNavigate={onNavigate} />}
     </div>
   );
 };

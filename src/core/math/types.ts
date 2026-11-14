@@ -50,7 +50,10 @@ export type CalculationId =
   | 'CAL-COND-DIST-001'
   | 'CAL-COMM-001'
   | 'CAL-COMM-002'
-  | 'CAL-JACOBIAN-001';
+  | 'CAL-JACOBIAN-001'
+  | 'CAL-CLT-001'
+  | 'CAL-CLT-002'
+  | 'CAL-CUSTOM-EXP-001';
 
 export type ErrorCode =
   | 'E-PROB-RANGE'
