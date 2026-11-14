@@ -62,11 +62,14 @@ import {
   EXERCISE_EX000026,
   EXERCISE_EX000027,
   EXERCISE_EX000028,
+  EXERCISE_EX000029,
+  EXERCISE_EX000030,
+  EXERCISE_EX000031,
 } from './fixtures';
 
 describe('Concept Content Fixtures - Modules M01 through M21 (A-005 Compliance)', () => {
   it('contains authored concepts for active modules across Part 1, Part 2, and Part 3', () => {
-    expect(ALL_CONCEPTS.length).toBe(38);
+    expect(ALL_CONCEPTS.length).toBe(44);
     const m01Concepts = getConceptsByModule('M01');
     expect(m01Concepts.length).toBe(3);
     expect(m01Concepts.map((c) => c.id)).toEqual(['C-000001', 'C-000002', 'C-000003']);
@@ -139,9 +142,21 @@ describe('Concept Content Fixtures - Modules M01 through M21 (A-005 Compliance)'
     expect(m18Concepts.length).toBe(2);
     expect(m18Concepts.map((c) => c.id)).toEqual(['C-000035', 'C-000036']);
 
+    const m19Concepts = getConceptsByModule('M19');
+    expect(m19Concepts.length).toBe(2);
+    expect(m19Concepts.map((c) => c.id)).toEqual(['C-000039', 'C-000040']);
+
+    const m20Concepts = getConceptsByModule('M20');
+    expect(m20Concepts.length).toBe(2);
+    expect(m20Concepts.map((c) => c.id)).toEqual(['C-000041', 'C-000042']);
+
     const m21Concepts = getConceptsByModule('M21');
     expect(m21Concepts.length).toBe(2);
     expect(m21Concepts.map((c) => c.id)).toEqual(['C-000037', 'C-000038']);
+
+    const m22Concepts = getConceptsByModule('M22');
+    expect(m22Concepts.length).toBe(2);
+    expect(m22Concepts.map((c) => c.id)).toEqual(['C-000043', 'C-000044']);
   });
 
   it('verifies C-000001: Sample Spaces and Events', () => {
@@ -395,9 +410,9 @@ describe('Concept Content Fixtures - Modules M01 through M21 (A-005 Compliance)'
     expect(c?.formalDefinitionLatex).toContain('\\frac{1}{|a|}');
   });
 
-  describe('Exercise Content Fixtures - Modules M01 through M21', () => {
+  describe('Exercise Content Fixtures - Modules M01 through M22', () => {
     it('contains authored exercises across Part 1, Part 2, and Part 3', () => {
-      expect(ALL_EXERCISES.length).toBe(28);
+      expect(ALL_EXERCISES.length).toBe(31);
       const m01Ex = getExercisesByModule('M01');
       expect(m01Ex.length).toBe(3);
       expect(m01Ex.map((e) => e.id)).toEqual(['EX-000001', 'EX-000002', 'EX-000003']);
@@ -477,9 +492,21 @@ describe('Concept Content Fixtures - Modules M01 through M21 (A-005 Compliance)'
       expect(m18Ex.length).toBe(1);
       expect(m18Ex.map((e) => e.id)).toEqual(['EX-000027']);
 
+      const m19Ex = getExercisesByModule('M19');
+      expect(m19Ex.length).toBe(1);
+      expect(m19Ex.map((e) => e.id)).toEqual(['EX-000029']);
+
+      const m20Ex = getExercisesByModule('M20');
+      expect(m20Ex.length).toBe(1);
+      expect(m20Ex.map((e) => e.id)).toEqual(['EX-000030']);
+
       const m21Ex = getExercisesByModule('M21');
       expect(m21Ex.length).toBe(1);
       expect(m21Ex.map((e) => e.id)).toEqual(['EX-000028']);
+
+      const m22Ex = getExercisesByModule('M22');
+      expect(m22Ex.length).toBe(1);
+      expect(m22Ex.map((e) => e.id)).toEqual(['EX-000031']);
 
       const ex17 = getExerciseById('EX-000017');
       expect(ex17).toBe(EXERCISE_EX000017);
@@ -564,6 +591,27 @@ describe('Concept Content Fixtures - Modules M01 through M21 (A-005 Compliance)'
       expect(ex28?.expectedRational.num).toBe(3n);
       expect(ex28?.expectedRational.den).toBe(25n);
       expect(ex28?.moduleId).toBe('M21');
+
+      const ex29 = getExerciseById('EX-000029');
+      expect(ex29).toBe(EXERCISE_EX000029);
+      expect(ex29?.title).toContain('Conditional Probability in Continuous Triangular');
+      expect(ex29?.expectedRational.num).toBe(1n);
+      expect(ex29?.expectedRational.den).toBe(2n);
+      expect(ex29?.moduleId).toBe('M19');
+
+      const ex30 = getExerciseById('EX-000030');
+      expect(ex30).toBe(EXERCISE_EX000030);
+      expect(ex30?.title).toContain('Binary Signaling False Alarm Probability');
+      expect(ex30?.expectedRational.num).toBe(1n);
+      expect(ex30?.expectedRational.den).toBe(12n);
+      expect(ex30?.moduleId).toBe('M20');
+
+      const ex31 = getExerciseById('EX-000031');
+      expect(ex31).toBe(EXERCISE_EX000031);
+      expect(ex31?.title).toContain('Jacobian Determinant for Bivariate');
+      expect(ex31?.expectedRational.num).toBe(1n);
+      expect(ex31?.expectedRational.den).toBe(2n);
+      expect(ex31?.moduleId).toBe('M22');
     });
   });
 });

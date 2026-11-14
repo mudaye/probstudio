@@ -1005,6 +1005,156 @@ export const CONCEPT_C000038: ConceptContent = {
   classification: 'source_derived',
 };
 
+export const CONCEPT_C000039: ConceptContent = {
+  id: 'C-000039',
+  title: 'Conditional Distributions and Density Slicing',
+  moduleId: 'M19',
+  intuition:
+    'Slicing a joint probability density at a fixed coordinate gives an unnormalized slice. Dividing this slice by the marginal density of the fixed coordinate renormalizes the area to exactly 1, producing a legitimate 1D probability density.',
+  formalDefinition:
+    'For continuous random variables (X, Y), the conditional density of Y given X = x is defined for f_X(x) > 0 as: f_{Y|X}(y|x) = f(x, y) / f_X(x). For discrete variables, p_{Y|X}(y|x) = p(x, y) / p_X(x).',
+  formalDefinitionLatex:
+    'p_{X|Y}(x|y) = \\frac{p(x, y)}{p_Y(y)}, \\qquad f_{Y|X}(y|x) = \\frac{f(x, y)}{f_X(x)} \\quad \\text{for } f_X(x) > 0',
+  properties: [
+    'Valid Distribution: For any fixed conditioning argument x with f_X(x) > 0, the conditional function is a true 1D probability density integrating to 1 over y.',
+    'Zero-Conditioning Safeguard (E-COND-ZERO): Conditioning on an outcome where the marginal density is zero is undefined.',
+    'Slicing Triangular Joint: In the model f(x, y) = 2 on 0 < x < y < 1, given X = x₀, the conditional distribution Y | X = x₀ is strictly Uniform on [x₀, 1].',
+  ],
+  sourceRef: {
+    id: 'SRC-P3-CH06-001',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 6: Conditional distributions',
+    note: 'Definition and limiting construction of conditional density functions.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000040: ConceptContent = {
+  id: 'C-000040',
+  title: "Bayes' Rule for Continuous and Mixed Random Variables",
+  moduleId: 'M19',
+  intuition:
+    'When inferring an unobserved hypothesis from continuous measurements, Bayes rule inverts the conditional relationship by replacing the discrete sum with an integral across the support of the continuous parameter.',
+  formalDefinition:
+    'Given prior density f_X(x) and observation model f_{Y|X}(y|x), the posterior density of X given Y = y is: f_{X|Y}(x|y) = (f_{Y|X}(y|x) f_X(x)) / (∫_{-∞}^∞ f_{Y|X}(y|t) f_X(t) dt).',
+  formalDefinitionLatex:
+    'f_{X|Y}(x|y) = \\frac{f_{Y|X}(y|x) f_X(x)}{\\int_{-\\infty}^\\infty f_{Y|X}(y|t) f_X(t) \\, dt}',
+  properties: [
+    'Continuous Inversion: Computes the posterior probability distribution of an unobserved parameter given noisy continuous measurements.',
+    'Mixed Discrete-Continuous Inversion: When Y is a continuous measurement and X is a discrete message bit, P(X = x | Y = y) = (f_{Y|X}(y|x) P(X = x)) / (Σ_k f_{Y|X}(y|x_k) P(X = x_k)).',
+    'Decoder Optimality: Forms the mathematical cornerstone for MAP (Maximum A Posteriori) detection in digital communication.',
+  ],
+  sourceRef: {
+    id: 'SRC-P3-CH06-002',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 6: Conditional distributions',
+    note: 'Continuous and mixed-variable extensions of Bayes rule.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000041: ConceptContent = {
+  id: 'C-000041',
+  title: 'Mixture Distributions & Gaussian Mixture Models (GMM)',
+  moduleId: 'M20',
+  intuition:
+    'A mixture model represents a heterogeneous population composed of several sub-populations. It can be viewed hierarchically: first pick a component according to discrete weights, then draw a sample from that chosen component density.',
+  formalDefinition:
+    'A mixture density f_Y(y) is a convex combination of K component densities: f_Y(y) = ∑_{k=1}^K w_k f_k(y), where weights w_k ≥ 0 and ∑_{k=1}^K w_k = 1.',
+  formalDefinitionLatex:
+    'f_Y(y) = \\sum_{k=1}^K w_k f_k(y), \\quad w_k \\ge 0, \\quad \\sum_{k=1}^K w_k = 1',
+  properties: [
+    'Hierarchical Sampling: First draw a discrete component index k with probability w_k, then draw observation Y from component density f_k(y).',
+    'Universal Density Approximation: Gaussian Mixture Models with sufficient components can approximate any smooth arbitrary probability density.',
+    'Multimodal Behavior: Mixtures naturally model bimodal and multimodal phenomena that cannot be captured by single unimodal distributions.',
+  ],
+  sourceRef: {
+    id: 'SRC-P3-CH07-001',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 7: Conditioning in communication systems',
+    note: 'Mixture density models and Gaussian mixtures in machine learning and communications.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000042: ConceptContent = {
+  id: 'C-000042',
+  title: 'Binary Communication Signaling Under Additive Noise',
+  moduleId: 'M20',
+  intuition:
+    'In digital communication, discrete symbols (e.g. 0V and 5V) are corrupted by continuous channel noise. The received signal forms a bimodal mixture, where a decision threshold separates decisions and determines the bit error rate.',
+  formalDefinition:
+    'A binary transmitter emits X ∈ {0, 1} with voltages v₀, v₁. The channel adds independent noise N, so the receiver measures Y = v_X + N with mixture density f_Y(y) = (1 - p₁)f_{Y|0}(y) + p₁f_{Y|1}(y).',
+  formalDefinitionLatex:
+    'Y = v_X + N, \\quad X \\in \\{0, 1\\}, \\quad f_Y(y) = (1 - p_1) f_{Y|0}(y) + p_1 f_{Y|1}(y)',
+  properties: [
+    'Decision Boundary & Thresholding: A receiver decides X̂ = 1 if received voltage Y > τ, otherwise X̂ = 0.',
+    'False Alarm & Miss Tradeoff: Raising threshold τ decreases False Alarms P(Y > τ | X = 0) but increases Misses P(Y ≤ τ | X = 1).',
+    'Optimal Midpoint Threshold: For symmetric noise and equal priors P(X = 0) = P(X = 1) = 0.5, the minimum-error threshold is the exact midpoint τ* = (v₀ + v₁) / 2.',
+  ],
+  sourceRef: {
+    id: 'SRC-P3-CH07-002',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 7: Conditioning in communication systems',
+    note: 'Binary signaling, decision thresholding, and likelihood ratio decoding.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000043: ConceptContent = {
+  id: 'C-000043',
+  title: 'Multivariate Random Vectors and Joint Factorization',
+  moduleId: 'M22',
+  intuition:
+    'Studying collections of random variables simultaneously requires vector-valued mapping into ℝⁿ. Joint CDFs and PDFs generalize 2D joints, and mutual independence allows complete factorization into individual marginal distributions.',
+  formalDefinition:
+    'An n-dimensional random vector X = (X₁, ..., Xₙ) maps sample space Ω to ℝⁿ. If the coordinates are mutually independent, the joint density factors completely into the product of marginals.',
+  formalDefinitionLatex:
+    '\\mathbf{X} = (X_1, \\dots, X_n)^T, \\qquad f_\\mathbf{X}(\\mathbf{x}) = \\prod_{i=1}^n f_{X_i}(x_i) \\iff X_1, \\dots, X_n \\text{ independent}',
+  properties: [
+    'Cylindrical Sets: Marginal distributions for any sub-vector are recovered by integrating the joint density over the remaining coordinates to +∞.',
+    'Product Support Criterion: Independence requires both product factorization of densities and a rectangular Cartesian product support.',
+    'Vector Transformations: Functions of random vectors g: ℝⁿ → ℝᵐ generate new random vectors.',
+  ],
+  sourceRef: {
+    id: 'SRC-P3-CH09-001',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 9: Multiple random variables',
+    note: 'Vector-valued random variables and multivariate marginalization.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000044: ConceptContent = {
+  id: 'C-000044',
+  title: 'Multidimensional Transformations & The Jacobian Determinant',
+  moduleId: 'M22',
+  intuition:
+    'When transforming random vectors Y = g(X), the local volume scaling factor is given by the determinant of the Jacobian matrix of the inverse transform, ensuring that total probability mass is preserved.',
+  formalDefinition:
+    'If Y = g(X) is a bijective differentiable transformation with inverse X = h(Y), the joint density of Y is: f_Y(y) = f_X(h(y)) · |det J_h(y)|, where J_h is the Jacobian matrix of partial derivatives.',
+  formalDefinitionLatex:
+    'f_\\mathbf{Y}(\\mathbf{y}) = f_\\mathbf{X}(h(\\mathbf{y})) \\cdot \\left| \\det J_h(\\mathbf{y}) \\right|, \\quad J_h(\\mathbf{y}) = \\left[ \\frac{\\partial h_i}{\\partial y_j} \\right]',
+  properties: [
+    'Differential Volume Scaling: The Jacobian determinant accounts for local volume expansion or contraction: dx₁ dx₂ = |det J_h| dy₁ dy₂.',
+    'Bijective Invertibility: The transformation must be one-to-one on the support region with non-zero Jacobian determinant.',
+    'Canonical Sum-Difference Transform: For Y₁ = X₁ + X₂, Y₂ = X₁ - X₂, the inverse is X₁ = (Y₁ + Y₂)/2, X₂ = (Y₁ - Y₂)/2, giving |det J| = 1/2.',
+  ],
+  sourceRef: {
+    id: 'SRC-P3-CH10-002',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 10: IID variables and transformations',
+    note: 'Jacobian determinant formula and sum-difference transformation example.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000001,
   CONCEPT_C000002,
@@ -1044,6 +1194,12 @@ export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000036,
   CONCEPT_C000037,
   CONCEPT_C000038,
+  CONCEPT_C000039,
+  CONCEPT_C000040,
+  CONCEPT_C000041,
+  CONCEPT_C000042,
+  CONCEPT_C000043,
+  CONCEPT_C000044,
 ];
 
 export function getConceptById(id: string): ConceptContent | undefined {
@@ -1756,6 +1912,81 @@ export const EXERCISE_EX000028: ExerciseContent = {
   classification: 'source_derived',
 };
 
+export const EXERCISE_EX000029: ExerciseContent = {
+  id: 'EX-000029',
+  title: 'Conditional Probability in Continuous Triangular Joint Distribution',
+  moduleId: 'M19',
+  category: 'numerical',
+  linkedConceptIds: ['C-000039', 'C-000040'],
+  prompt:
+    'A pair of continuous random variables (X, Y) has joint density f(x, y) = 2 for 0 < x < y < 1. Given that X = 0.5 (or 1/2), the conditional distribution Y | X = 0.5 is Uniform on [0.5, 1] with conditional density f_{Y|X}(y | 0.5) = 2. Calculate the conditional probability P(Y > 0.75 | X = 0.5). Express your answer as a simplified fraction.',
+  promptLatex:
+    'f(x, y) = 2 \\quad (0 < x < y < 1), \\quad X = 0.5.\\newline \\text{Given } Y \\mid X=0.5 \\sim \\text{Uniform}(0.5, 1), \\text{ find } P(Y > 0.75 \\mid X = 0.5).',
+  expectedRational: { num: 1n, den: 2n },
+  explanation:
+    'Given X = 0.5, Y is uniformly distributed on [0.5, 1], with density f_{Y|X}(y|0.5) = 1/(1 - 0.5) = 2. The conditional probability P(Y > 0.75 | X = 0.5) is the integral ∫_{0.75}^1 2 dy = 2 · (1 - 0.75) = 2 · 0.25 = 0.50 = 1/2.',
+  explanationLatex:
+    'P(Y > 0.75 \\mid X = 0.5) = \\int_{0.75}^1 \\frac{1}{1 - 0.5} \\, dy = 2 \\times 0.25 = \\frac{1}{2}',
+  sourceRef: {
+    id: 'SRC-P3-CH06-003',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 6: Conditional distributions',
+    note: 'Evaluation of conditional probability in continuous triangular model.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000030: ExerciseContent = {
+  id: 'EX-000030',
+  title: 'Binary Signaling False Alarm Probability Under Uniform Channel Noise',
+  moduleId: 'M20',
+  category: 'numerical',
+  linkedConceptIds: ['C-000041', 'C-000042'],
+  prompt:
+    'A binary communication channel transmits voltage 0V for Bit 0 and 5V for Bit 1 with equal prior probabilities P(X = 0) = P(X = 1) = 1/2. The channel corrupts the signal with additive noise N ~ Uniform(-3, 3). The receiver uses the optimal decision threshold τ = 2.5V (deciding Bit 1 if received voltage Y > 2.5V). When Bit 0 is transmitted (so Y ~ Uniform(-3, 3)), calculate the False Alarm probability P(Y > 2.5 | X = 0). Express your answer as a simplified fraction.',
+  promptLatex:
+    'Y = v_X + N, \\quad v_0 = 0\\text{V}, \\quad N \\sim \\text{Uniform}(-3, 3), \\quad \\tau = 2.5\\text{V}.\\newline \\text{Find False Alarm probability } P(Y > 2.5 \\mid X = 0).',
+  expectedRational: { num: 1n, den: 12n },
+  explanation:
+    'When Bit 0 is sent, received voltage is Y = 0 + N = N ~ Uniform(-3, 3). The support length is 3 - (-3) = 6. The region exceeding threshold τ = 2.5 is the sub-interval (2.5, 3), which has length 3 - 2.5 = 0.5. Hence, P(Y > 2.5 | X = 0) = 0.5 / 6 = 1/12 (≈ 0.0833).',
+  explanationLatex:
+    'P(Y > 2.5 \\mid X = 0) = \\frac{3 - 2.5}{3 - (-3)} = \\frac{0.5}{6} = \\frac{1}{12}',
+  sourceRef: {
+    id: 'SRC-P3-CH07-003',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 7: Conditioning in communication systems',
+    note: 'False alarm error probability in binary communication system with thresholding.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000031: ExerciseContent = {
+  id: 'EX-000031',
+  title: 'Jacobian Determinant for Bivariate Sum-Difference Transformation',
+  moduleId: 'M22',
+  category: 'numerical',
+  linkedConceptIds: ['C-000043', 'C-000044'],
+  prompt:
+    'Continuous random variables X₁ and X₂ are transformed via the linear mapping: Y₁ = X₁ + X₂ and Y₂ = X₁ - X₂. Inverting this system yields X₁ = (Y₁ + Y₂)/2 and X₂ = (Y₁ - Y₂)/2. Calculate the absolute value of the Jacobian determinant |det J_h(y)| required for the transformed joint density formula f_Y(y) = f_X(h(y)) · |det J_h(y)|. Express your answer as a simplified fraction.',
+  promptLatex:
+    'Y_1 = X_1 + X_2, \\quad Y_2 = X_1 - X_2 \\implies X_1 = \\frac{Y_1 + Y_2}{2}, \\; X_2 = \\frac{Y_1 - Y_2}{2}.\\newline \\text{Find } \\left| \\det J \\right| = \\left| \\det \\begin{pmatrix} \\frac{\\partial X_1}{\\partial Y_1} & \\frac{\\partial X_1}{\\partial Y_2} \\\\ \\frac{\\partial X_2}{\\partial Y_1} & \\frac{\\partial X_2}{\\partial Y_2} \\end{pmatrix} \\right|.',
+  expectedRational: { num: 1n, den: 2n },
+  explanation:
+    'The partial derivatives of the inverse transformation are: ∂X₁/∂Y₁ = 1/2, ∂X₁/∂Y₂ = 1/2, ∂X₂/∂Y₁ = 1/2, ∂X₂/∂Y₂ = -1/2. The determinant is det J = (1/2)(-1/2) - (1/2)(1/2) = -1/4 - 1/4 = -2/4 = -1/2. Taking the absolute value gives |det J| = 1/2.',
+  explanationLatex:
+    '\\det J = \\begin{vmatrix} 1/2 & 1/2 \\\\ 1/2 & -1/2 \\end{vmatrix} = -\\frac{1}{4} - \\frac{1}{4} = -\\frac{1}{2} \\implies \\left| \\det J \\right| = \\frac{1}{2}',
+  sourceRef: {
+    id: 'SRC-P3-CH10-003',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 10: IID variables and transformations',
+    note: 'Jacobian determinant calculation for sum-difference bivariate transformation.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000001,
   EXERCISE_EX000002,
@@ -1785,6 +2016,9 @@ export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000026,
   EXERCISE_EX000027,
   EXERCISE_EX000028,
+  EXERCISE_EX000029,
+  EXERCISE_EX000030,
+  EXERCISE_EX000031,
 ];
 
 export function getExerciseById(id: string): ExerciseContent | undefined {

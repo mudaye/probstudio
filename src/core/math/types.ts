@@ -46,7 +46,11 @@ export type CalculationId =
   | 'CAL-JOINT-003'
   | 'CAL-JOINT-004'
   | 'CAL-JOINT-005'
-  | 'CAL-JOINT-006';
+  | 'CAL-JOINT-006'
+  | 'CAL-COND-DIST-001'
+  | 'CAL-COMM-001'
+  | 'CAL-COMM-002'
+  | 'CAL-JACOBIAN-001';
 
 export type ErrorCode =
   | 'E-PROB-RANGE'

@@ -176,6 +176,22 @@ describe('Module Catalog (A-001 §4.1 Integrity)', () => {
     expect(m18?.exerciseCount).toBe(1);
     expect(m18?.labAssociation).toBe('PL-09');
 
+    const m19 = getModuleById('M19');
+    expect(m19).toBeDefined();
+    expect(m19?.title).toContain('Conditional Distributions');
+    expect(m19?.status).toBe('active');
+    expect(m19?.conceptCount).toBe(2);
+    expect(m19?.exerciseCount).toBe(1);
+    expect(m19?.labAssociation).toBe('PL-10');
+
+    const m20 = getModuleById('M20');
+    expect(m20).toBeDefined();
+    expect(m20?.title).toContain('Mixture Models');
+    expect(m20?.status).toBe('active');
+    expect(m20?.conceptCount).toBe(2);
+    expect(m20?.exerciseCount).toBe(1);
+    expect(m20?.labAssociation).toBe('PL-10');
+
     const m21 = getModuleById('M21');
     expect(m21).toBeDefined();
     expect(m21?.title).toContain('Independence');
@@ -183,5 +199,13 @@ describe('Module Catalog (A-001 §4.1 Integrity)', () => {
     expect(m21?.conceptCount).toBe(2);
     expect(m21?.exerciseCount).toBe(1);
     expect(m21?.labAssociation).toBe('PL-09');
+
+    const m22 = getModuleById('M22');
+    expect(m22).toBeDefined();
+    expect(m22?.title).toContain('Multiple Variables');
+    expect(m22?.status).toBe('active');
+    expect(m22?.conceptCount).toBe(2);
+    expect(m22?.exerciseCount).toBe(1);
+    expect(m22?.labAssociation).toBe('PL-10');
   });
 });
