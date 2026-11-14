@@ -4,8 +4,9 @@ import { LabPL02 } from '../components/LabPL02';
 import { LabPL03 } from '../components/LabPL03';
 import { LabPL04 } from '../components/LabPL04';
 import { LabPL05 } from '../components/LabPL05';
+import { LabPL06 } from '../components/LabPL06';
 
-export type GuidedLabId = 'PL-01' | 'PL-02' | 'PL-03' | 'PL-04' | 'PL-05';
+export type GuidedLabId = 'PL-01' | 'PL-02' | 'PL-03' | 'PL-04' | 'PL-05' | 'PL-06';
 
 export const PlaygroundScreen: React.FC = () => {
   const [activeLab, setActiveLab] = useState<GuidedLabId>('PL-01');
@@ -126,6 +127,26 @@ export const PlaygroundScreen: React.FC = () => {
           <span style={{ background: activeLab === 'PL-05' ? '#2563eb' : '#94a3b8', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>PL-05</span>
           <span>CDF & PMF Explorer</span>
         </button>
+
+        <button
+          onClick={() => setActiveLab('PL-06')}
+          style={{
+            padding: '8px 16px',
+            fontSize: '0.88rem',
+            fontWeight: 600,
+            borderRadius: '6px',
+            border: activeLab === 'PL-06' ? '1px solid #2563eb' : '1px solid #cbd5e1',
+            background: activeLab === 'PL-06' ? '#eff6ff' : '#ffffff',
+            color: activeLab === 'PL-06' ? '#1d4ed8' : '#475569',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          <span style={{ background: activeLab === 'PL-06' ? '#2563eb' : '#94a3b8', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>PL-06</span>
+          <span>Distribution Explorer</span>
+        </button>
       </div>
 
       {/* Render Active Lab */}
@@ -134,6 +155,7 @@ export const PlaygroundScreen: React.FC = () => {
       {activeLab === 'PL-03' && <LabPL03 />}
       {activeLab === 'PL-04' && <LabPL04 />}
       {activeLab === 'PL-05' && <LabPL05 />}
+      {activeLab === 'PL-06' && <LabPL06 />}
     </div>
   );
 };

@@ -71,5 +71,13 @@ describe('Module Catalog (A-001 §4.1 Integrity)', () => {
     expect(m06?.conceptCount).toBe(2);
     expect(m06?.exerciseCount).toBe(2);
     expect(m06?.labAssociation).toBe('PL-05');
+
+    const m08 = getModuleById('M08');
+    expect(m08).toBeDefined();
+    expect(m08?.title).toContain('Discrete Distributions');
+    expect(m08?.status).toBe('active');
+    expect(m08?.conceptCount).toBe(2);
+    expect(m08?.exerciseCount).toBe(2);
+    expect(m08?.labAssociation).toBe('PL-06');
   });
 });

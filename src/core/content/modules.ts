@@ -123,9 +123,9 @@ export const MODULES: readonly ModuleInfo[] = [
     partId: 'P1',
     title: 'Discrete Distributions',
     summary: 'Bernoulli, Binomial, Geometric, and Poisson models.',
-    status: 'planned',
-    conceptCount: 0,
-    exerciseCount: 0,
+    status: 'active',
+    conceptCount: 2,
+    exerciseCount: 2,
     labAssociation: 'PL-06',
   },
 

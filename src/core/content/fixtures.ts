@@ -328,6 +328,58 @@ export const CONCEPT_C000011: ConceptContent = {
   classification: 'source_derived',
 };
 
+export const CONCEPT_C000012: ConceptContent = {
+  id: 'C-000012',
+  title: 'Discrete Distribution Families: Bernoulli & Binomial Experiments',
+  moduleId: 'M08',
+  intuition:
+    'Many random experiments consist of repeated trials with binary outcomes (success or failure). A single trial is modeled by a Bernoulli distribution with parameter p. When we conduct n independent and identically distributed Bernoulli trials, the total count of successes follows the Binomial distribution with parameters n and p.',
+  formalDefinition:
+    'Bernoulli Distribution: X ~ Bernoulli(p) has support S_X = {0, 1} with PMF P(X=1) = p and P(X=0) = 1-p, where 0 ≤ p ≤ 1. Mean E[X] = p, Var(X) = p(1-p).\nBinomial Distribution: X ~ Binomial(n, p) is the sum of n independent Bernoulli(p) trials, X = Σ_{i=1}^n I_i. Support S_X = {0, 1, ..., n}. PMF P(X=k) = C(n, k) p^k (1-p)^(n-k) for k ∈ {0, 1, ..., n}. Mean E[X] = np, Var(X) = np(1-p).',
+  formalDefinitionLatex:
+    '\\begin{aligned} &\\textbf{Bernoulli}(p): \\quad S_X = \\{0, 1\\}, \\quad P(X = k) = p^k (1-p)^{1-k}, \\quad k \\in \\{0, 1\\} \\\\[4pt] &E[X] = p, \\quad \\text{Var}(X) = p(1-p) \\\\[6pt] &\\textbf{Binomial}(n, p): \\quad S_X = \\{0, 1, \\dots, n\\}, \\quad P(X = k) = \\binom{n}{k} p^k (1-p)^{n-k}, \\quad k \\in \\{0, 1, \\dots, n\\} \\\\[4pt] &E[X] = np, \\quad \\text{Var}(X) = np(1-p) \\end{aligned}',
+  properties: [
+    'Binary Success-Failure Model: Bernoulli models a single binary experiment; Binomial counts successes across n independent trials.',
+    'Combinatorial Multiplicity: The binomial coefficient C(n, k) = n! / (k!(n-k)!) counts the number of distinct outcome sequences containing exactly k successes and n-k failures.',
+    'Support Bounds: Binomial support is strictly finite, bounded between 0 and n.',
+    'Linearity of Expectation: Because X = Σ_{i=1}^n X_i with each E[X_i] = p, the mean is E[X] = np.',
+  ],
+  sourceRef: {
+    id: 'SRC-P1-CH08-001',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 8: Discrete random variables',
+    note: 'Bernoulli and Binomial random variables, PMF formula, independent trial formulation.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000013: ConceptContent = {
+  id: 'C-000013',
+  title: 'Waiting Times & Rate Models: Geometric & Poisson Distributions',
+  moduleId: 'M08',
+  intuition:
+    'When we repeat independent Bernoulli trials until the first success occurs, the number of trials needed follows a Geometric distribution. When we count the number of rare events occurring in a fixed interval of time or space at a constant average rate λ, the count follows a Poisson distribution. Both distributions possess countably infinite support.',
+  formalDefinition:
+    'Geometric Distribution: In the NPTEL transcript convention, X is the number of independent Bernoulli(p) trials until the first success occurs. Support S_X = {1, 2, 3, ...}. PMF P(X=k) = (1-p)^(k-1) p for k ≥ 1. Analytical CDF F_X(k) = 1 - (1-p)^k for k ≥ 1. Mean E[X] = 1/p, Var(X) = (1-p)/p^2.\nPoisson Distribution: X ~ Poisson(λ) models count of events with rate parameter λ ≥ 0. Support S_X = {0, 1, 2, ...}. PMF P(X=k) = e^(-λ) λ^k / k! for k ≥ 0. Mean E[X] = λ, Var(X) = λ.',
+  formalDefinitionLatex:
+    '\\begin{aligned} &\\textbf{Geometric}(p): \\quad S_X = \\{1, 2, 3, \\dots\\}, \\quad P(X = k) = (1-p)^{k-1} p, \\quad k \\in \\{1, 2, \\dots\\} \\\\[4pt] &F_X(k) = 1 - (1-p)^k, \\quad E[X] = \\frac{1}{p}, \\quad \\text{Var}(X) = \\frac{1-p}{p^2} \\\\[6pt] &\\textbf{Poisson}(\\lambda): \\quad S_X = \\{0, 1, 2, \\dots\\}, \\quad P(X = k) = \\frac{e^{-\\lambda} \\lambda^k}{k!}, \\quad k \\in \\{0, 1, \\dots\\} \\\\[4pt] &E[X] = \\lambda, \\quad \\text{Var}(X) = \\lambda \\end{aligned}',
+  properties: [
+    'Transcript Convention for Geometric Support: Support strictly starts at k = 1 (the trial number of the first success), requiring k - 1 preceding failures.',
+    'Countably Infinite Support: Unlike Bernoulli and Binomial models, both Geometric and Poisson have infinite support {1, 2, ...} and {0, 1, 2, ...}.',
+    'Equidispersion of Poisson: For the Poisson distribution, the mean and variance are identical: E[X] = Var(X) = λ.',
+    'Memoryless Property of Geometric: P(X > s + t | X > s) = P(X > t), meaning past failed trials do not affect remaining waiting time.',
+  ],
+  sourceRef: {
+    id: 'SRC-P1-CH08-002',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 8: Discrete random variables',
+    note: 'Geometric waiting time (support starting at 1) and Poisson distribution PMF.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000001,
   CONCEPT_C000002,
@@ -340,6 +392,8 @@ export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000009,
   CONCEPT_C000010,
   CONCEPT_C000011,
+  CONCEPT_C000012,
+  CONCEPT_C000013,
 ];
 
 export function getConceptById(id: string): ConceptContent | undefined {
@@ -602,6 +656,56 @@ export const EXERCISE_EX000010: ExerciseContent = {
   classification: 'source_derived',
 };
 
+export const EXERCISE_EX000011: ExerciseContent = {
+  id: 'EX-000011',
+  title: 'Binomial Probability of Exact Success Count',
+  moduleId: 'M08',
+  category: 'numerical',
+  linkedConceptIds: ['C-000012'],
+  prompt:
+    'In a sequence of n = 4 independent Bernoulli trials with success probability p = 1/3, let X denote the total number of successes (X ~ Binomial(4, 1/3)). Calculate the exact probability of observing exactly k = 2 successes, P(X = 2). Express your answer as a simplified fraction.',
+  promptLatex:
+    'X \\sim \\text{Binomial}\\left(n = 4, p = \\frac{1}{3}\\right). \\quad \\text{Find } P(X = 2).',
+  expectedRational: { num: 8n, den: 27n },
+  explanation:
+    'Using the Binomial PMF formula: P(X = k) = C(n, k) p^k (1-p)^(n-k). Here n = 4, k = 2, p = 1/3, and 1 - p = 2/3. The binomial coefficient is C(4, 2) = 4! / (2! 2!) = 6. Thus P(X = 2) = 6 * (1/3)^2 * (2/3)^2 = 6 * (1/9) * (4/9) = 24 / 81 = 8 / 27 (approx 0.2963).',
+  explanationLatex:
+    'P(X = 2) = \\binom{4}{2} \\left(\\frac{1}{3}\\right)^2 \\left(1 - \\frac{1}{3}\\right)^{4 - 2} = 6 \\times \\frac{1}{9} \\times \\frac{4}{9} = \\frac{24}{81} = \\frac{8}{27} \\approx 0.2963',
+  sourceRef: {
+    id: 'SRC-P1-CH08-003',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 8: Discrete random variables',
+    note: 'Binomial PMF calculation on independent Bernoulli trials.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000012: ExerciseContent = {
+  id: 'EX-000012',
+  title: 'Geometric Waiting Time for First Success',
+  moduleId: 'M08',
+  category: 'numerical',
+  linkedConceptIds: ['C-000013'],
+  prompt:
+    'A biased coin lands on Heads with probability p = 1/4 on each independent toss. Let random variable X denote the number of tosses until the first Head appears, following the geometric distribution on support {1, 2, 3, ...}. Calculate the probability that the first Head appears on exactly the 3rd toss, P(X = 3). Express your answer as a simplified fraction.',
+  promptLatex:
+    'X \\sim \\text{Geometric}\\left(p = \\frac{1}{4}\\right) \\quad \\text{on support } \\{1, 2, 3, \\dots\\}. \\quad \\text{Find } P(X = 3).',
+  expectedRational: { num: 9n, den: 64n },
+  explanation:
+    'Per the transcript convention, the Geometric distribution support begins at 1 (the trial number of the first success). For the first success to occur on the 3rd toss, the first two tosses must be failures (Tails) followed by a success (Head): P(X = 3) = (1 - p)^(3 - 1) * p = (1 - 1/4)^2 * (1/4) = (3/4)^2 * (1/4) = (9/16) * (1/4) = 9/64 (or 0.140625).',
+  explanationLatex:
+    'P(X = 3) = (1 - p)^{3 - 1} p = \\left(1 - \\frac{1}{4}\\right)^2 \\left(\\frac{1}{4}\\right) = \\left(\\frac{3}{4}\\right)^2 \\times \\frac{1}{4} = \\frac{9}{16} \\times \\frac{1}{4} = \\frac{9}{64} = 0.140625',
+  sourceRef: {
+    id: 'SRC-P1-CH08-004',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 8: Discrete random variables',
+    note: 'Geometric waiting time calculation with support starting at 1.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000001,
   EXERCISE_EX000002,
@@ -613,6 +717,8 @@ export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000008,
   EXERCISE_EX000009,
   EXERCISE_EX000010,
+  EXERCISE_EX000011,
+  EXERCISE_EX000012,
 ];
 
 export function getExerciseById(id: string): ExerciseContent | undefined {
