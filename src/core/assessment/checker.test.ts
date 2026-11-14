@@ -119,4 +119,48 @@ describe('Assessment Checker - Prototype Rational Inputs', () => {
       expect(res.message).toContain('expected probability is 1/6');
     });
   });
+
+  describe('EX-000005: Independent Event Product Evaluation', () => {
+    const expJoint = createRational(1n, 4n);
+    const explanationLatex = 'P(A ∩ B) = 1/2 * 1/2 = 1/4';
+
+    it('accepts fraction "1/4"', () => {
+      const res = checkExactRationalAnswer('1/4', expJoint, explanationLatex);
+      expect(res.status).toBe('correct');
+      expect(res.parsedInput?.num).toBe(1n);
+      expect(res.parsedInput?.den).toBe(4n);
+    });
+
+    it('accepts equivalent decimal "0.25"', () => {
+      const res = checkExactRationalAnswer('0.25', expJoint, explanationLatex);
+      expect(res.status).toBe('correct');
+    });
+
+    it('evaluates incorrect response "1/2" as incorrect', () => {
+      const res = checkExactRationalAnswer('1/2', expJoint, explanationLatex);
+      expect(res.status).toBe('incorrect');
+    });
+  });
+
+  describe('EX-000006: Conditional Invariance Under Independence Evaluation', () => {
+    const expCond = createRational(1n, 5n);
+    const explanationLatex = 'P(F1 | F2) = P(F1) = 1/5 = 0.20';
+
+    it('accepts fraction "1/5"', () => {
+      const res = checkExactRationalAnswer('1/5', expCond, explanationLatex);
+      expect(res.status).toBe('correct');
+      expect(res.parsedInput?.num).toBe(1n);
+      expect(res.parsedInput?.den).toBe(5n);
+    });
+
+    it('accepts equivalent decimal "0.2"', () => {
+      const res = checkExactRationalAnswer('0.2', expCond, explanationLatex);
+      expect(res.status).toBe('correct');
+    });
+
+    it('evaluates incorrect response "1/4" as incorrect', () => {
+      const res = checkExactRationalAnswer('1/4', expCond, explanationLatex);
+      expect(res.status).toBe('incorrect');
+    });
+  });
 });

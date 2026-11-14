@@ -83,9 +83,9 @@ export const MODULES: readonly ModuleInfo[] = [
     partId: 'P1',
     title: 'Event Independence',
     summary: 'Pairwise independence, mutual independence, and conditional independence.',
-    status: 'planned',
-    conceptCount: 0,
-    exerciseCount: 0,
+    status: 'active',
+    conceptCount: 2,
+    exerciseCount: 2,
     labAssociation: 'PL-03',
   },
   {

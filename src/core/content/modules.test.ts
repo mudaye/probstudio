@@ -47,5 +47,13 @@ describe('Module Catalog (A-001 §4.1 Integrity)', () => {
     expect(m02?.conceptCount).toBe(2);
     expect(m02?.exerciseCount).toBe(1);
     expect(m02?.labAssociation).toBe('PL-02');
+
+    const m04 = getModuleById('M04');
+    expect(m04).toBeDefined();
+    expect(m04?.title).toBe('Event Independence');
+    expect(m04?.status).toBe('active');
+    expect(m04?.conceptCount).toBe(2);
+    expect(m04?.exerciseCount).toBe(2);
+    expect(m04?.labAssociation).toBe('PL-03');
   });
 });

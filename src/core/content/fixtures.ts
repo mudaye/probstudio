@@ -177,12 +177,64 @@ export const CONCEPT_C000005: ConceptContent = {
   classification: 'source_derived',
 };
 
+export const CONCEPT_C000006: ConceptContent = {
+  id: 'C-000006',
+  title: 'Event Independence & Equivalent Formulations',
+  moduleId: 'M04',
+  intuition:
+    'Two events are independent if knowing whether one occurred provides zero information about the probability of the other. The defining mathematical hallmark of independence is that joint probability factorizes into the product of marginal probabilities.',
+  formalDefinition:
+    'Two events A and B are independent iff P(A ∩ B) = P(A)P(B).\nWhen P(B) > 0, this is mathematically equivalent to P(A | B) = P(A).\nWhen P(A) > 0, it is equivalent to P(B | A) = P(B).',
+  formalDefinitionLatex:
+    'P(A \\cap B) = P(A)P(B) \\iff P(A \\mid B) = P(A) \\quad (\\text{for } P(B) > 0)',
+  properties: [
+    'Product Rule Primacy: P(A ∩ B) = P(A)P(B) serves as the primary definition because it remains valid even when P(A) = 0 or P(B) = 0.',
+    'Complement Invariance: If A and B are independent, then (A, Bᶜ), (Aᶜ, B), and (Aᶜ, Bᶜ) are also independent pairs.',
+    'Disjoint vs Independent: Disjoint events with positive probabilities are NEVER independent, because P(A ∩ B) = 0 while P(A)P(B) > 0.',
+  ],
+  sourceRef: {
+    id: 'SRC-P1-CH05-001',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 5: Independence',
+    note: 'Definition of independence and complement independence invariance.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000007: ConceptContent = {
+  id: 'C-000007',
+  title: 'Pairwise vs Mutual and Conditional Independence',
+  moduleId: 'M04',
+  intuition:
+    'For three or more events, pairwise independence does not guarantee mutual (total) independence. Mutual independence requires every sub-family of events to factorize. Furthermore, independence is not preserved under conditioning: independent events can become dependent upon observing evidence, and vice-versa.',
+  formalDefinition:
+    '1. Mutual Independence: A collection {A_1, ..., A_n} is mutually independent iff for every subset S ⊆ {1, ..., n} with |S| ≥ 2:\nP(∩_{i ∈ S} A_i) = ∏_{i ∈ S} P(A_i).\n2. Conditional Independence: Events A and B are conditionally independent given C with P(C) > 0 iff:\nP(A ∩ B | C) = P(A | C)P(B | C).',
+  formalDefinitionLatex:
+    '\\begin{aligned} &\\text{Mutual: } P\\left(\\bigcap_{i \\in S} A_i\\right) = \\prod_{i \\in S} P(A_i) \\quad \\forall S \\subseteq \\{1,\\dots,n\\}, |S| \\ge 2 \\\\[4pt] &\\text{Conditional: } P(A \\cap B \\mid C) = P(A \\mid C) P(B \\mid C) \\quad (P(C) > 0) \\end{aligned}',
+  properties: [
+    'Pairwise Does Not Imply Mutual: All pairs can be independent while the triple fails the joint product condition.',
+    'Conditioning Can Create Dependence: Two independent coin tosses A and B become dependent when conditioning on whether their outcomes match (event C).',
+    'Conditioning Can Create Independence: Unconditionally dependent diagnostic test observations can become conditionally independent given true disease status.',
+  ],
+  sourceRef: {
+    id: 'SRC-P1-CH05-002',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 5: Independence',
+    note: 'Total independence vs pairwise independence and conditional independence.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000001,
   CONCEPT_C000002,
   CONCEPT_C000003,
   CONCEPT_C000004,
   CONCEPT_C000005,
+  CONCEPT_C000006,
+  CONCEPT_C000007,
 ];
 
 export function getConceptById(id: string): ConceptContent | undefined {
@@ -295,11 +347,63 @@ export const EXERCISE_EX000004: ExerciseContent = {
   classification: 'source_derived',
 };
 
+export const EXERCISE_EX000005: ExerciseContent = {
+  id: 'EX-000005',
+  title: 'Joint Probability of Independent Events',
+  moduleId: 'M04',
+  category: 'numerical',
+  linkedConceptIds: ['C-000006'],
+  prompt:
+    'In a two-coin toss experiment with sample space Ω = {HH, HT, TH, TT} and equal probability 1/4 each, let event A be "first toss is Head" (A = {HH, HT}) and event B be "second toss is Head" (B = {HH, TH}). Because the coin tosses are independent, calculate the exact joint probability P(A ∩ B).',
+  promptLatex:
+    'P(A) = \\frac{1}{2}, \\quad P(B) = \\frac{1}{2}.\\newline \\text{Since } A \\perp B, \\text{ find } P(A \\cap B).',
+  expectedRational: { num: 1n, den: 4n },
+  explanation:
+    'By the product rule for independent events: P(A ∩ B) = P(A) · P(B) = (1/2) · (1/2) = 1/4. In the sample space, A ∩ B = {HH}, which has outcome probability 1/4.',
+  explanationLatex:
+    'P(A \\cap B) = P(A) P(B) = \\frac{1}{2} \\times \\frac{1}{2} = \\frac{1}{4}',
+  sourceRef: {
+    id: 'SRC-P1-CH05-003',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 5: Independence',
+    note: 'Product rule application in coin tossing.',
+  },
+  classification: 'supplementary',
+};
+
+export const EXERCISE_EX000006: ExerciseContent = {
+  id: 'EX-000006',
+  title: 'Conditional Probability Under Independence',
+  moduleId: 'M04',
+  category: 'numerical',
+  linkedConceptIds: ['C-000006', 'C-000007'],
+  prompt:
+    'Two independent network servers S₁ and S₂ fail independently during peak hours with failure probabilities P(F₁) = 1/5 and P(F₂) = 1/4. Given that server S₂ has failed (event F₂), what is the conditional probability P(F₁ | F₂) that server S₁ also fails? Express your answer as a simplified fraction or decimal.',
+  promptLatex:
+    'P(F_1) = \\frac{1}{5}, \\quad P(F_2) = \\frac{1}{4}, \\quad F_1 \\perp F_2.\\newline \\text{Find } P(F_1 \\mid F_2).',
+  expectedRational: { num: 1n, den: 5n },
+  explanation:
+    'Because events F₁ and F₂ are independent, knowing that F₂ occurred provides zero information about F₁. Therefore, P(F₁ | F₂) = P(F₁) = 1/5 (or 0.20). Mathematically: P(F₁ | F₂) = P(F₁ ∩ F₂) / P(F₂) = (P(F₁)P(F₂)) / P(F₂) = P(F₁) = 1/5.',
+  explanationLatex:
+    'P(F_1 \\mid F_2) = \\frac{P(F_1 \\cap F_2)}{P(F_2)} = \\frac{P(F_1)P(F_2)}{P(F_2)} = P(F_1) = \\frac{1}{5} = 0.20',
+  sourceRef: {
+    id: 'SRC-P1-CH05-004',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 5: Independence',
+    note: 'Invariance of conditional probability under independence.',
+  },
+  classification: 'supplementary',
+};
+
 export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000001,
   EXERCISE_EX000002,
   EXERCISE_EX000003,
   EXERCISE_EX000004,
+  EXERCISE_EX000005,
+  EXERCISE_EX000006,
 ];
 
 export function getExerciseById(id: string): ExerciseContent | undefined {
