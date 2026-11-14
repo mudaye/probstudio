@@ -33,6 +33,14 @@ import {
   CONCEPT_C000028,
   CONCEPT_C000029,
   CONCEPT_C000030,
+  CONCEPT_C000031,
+  CONCEPT_C000032,
+  CONCEPT_C000033,
+  CONCEPT_C000034,
+  CONCEPT_C000035,
+  CONCEPT_C000036,
+  CONCEPT_C000037,
+  CONCEPT_C000038,
   ALL_EXERCISES,
   getExercisesByModule,
   getExerciseById,
@@ -50,11 +58,15 @@ import {
   EXERCISE_EX000022,
   EXERCISE_EX000023,
   EXERCISE_EX000024,
+  EXERCISE_EX000025,
+  EXERCISE_EX000026,
+  EXERCISE_EX000027,
+  EXERCISE_EX000028,
 } from './fixtures';
 
-describe('Concept Content Fixtures - Modules M01 through M15 (A-005 Compliance)', () => {
-  it('contains authored concepts for active modules across Part 1 and Part 2', () => {
-    expect(ALL_CONCEPTS.length).toBe(30);
+describe('Concept Content Fixtures - Modules M01 through M21 (A-005 Compliance)', () => {
+  it('contains authored concepts for active modules across Part 1, Part 2, and Part 3', () => {
+    expect(ALL_CONCEPTS.length).toBe(38);
     const m01Concepts = getConceptsByModule('M01');
     expect(m01Concepts.length).toBe(3);
     expect(m01Concepts.map((c) => c.id)).toEqual(['C-000001', 'C-000002', 'C-000003']);
@@ -114,6 +126,22 @@ describe('Concept Content Fixtures - Modules M01 through M15 (A-005 Compliance)'
     const m15Concepts = getConceptsByModule('M15');
     expect(m15Concepts.length).toBe(1);
     expect(m15Concepts.map((c) => c.id)).toEqual(['C-000030']);
+
+    const m16Concepts = getConceptsByModule('M16');
+    expect(m16Concepts.length).toBe(2);
+    expect(m16Concepts.map((c) => c.id)).toEqual(['C-000031', 'C-000032']);
+
+    const m17Concepts = getConceptsByModule('M17');
+    expect(m17Concepts.length).toBe(2);
+    expect(m17Concepts.map((c) => c.id)).toEqual(['C-000033', 'C-000034']);
+
+    const m18Concepts = getConceptsByModule('M18');
+    expect(m18Concepts.length).toBe(2);
+    expect(m18Concepts.map((c) => c.id)).toEqual(['C-000035', 'C-000036']);
+
+    const m21Concepts = getConceptsByModule('M21');
+    expect(m21Concepts.length).toBe(2);
+    expect(m21Concepts.map((c) => c.id)).toEqual(['C-000037', 'C-000038']);
   });
 
   it('verifies C-000001: Sample Spaces and Events', () => {
@@ -179,6 +207,14 @@ describe('Concept Content Fixtures - Modules M01 through M15 (A-005 Compliance)'
       CONCEPT_C000028,
       CONCEPT_C000029,
       CONCEPT_C000030,
+      CONCEPT_C000031,
+      CONCEPT_C000032,
+      CONCEPT_C000033,
+      CONCEPT_C000034,
+      CONCEPT_C000035,
+      CONCEPT_C000036,
+      CONCEPT_C000037,
+      CONCEPT_C000038,
     ]) {
       expect(c.classification).toBe('source_derived');
       expect(c.intuition.length).toBeGreaterThan(20);
@@ -359,9 +395,9 @@ describe('Concept Content Fixtures - Modules M01 through M15 (A-005 Compliance)'
     expect(c?.formalDefinitionLatex).toContain('\\frac{1}{|a|}');
   });
 
-  describe('Exercise Content Fixtures - Modules M01 through M15', () => {
-    it('contains authored exercises across Part 1 and Part 2', () => {
-      expect(ALL_EXERCISES.length).toBe(24);
+  describe('Exercise Content Fixtures - Modules M01 through M21', () => {
+    it('contains authored exercises across Part 1, Part 2, and Part 3', () => {
+      expect(ALL_EXERCISES.length).toBe(28);
       const m01Ex = getExercisesByModule('M01');
       expect(m01Ex.length).toBe(3);
       expect(m01Ex.map((e) => e.id)).toEqual(['EX-000001', 'EX-000002', 'EX-000003']);
@@ -429,6 +465,22 @@ describe('Concept Content Fixtures - Modules M01 through M15 (A-005 Compliance)'
       expect(m15Ex.length).toBe(1);
       expect(m15Ex.map((e) => e.id)).toEqual(['EX-000024']);
 
+      const m16Ex = getExercisesByModule('M16');
+      expect(m16Ex.length).toBe(1);
+      expect(m16Ex.map((e) => e.id)).toEqual(['EX-000025']);
+
+      const m17Ex = getExercisesByModule('M17');
+      expect(m17Ex.length).toBe(1);
+      expect(m17Ex.map((e) => e.id)).toEqual(['EX-000026']);
+
+      const m18Ex = getExercisesByModule('M18');
+      expect(m18Ex.length).toBe(1);
+      expect(m18Ex.map((e) => e.id)).toEqual(['EX-000027']);
+
+      const m21Ex = getExercisesByModule('M21');
+      expect(m21Ex.length).toBe(1);
+      expect(m21Ex.map((e) => e.id)).toEqual(['EX-000028']);
+
       const ex17 = getExerciseById('EX-000017');
       expect(ex17).toBe(EXERCISE_EX000017);
       expect(ex17?.title).toContain('Continuous PDF Normalization');
@@ -484,6 +536,34 @@ describe('Concept Content Fixtures - Modules M01 through M15 (A-005 Compliance)'
       expect(ex24?.expectedRational.num).toBe(7n);
       expect(ex24?.expectedRational.den).toBe(1n);
       expect(ex24?.moduleId).toBe('M15');
+
+      const ex25 = getExerciseById('EX-000025');
+      expect(ex25).toBe(EXERCISE_EX000025);
+      expect(ex25?.title).toContain('Discrete Joint Table Normalization');
+      expect(ex25?.expectedRational.num).toBe(2n);
+      expect(ex25?.expectedRational.den).toBe(5n);
+      expect(ex25?.moduleId).toBe('M16');
+
+      const ex26 = getExerciseById('EX-000026');
+      expect(ex26).toBe(EXERCISE_EX000026);
+      expect(ex26?.title).toContain('Continuous Triangular Joint PDF');
+      expect(ex26?.expectedRational.num).toBe(1n);
+      expect(ex26?.expectedRational.den).toBe(4n);
+      expect(ex26?.moduleId).toBe('M17');
+
+      const ex27 = getExerciseById('EX-000027');
+      expect(ex27).toBe(EXERCISE_EX000027);
+      expect(ex27?.title).toContain('Discrete Marginal Mass by Column Summation');
+      expect(ex27?.expectedRational.num).toBe(2n);
+      expect(ex27?.expectedRational.den).toBe(3n);
+      expect(ex27?.moduleId).toBe('M18');
+
+      const ex28 = getExerciseById('EX-000028');
+      expect(ex28).toBe(EXERCISE_EX000028);
+      expect(ex28?.title).toContain('Multiplicative Factorization Test');
+      expect(ex28?.expectedRational.num).toBe(3n);
+      expect(ex28?.expectedRational.den).toBe(25n);
+      expect(ex28?.moduleId).toBe('M21');
     });
   });
 });

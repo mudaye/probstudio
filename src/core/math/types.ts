@@ -40,7 +40,13 @@ export type CalculationId =
   | 'CAL-INEQ-001'
   | 'CAL-INEQ-002'
   | 'CAL-INEQ-003'
-  | 'CAL-TRANS-001';
+  | 'CAL-TRANS-001'
+  | 'CAL-JOINT-001'
+  | 'CAL-JOINT-002'
+  | 'CAL-JOINT-003'
+  | 'CAL-JOINT-004'
+  | 'CAL-JOINT-005'
+  | 'CAL-JOINT-006';
 
 export type ErrorCode =
   | 'E-PROB-RANGE'

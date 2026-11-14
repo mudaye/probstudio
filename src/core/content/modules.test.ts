@@ -151,5 +151,37 @@ describe('Module Catalog (A-001 §4.1 Integrity)', () => {
     expect(m15?.conceptCount).toBe(1);
     expect(m15?.exerciseCount).toBe(1);
     expect(m15?.labAssociation).toBe('PL-08');
+
+    const m16 = getModuleById('M16');
+    expect(m16).toBeDefined();
+    expect(m16?.title).toContain('Joint Distribution');
+    expect(m16?.status).toBe('active');
+    expect(m16?.conceptCount).toBe(2);
+    expect(m16?.exerciseCount).toBe(1);
+    expect(m16?.labAssociation).toBe('PL-09');
+
+    const m17 = getModuleById('M17');
+    expect(m17).toBeDefined();
+    expect(m17?.title).toContain('Joint PMFs');
+    expect(m17?.status).toBe('active');
+    expect(m17?.conceptCount).toBe(2);
+    expect(m17?.exerciseCount).toBe(1);
+    expect(m17?.labAssociation).toBe('PL-09');
+
+    const m18 = getModuleById('M18');
+    expect(m18).toBeDefined();
+    expect(m18?.title).toContain('Marginal Distributions');
+    expect(m18?.status).toBe('active');
+    expect(m18?.conceptCount).toBe(2);
+    expect(m18?.exerciseCount).toBe(1);
+    expect(m18?.labAssociation).toBe('PL-09');
+
+    const m21 = getModuleById('M21');
+    expect(m21).toBeDefined();
+    expect(m21?.title).toContain('Independence');
+    expect(m21?.status).toBe('active');
+    expect(m21?.conceptCount).toBe(2);
+    expect(m21?.exerciseCount).toBe(1);
+    expect(m21?.labAssociation).toBe('PL-09');
   });
 });

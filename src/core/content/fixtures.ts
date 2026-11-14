@@ -805,6 +805,206 @@ export const CONCEPT_C000030: ConceptContent = {
   classification: 'source_derived',
 };
 
+export const CONCEPT_C000031: ConceptContent = {
+  id: 'C-000031',
+  title: 'Joint Cumulative Distribution Functions',
+  moduleId: 'M16',
+  intuition:
+    'When studying two random variables together, a joint cumulative distribution function (CDF) measures the probability that both variables simultaneously fall below specified thresholds, capturing both their individual behaviors and their dependence structure.',
+  formalDefinition:
+    'For two random variables X and Y, the joint CDF F_{X,Y}: ℝ² → [0, 1] is defined as:\nF_{X,Y}(x, y) = P(X ≤ x, Y ≤ y).\nProperties:\n1. Non-decreasing in each coordinate: x₁ ≤ x₂ ⟹ F(x₁, y) ≤ F(x₂, y).\n2. Limits: lim_{x,y → ∞} F(x, y) = 1; lim_{x → -∞} F(x, y) = lim_{y → -∞} F(x, y) = 0.\n3. Right-continuous in both arguments.',
+  formalDefinitionLatex:
+    'F_{X,Y}(x, y) = P(X \\le x, Y \\le y), \\qquad \\lim_{x, y \\to \\infty} F_{X,Y}(x, y) = 1, \\quad \\lim_{x \\to -\\infty} F(x, y) = 0',
+  properties: [
+    'Joint Threshold: Measures the probability of the semi-infinite bottom-left quadrant (-∞, x] × (-∞, y].',
+    'Component Monotonicity: F is non-decreasing separately in both x and y.',
+    'Bivariate Limits: Letting both variables grow to +∞ yields certainty (1); letting either variable approach -∞ yields 0.',
+  ],
+  sourceRef: {
+    id: 'SRC-P3-CH02-001',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 2: Joint distribution functions',
+    note: 'Definition of bivariate joint cumulative distribution functions and boundary limits.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000032: ConceptContent = {
+  id: 'C-000032',
+  title: '2D Rectangle Probability & Non-Decreasing Joint CDFs',
+  moduleId: 'M16',
+  intuition:
+    'Calculating the probability of a 2D rectangular box [x₁, x₂] × [y₁, y₂] from a joint CDF requires an inclusion-exclusion formula: start with the top-right quadrant, subtract the overlapping strips, and re-add the doubly subtracted bottom-left corner.',
+  formalDefinition:
+    'For any rectangle (x₁, x₂] × (y₁, y₂] with x₁ < x₂ and y₁ < y₂:\nP(x₁ < X ≤ x₂, y₁ < Y ≤ y₂) = F(x₂, y₂) - F(x₁, y₂) - F(x₂, y₁) + F(x₁, y₁).\n2D Non-Decreasing Axiom: For any valid bivariate CDF, this rectangular difference must be non-negative (≥ 0) for all intervals.',
+  formalDefinitionLatex:
+    'P(x_1 < X \\le x_2, y_1 < Y \\le y_2) = F(x_2, y_2) - F(x_1, y_2) - F(x_2, y_1) + F(x_1, y_1) \\ge 0',
+  properties: [
+    'Inclusion-Exclusion in 2D: Adds the corner F(x₁, y₁) to balance the double subtraction of the origin quadrant.',
+    'Valid Joint CDF Condition: Coordinate-wise monotonicity is necessary but not sufficient; the 2D rectangular difference must be non-negative.',
+    'Closed vs Open Boundaries: In continuous models, boundary points carry zero probability mass, making boundary strictness invariant.',
+  ],
+  sourceRef: {
+    id: 'SRC-P3-CH02-002',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 2: Joint distribution functions',
+    note: '2D rectangular probability evaluation using joint CDF.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000033: ConceptContent = {
+  id: 'C-000033',
+  title: 'Discrete Bivariate Random Variables & Joint PMFs',
+  moduleId: 'M17',
+  intuition:
+    'When two random variables are discrete, their joint behavior is described by a 2D mass table where each cell represents the probability of a specific pair of values. The entire grid must sum to exactly 1.',
+  formalDefinition:
+    'For discrete random variables X and Y with supports S_X and S_Y, the joint PMF is:\np_{X,Y}(x, y) = P(X = x, Y = y).\nAxioms:\n1. Non-negativity: p_{X,Y}(x, y) ≥ 0 for all (x, y).\n2. Total Normalization: Σ_{x ∈ S_X} Σ_{y ∈ S_Y} p_{X,Y}(x, y) = 1.',
+  formalDefinitionLatex:
+    'p_{X,Y}(x, y) = P(X = x, Y = y) \\ge 0, \\qquad \\sum_{x} \\sum_{y} p_{X,Y}(x, y) = 1',
+  properties: [
+    'Finite Contingency Grid: For finite discrete supports, the joint PMF is represented as a 2D matrix of non-negative probabilities.',
+    'Subset Probabilities: The probability of any discrete event A ⊆ S_X × S_Y is the sum of masses in that subset: P((X, Y) ∈ A) = Σ_{(x,y)∈A} p(x, y).',
+    'Mass Conservation: The sum over all rows and columns equals exactly 1.',
+  ],
+  sourceRef: {
+    id: 'SRC-P3-CH03-001',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 3: Discrete joint PMF',
+    note: 'Definition and normalization conditions of discrete joint PMFs.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000034: ConceptContent = {
+  id: 'C-000034',
+  title: 'Continuous Joint Densities and Support Geometry',
+  moduleId: 'M17',
+  intuition:
+    'For continuous random pairs, probability corresponds to the 3D volume under a surface f(x, y) over a region in the plane. The region where the density is positive is the support of the distribution.',
+  formalDefinition:
+    'A pair of continuous random variables (X, Y) has joint probability density function (PDF) f_{X,Y}: ℝ² → [0, ∞) such that for any measurable region R ⊆ ℝ²:\nP((X, Y) ∈ R) = ∬_R f_{X,Y}(x, y) dx dy.\nAxioms: f(x, y) ≥ 0 and ∬_{ℝ²} f(x, y) dx dy = 1.\nTriangular Model: f(x, y) = 2 on 0 < x < y < 1 (and 0 elsewhere).',
+  formalDefinitionLatex:
+    'P((X, Y) \\in R) = \\iint_R f_{X,Y}(x, y) dx dy, \\qquad \\int_{-\\infty}^\\infty \\int_{-\\infty}^\\infty f(x, y) dx dy = 1',
+  properties: [
+    'Volume Under Surface: The joint density f(x, y) is not a probability; probability is represented by volume under the surface over region R.',
+    'Zero Probability of Curves: Line segments and curves in the plane have 2D area zero, so P((X, Y) ∈ Curve) = 0.',
+    'Support Geometry: When support is not a rectangular product set (such as the triangle 0 < x < y < 1), the variables are inherently dependent.',
+  ],
+  sourceRef: {
+    id: 'SRC-P3-CH04-001',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 4: Continuous joint PDF',
+    note: 'Continuous joint density, triangular support example, and double integral evaluation.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000035: ConceptContent = {
+  id: 'C-000035',
+  title: 'Discrete Marginal Mass Functions by Row and Column Sums',
+  moduleId: 'M18',
+  intuition:
+    'To find the probability distribution of one variable alone from a joint table, you "sum out" (marginalize) the other variable. In a table, this corresponds to summing across rows or down columns into the margins.',
+  formalDefinition:
+    'Given joint PMF p_{X,Y}(x, y):\nMarginal PMF of X: p_X(x) = P(X = x) = Σ_{y ∈ S_Y} p_{X,Y}(x, y).\nMarginal PMF of Y: p_Y(y) = P(Y = y) = Σ_{x ∈ S_X} p_{X,Y}(x, y).',
+  formalDefinitionLatex:
+    'p_X(x) = \\sum_{y} p_{X,Y}(x, y), \\qquad p_Y(y) = \\sum_{x} p_{X,Y}(x, y)',
+  properties: [
+    'Row and Column Totals: Row sums give the marginal PMF of X; column sums give the marginal PMF of Y.',
+    'Information Loss: While joint PMFs uniquely determine marginals, marginals alone do NOT uniquely determine the joint PMF (many dependence structures can share the same marginals).',
+    'Total Normalization Preservation: Σ_x p_X(x) = 1 and Σ_y p_Y(y) = 1.',
+  ],
+  sourceRef: {
+    id: 'SRC-P3-CH05-001',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 5: Marginal distributions',
+    note: 'Derivation of marginal PMFs from joint mass tables.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000036: ConceptContent = {
+  id: 'C-000036',
+  title: 'Continuous Marginal Densities via Projection Integrals',
+  moduleId: 'M18',
+  intuition:
+    'In continuous bivariate distributions, marginalizing out a variable is done by integrating the joint density along slices. This projects the 3D surface onto a single axis.',
+  formalDefinition:
+    'Given continuous joint density f_{X,Y}(x, y):\nMarginal PDF of X: f_X(x) = ∫_{-∞}^∞ f_{X,Y}(x, y) dy.\nMarginal PDF of Y: f_Y(y) = ∫_{-∞}^∞ f_{X,Y}(x, y) dx.\nFor Triangular Model f(x, y) = 2 on 0 < x < y < 1:\nf_X(x) = ∫_x^1 2 dy = 2(1 - x) \\quad (0 < x < 1),\nf_Y(y) = ∫_0^y 2 dx = 2y \\quad (0 < y < 1).',
+  formalDefinitionLatex:
+    'f_X(x) = \\int_{-\\infty}^\\infty f(x, y) dy, \\qquad f_Y(y) = \\int_{-\\infty}^\\infty f(x, y) dx',
+  properties: [
+    'Slice Integration: The marginal density at a point x represents the area of the vertical cross-section of the joint density at that x.',
+    'Variable Limits of Integration: When support is non-rectangular, the integration limits depend on the remaining variable (e.g. y ranges from x to 1).',
+    'Density Normalization: Each marginal PDF is a valid univariate density integrating to 1.',
+  ],
+  sourceRef: {
+    id: 'SRC-P3-CH05-002',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 5: Marginal distributions',
+    note: 'Continuous marginal PDF derivation and integration over non-rectangular support.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000037: ConceptContent = {
+  id: 'C-000037',
+  title: 'Independence of Random Variables and Multiplicative Factorization',
+  moduleId: 'M21',
+  intuition:
+    'Two random variables are independent if knowing the value of one provides zero information about the other. Mathematically, this occurs if and only if their joint distribution factors into the product of their marginal distributions everywhere.',
+  formalDefinition:
+    'Random variables X and Y are independent if for all measurable sets A, B ⊆ ℝ:\nP(X ∈ A, Y ∈ B) = P(X ∈ A) · P(Y ∈ B).\nFactorization Criteria:\n1. Joint CDF: F_{X,Y}(x, y) = F_X(x) · F_Y(y) for all x, y ∈ ℝ.\n2. Discrete Joint PMF: p_{X,Y}(x, y) = p_X(x) · p_Y(y) for all x, y.\n3. Continuous Joint PDF: f_{X,Y}(x, y) = f_X(x) · f_Y(y) for almost all x, y.',
+  formalDefinitionLatex:
+    'p_{X,Y}(x, y) = p_X(x) p_Y(y) \\quad \\text{(discrete)}, \\qquad f_{X,Y}(x, y) = f_X(x) f_Y(y) \\quad \\text{(continuous)}',
+  properties: [
+    'Product Support Prerequisite: For continuous independent variables, the support set MUST be a Cartesian product (rectangle) A × B; non-product support (like a triangle) guarantees dependence.',
+    'Universal Factorization: Factorization must hold for EVERY point; a single discrepancy proves dependence.',
+    'Expectation of Products: If X and Y are independent, E[g(X)h(Y)] = E[g(X)] · E[h(Y)].',
+  ],
+  sourceRef: {
+    id: 'SRC-P3-CH08-001',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 8: Independence of random variables',
+    note: 'Factorization conditions for independent random variables.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000038: ConceptContent = {
+  id: 'C-000038',
+  title: 'Independent and Identically Distributed (IID) Random Sequences',
+  moduleId: 'M21',
+  intuition:
+    'A sequence of random variables is IID if each variable follows the exact same probability distribution and all variables are mutually independent. This is the cornerstone assumption of classical statistics and Monte Carlo sampling.',
+  formalDefinition:
+    'A collection of random variables X₁, X₂, ..., Xₙ is Independent and Identically Distributed (IID) if:\n1. Identical Distribution: F_{X_1}(x) = F_{X_2}(x) = ... = F_{X_n}(x) for all x ∈ ℝ.\n2. Mutual Independence: F_{X_1,...,X_n}(x_1,...,x_n) = ∏_{i=1}^n F_{X_i}(x_i) for all x_1,...,x_n ∈ ℝ.',
+  formalDefinitionLatex:
+    'F_{X_1, \\dots, X_n}(x_1, \\dots, x_n) = \\prod_{i=1}^n F(x_i), \\qquad f_{X_1, \\dots, X_n}(x_1, \\dots, x_n) = \\prod_{i=1}^n f(x_i)',
+  properties: [
+    'Statistical Sampling Baseline: Repeated independent experiments (e.g. repeated coin flips, sample draws) yield IID sequences.',
+    'Sum and Variance Scaling: If X_i are IID with mean μ and variance σ², then E[Σ X_i] = nμ and Var(Σ X_i) = nσ².',
+    'Foundation of LLN and CLT: The Law of Large Numbers and Central Limit Theorem strictly build upon the IID paradigm.',
+  ],
+  sourceRef: {
+    id: 'SRC-P3-CH10-001',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 10: IID variables and transformations',
+    note: 'Definition and properties of IID sequences.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000001,
   CONCEPT_C000002,
@@ -836,6 +1036,14 @@ export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000028,
   CONCEPT_C000029,
   CONCEPT_C000030,
+  CONCEPT_C000031,
+  CONCEPT_C000032,
+  CONCEPT_C000033,
+  CONCEPT_C000034,
+  CONCEPT_C000035,
+  CONCEPT_C000036,
+  CONCEPT_C000037,
+  CONCEPT_C000038,
 ];
 
 export function getConceptById(id: string): ConceptContent | undefined {
@@ -1448,6 +1656,106 @@ export const EXERCISE_EX000024: ExerciseContent = {
   classification: 'source_derived',
 };
 
+export const EXERCISE_EX000025: ExerciseContent = {
+  id: 'EX-000025',
+  title: 'Discrete Joint Table Normalization',
+  moduleId: 'M16',
+  category: 'numerical',
+  linkedConceptIds: ['C-000031', 'C-000033'],
+  prompt:
+    'A pair of binary random variables (X, Y) has joint probability mass table: p(0, 0) = 1/5, p(0, 1) = 1/5, p(1, 0) = 1/5, and p(1, 1) = c. For p(x, y) to satisfy the total probability axiom of a joint PMF, calculate the required value of c. Express your answer as a simplified fraction.',
+  promptLatex:
+    'p(0, 0) = \\frac{1}{5}, \\quad p(0, 1) = \\frac{1}{5}, \\quad p(1, 0) = \\frac{1}{5}, \\quad p(1, 1) = c.\\newline \\text{By normalization } \\sum_{x} \\sum_{y} p(x, y) = 1, \\text{ find } c.',
+  expectedRational: { num: 2n, den: 5n },
+  explanation:
+    'The sum of all joint probabilities across the entire sample support must equal 1: p(0,0) + p(0,1) + p(1,0) + p(1,1) = 1 ⟹ 1/5 + 1/5 + 1/5 + c = 1 ⟹ 3/5 + c = 1 ⟹ c = 2/5 (or 0.40).',
+  explanationLatex:
+    'c = 1 - \\left(\\frac{1}{5} + \\frac{1}{5} + \\frac{1}{5}\\right) = 1 - \\frac{3}{5} = \\frac{2}{5}',
+  sourceRef: {
+    id: 'SRC-P3-CH03-002',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 3: Discrete joint PMF',
+    note: 'Normalization of joint probability mass table.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000026: ExerciseContent = {
+  id: 'EX-000026',
+  title: 'Continuous Triangular Joint PDF Probability Evaluation',
+  moduleId: 'M17',
+  category: 'numerical',
+  linkedConceptIds: ['C-000034'],
+  prompt:
+    'Continuous random variables X and Y have joint density f(x, y) = 2 for 0 < x < y < 1 (and 0 otherwise). Using the boundary event formula P(Y > X + c) = (1 - c)² with threshold c = 0.5 (or 1/2), calculate the exact probability P(Y > X + 0.5). Express your answer as a simplified fraction.',
+  promptLatex:
+    'f(x, y) = 2 \\quad (0 < x < y < 1).\\newline \\text{Using } P(Y > X + c) = (1 - c)^2 \\text{ with } c = \\frac{1}{2}, \\text{ find } P(Y > X + 0.5).',
+  expectedRational: { num: 1n, den: 4n },
+  explanation:
+    'The event Y > X + 0.5 defines a triangular sub-region with vertices at (0, 0.5), (0, 1), and (0.5, 1). Its geometric area is (1/2) · (0.5) · (0.5) = 1/8. Integrating the constant joint density 2 over this region yields: P(Y > X + 0.5) = 2 · (1/8) = 1/4 (or (1 - 0.5)² = 0.25).',
+  explanationLatex:
+    'P(Y > X + 0.5) = (1 - 0.5)^2 = (0.5)^2 = 0.25 = \\frac{1}{4}',
+  sourceRef: {
+    id: 'SRC-P3-CH04-002',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 4: Continuous joint PDF',
+    note: 'Evaluation of non-rectangular region probability in triangular joint density.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000027: ExerciseContent = {
+  id: 'EX-000027',
+  title: 'Discrete Marginal Mass by Column Summation',
+  moduleId: 'M18',
+  category: 'numerical',
+  linkedConceptIds: ['C-000035'],
+  prompt:
+    'A discrete random vector (X, Y) has joint probability masses: p(0, 1) = 1/6, p(1, 1) = 2/6, and p(2, 1) = 1/6 (with all other pairs having Y ≠ 1). Calculate the marginal probability p_Y(1) = P(Y = 1). Express your answer as a simplified fraction.',
+  promptLatex:
+    'p(0, 1) = \\frac{1}{6}, \\; p(1, 1) = \\frac{2}{6}, \\; p(2, 1) = \\frac{1}{6}.\\newline \\text{By marginalization } p_Y(1) = \\sum_{x} p(x, 1), \\text{ find } p_Y(1).',
+  expectedRational: { num: 2n, den: 3n },
+  explanation:
+    'The marginal probability p_Y(1) is obtained by summing the joint masses across all possible values of X: p_Y(1) = p(0, 1) + p(1, 1) + p(2, 1) = 1/6 + 2/6 + 1/6 = 4/6 = 2/3.',
+  explanationLatex:
+    'p_Y(1) = \\sum_{x} p(x, 1) = \\frac{1}{6} + \\frac{2}{6} + \\frac{1}{6} = \\frac{4}{6} = \\frac{2}{3}',
+  sourceRef: {
+    id: 'SRC-P3-CH05-003',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 5: Marginal distributions',
+    note: 'Discrete marginal mass calculation by column summation.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000028: ExerciseContent = {
+  id: 'EX-000028',
+  title: 'Multiplicative Factorization Test for Bivariate Independence',
+  moduleId: 'M21',
+  category: 'numerical',
+  linkedConceptIds: ['C-000037'],
+  prompt:
+    'Two binary random variables X and Y are known to be independent. Their marginal probabilities are P(X = 1) = 3/10 and P(Y = 1) = 4/10. By multiplicative factorization of independent random variables P(X = 1, Y = 1) = P(X = 1) · P(Y = 1), calculate the joint probability p(1, 1). Express your answer as a simplified fraction.',
+  promptLatex:
+    'X \\perp Y, \\quad P(X = 1) = \\frac{3}{10}, \\quad P(Y = 1) = \\frac{4}{10}.\\newline \\text{Using independence } P(X = 1, Y = 1) = P(X = 1) P(Y = 1), \\text{ find } p(1, 1).',
+  expectedRational: { num: 3n, den: 25n },
+  explanation:
+    'For independent random variables, the joint probability is the direct product of the marginals: p(1, 1) = P(X = 1) · P(Y = 1) = (3/10) · (4/10) = 12/100 = 3/25 (or 0.12).',
+  explanationLatex:
+    'p(1, 1) = P(X = 1) \\times P(Y = 1) = \\frac{3}{10} \\times \\frac{4}{10} = \\frac{12}{100} = \\frac{3}{25} = 0.12',
+  sourceRef: {
+    id: 'SRC-P3-CH08-002',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 8: Independence of random variables',
+    note: 'Joint probability calculation under independence factorization.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000001,
   EXERCISE_EX000002,
@@ -1473,6 +1781,10 @@ export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000022,
   EXERCISE_EX000023,
   EXERCISE_EX000024,
+  EXERCISE_EX000025,
+  EXERCISE_EX000026,
+  EXERCISE_EX000027,
+  EXERCISE_EX000028,
 ];
 
 export function getExerciseById(id: string): ExerciseContent | undefined {

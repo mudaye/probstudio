@@ -7,8 +7,9 @@ import { LabPL05 } from '../components/LabPL05';
 import { LabPL06 } from '../components/LabPL06';
 import { LabPL07 } from '../components/LabPL07';
 import { LabPL08 } from '../components/LabPL08';
+import { LabPL09 } from '../components/LabPL09';
 
-export type GuidedLabId = 'PL-01' | 'PL-02' | 'PL-03' | 'PL-04' | 'PL-05' | 'PL-06' | 'PL-07' | 'PL-08';
+export type GuidedLabId = 'PL-01' | 'PL-02' | 'PL-03' | 'PL-04' | 'PL-05' | 'PL-06' | 'PL-07' | 'PL-08' | 'PL-09';
 
 export const PlaygroundScreen: React.FC = () => {
   const [activeLab, setActiveLab] = useState<GuidedLabId>('PL-01');
@@ -189,6 +190,26 @@ export const PlaygroundScreen: React.FC = () => {
           <span style={{ background: activeLab === 'PL-08' ? '#2563eb' : '#94a3b8', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>PL-08</span>
           <span>Transform & Moments</span>
         </button>
+
+        <button
+          onClick={() => setActiveLab('PL-09')}
+          style={{
+            padding: '8px 16px',
+            fontSize: '0.88rem',
+            fontWeight: 600,
+            borderRadius: '6px',
+            border: activeLab === 'PL-09' ? '1px solid #2563eb' : '1px solid #cbd5e1',
+            background: activeLab === 'PL-09' ? '#eff6ff' : '#ffffff',
+            color: activeLab === 'PL-09' ? '#1d4ed8' : '#475569',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          <span style={{ background: activeLab === 'PL-09' ? '#2563eb' : '#94a3b8', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>PL-09</span>
+          <span>Joint & Marginals</span>
+        </button>
       </div>
 
       {/* Render Active Lab */}
@@ -200,6 +221,7 @@ export const PlaygroundScreen: React.FC = () => {
       {activeLab === 'PL-06' && <LabPL06 />}
       {activeLab === 'PL-07' && <LabPL07 />}
       {activeLab === 'PL-08' && <LabPL08 />}
+      {activeLab === 'PL-09' && <LabPL09 />}
     </div>
   );
 };
