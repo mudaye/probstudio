@@ -103,9 +103,9 @@ export const MODULES: readonly ModuleInfo[] = [
     partId: 'P1',
     title: 'Cumulative Distribution Functions',
     summary: 'Properties of CDFs: non-decreasing, right-continuous, limits at infinity.',
-    status: 'planned',
-    conceptCount: 0,
-    exerciseCount: 0,
+    status: 'active',
+    conceptCount: 2,
+    exerciseCount: 2,
     labAssociation: 'PL-05',
   },
   {

@@ -12,14 +12,16 @@ import {
   CONCEPT_C000007,
   CONCEPT_C000008,
   CONCEPT_C000009,
+  CONCEPT_C000010,
+  CONCEPT_C000011,
   ALL_EXERCISES,
   getExercisesByModule,
   getExerciseById,
 } from './fixtures';
 
-describe('Concept Content Fixtures - Modules M01, M02, M04, and M05 (A-005 Compliance)', () => {
-  it('contains authored concepts for Module M01, M02, M04, and M05', () => {
-    expect(ALL_CONCEPTS.length).toBe(9);
+describe('Concept Content Fixtures - Modules M01, M02, M04, M05, and M06 (A-005 Compliance)', () => {
+  it('contains authored concepts for Module M01, M02, M04, M05, and M06', () => {
+    expect(ALL_CONCEPTS.length).toBe(11);
     const m01Concepts = getConceptsByModule('M01');
     expect(m01Concepts.length).toBe(3);
     expect(m01Concepts.map((c) => c.id)).toEqual(['C-000001', 'C-000002', 'C-000003']);
@@ -35,6 +37,10 @@ describe('Concept Content Fixtures - Modules M01, M02, M04, and M05 (A-005 Compl
     const m05Concepts = getConceptsByModule('M05');
     expect(m05Concepts.length).toBe(2);
     expect(m05Concepts.map((c) => c.id)).toEqual(['C-000008', 'C-000009']);
+
+    const m06Concepts = getConceptsByModule('M06');
+    expect(m06Concepts.length).toBe(2);
+    expect(m06Concepts.map((c) => c.id)).toEqual(['C-000010', 'C-000011']);
   });
 
   it('verifies C-000001: Sample Spaces and Events', () => {
@@ -69,7 +75,7 @@ describe('Concept Content Fixtures - Modules M01, M02, M04, and M05 (A-005 Compl
   });
 
   it('ensures all concepts have valid classification and non-empty intuition', () => {
-    for (const c of [CONCEPT_C000001, CONCEPT_C000002, CONCEPT_C000003, CONCEPT_C000004, CONCEPT_C000005, CONCEPT_C000006, CONCEPT_C000007, CONCEPT_C000008, CONCEPT_C000009]) {
+    for (const c of [CONCEPT_C000001, CONCEPT_C000002, CONCEPT_C000003, CONCEPT_C000004, CONCEPT_C000005, CONCEPT_C000006, CONCEPT_C000007, CONCEPT_C000008, CONCEPT_C000009, CONCEPT_C000010, CONCEPT_C000011]) {
       expect(c.classification).toBe('source_derived');
       expect(c.intuition.length).toBeGreaterThan(20);
       expect(c.formalDefinition.length).toBeGreaterThan(20);
@@ -131,9 +137,27 @@ describe('Concept Content Fixtures - Modules M01, M02, M04, and M05 (A-005 Compl
     expect(c?.formalDefinitionLatex).toContain('\\sum');
   });
 
-  describe('Exercise Content Fixtures - Modules M01, M02, M04, and M05', () => {
-    it('contains authored exercises for Modules M01, M02, M04, and M05', () => {
-      expect(ALL_EXERCISES.length).toBe(8);
+  it('verifies C-000010: Cumulative Distribution Functions & Properties', () => {
+    const c = getConceptById('C-000010');
+    expect(c).toBeDefined();
+    expect(c?.title).toContain('Cumulative Distribution');
+    expect(c?.moduleId).toBe('M06');
+    expect(c?.formalDefinitionLatex).toContain('F_X(x) = P(X \\le x)');
+    expect(c?.properties.some((p) => p.includes('Right-Continuity'))).toBe(true);
+  });
+
+  it('verifies C-000011: Discrete Staircase CDFs & Jump Discontinuities', () => {
+    const c = getConceptById('C-000011');
+    expect(c).toBeDefined();
+    expect(c?.title).toContain('Discrete Staircase');
+    expect(c?.moduleId).toBe('M06');
+    expect(c?.formalDefinitionLatex).toContain('F_X(x_k) - F_X(x_k^-)');
+    expect(c?.formalDefinitionLatex).toContain('P(a < X \\le b)');
+  });
+
+  describe('Exercise Content Fixtures - Modules M01, M02, M04, M05, and M06', () => {
+    it('contains authored exercises for Modules M01, M02, M04, M05, and M06', () => {
+      expect(ALL_EXERCISES.length).toBe(10);
       const m01Ex = getExercisesByModule('M01');
       expect(m01Ex.length).toBe(3);
       expect(m01Ex.map((e) => e.id)).toEqual(['EX-000001', 'EX-000002', 'EX-000003']);
@@ -150,17 +174,21 @@ describe('Concept Content Fixtures - Modules M01, M02, M04, and M05 (A-005 Compl
       expect(m05Ex.length).toBe(2);
       expect(m05Ex.map((e) => e.id)).toEqual(['EX-000007', 'EX-000008']);
 
-      const ex7 = getExerciseById('EX-000007');
-      expect(ex7?.title).toContain('Induced PMF');
-      expect(ex7?.expectedRational.num).toBe(3n);
-      expect(ex7?.expectedRational.den).toBe(8n);
-      expect(ex7?.moduleId).toBe('M05');
+      const m06Ex = getExercisesByModule('M06');
+      expect(m06Ex.length).toBe(2);
+      expect(m06Ex.map((e) => e.id)).toEqual(['EX-000009', 'EX-000010']);
 
-      const ex8 = getExerciseById('EX-000008');
-      expect(ex8?.title).toContain('Net Payoff');
-      expect(ex8?.expectedRational.num).toBe(3n);
-      expect(ex8?.expectedRational.den).toBe(4n);
-      expect(ex8?.moduleId).toBe('M05');
+      const ex9 = getExerciseById('EX-000009');
+      expect(ex9?.title).toContain('Interval Probability');
+      expect(ex9?.expectedRational.num).toBe(3n);
+      expect(ex9?.expectedRational.den).toBe(4n);
+      expect(ex9?.moduleId).toBe('M06');
+
+      const ex10 = getExerciseById('EX-000010');
+      expect(ex10?.title).toContain('Point Mass Retrieval');
+      expect(ex10?.expectedRational.num).toBe(1n);
+      expect(ex10?.expectedRational.den).toBe(2n);
+      expect(ex10?.moduleId).toBe('M06');
     });
   });
 });

@@ -277,6 +277,57 @@ export const CONCEPT_C000009: ConceptContent = {
   classification: 'source_derived',
 };
 
+export const CONCEPT_C000010: ConceptContent = {
+  id: 'C-000010',
+  title: 'Cumulative Distribution Functions & Foundational Properties',
+  moduleId: 'M06',
+  intuition:
+    'The Cumulative Distribution Function (CDF) accumulates all probability mass up to a given real value x. Unlike the sample space probability measure P(·) which acts on event sets, the CDF F_X(x) is an ordinary function from real numbers to [0, 1] that completely describes the probabilistic behavior of random variable X.',
+  formalDefinition:
+    'For any random variable X, its Cumulative Distribution Function F_X: ℝ → [0, 1] is defined as:\nF_X(x) = P(X ≤ x) = P({ω ∈ Ω : X(ω) ≤ x}).',
+  formalDefinitionLatex:
+    'F_X(x) = P(X \\le x) = P(\\{\\omega \\in \\Omega : X(\\omega) \\le x\\})',
+  properties: [
+    'Bounded Range: 0 ≤ F_X(x) ≤ 1 for all x ∈ ℝ.',
+    'Asymptotic Limits: lim_{x → -∞} F_X(x) = 0 and lim_{x → +∞} F_X(x) = 1.',
+    'Monotonicity (Non-Decreasing): If x₁ ≤ x₂, then F_X(x₁) ≤ F_X(x₂).',
+    'Right-Continuity: lim_{h ↓ 0} F_X(x + h) = F_X(x) for all x ∈ ℝ.',
+  ],
+  sourceRef: {
+    id: 'SRC-P1-CH07-001',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 7: Cumulative distribution function',
+    note: 'CDF definition and foundational properties.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000011: ConceptContent = {
+  id: 'C-000011',
+  title: 'Discrete Staircase CDFs & Jump Discontinuities',
+  moduleId: 'M06',
+  intuition:
+    'For discrete random variables, the CDF forms a staircase step function. Between support points, the CDF is flat (constant). At each support point x_k, the CDF jumps vertically by an amount exactly equal to the point mass P(X = x_k).',
+  formalDefinition:
+    'Let X be a discrete random variable with support {x_1 < x_2 < ...} and masses p_k = P(X = x_k).\nF_X(x) = Σ_{x_k ≤ x} p_k.\nAt every support point x_k, the jump height equals the PMF mass:\nP(X = x_k) = F_X(x_k) - F_X(x_k⁻) = F_X(x_k) - lim_{t ↑ x_k} F_X(t).\nInterval probability:\nP(a < X ≤ b) = F_X(b) - F_X(a).',
+  formalDefinitionLatex:
+    '\\begin{aligned} F_X(x) &= \\sum_{x_k \\le x} P(X = x_k) \\\\[4pt] P(X = x_k) &= F_X(x_k) - F_X(x_k^-) \\\\[4pt] P(a < X \\le b) &= F_X(b) - F_X(a) \\end{aligned}',
+  properties: [
+    'Step and Plateau: F_X(x) remains constant on intervals [x_k, x_{k+1}) where no probability mass resides.',
+    'Jump Height Equals Point Mass: A vertical jump in F(x) signals discrete probability mass, with jump size P(X = x).',
+    'Boundary Conventions: P(a ≤ X ≤ b) includes jumps at both endpoints; P(a < X < b) excludes both endpoint jumps.',
+  ],
+  sourceRef: {
+    id: 'SRC-P1-CH07-002',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 7: Cumulative distribution function',
+    note: 'Staircase CDFs, jump discontinuities, and interval probabilities.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000001,
   CONCEPT_C000002,
@@ -287,6 +338,8 @@ export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000007,
   CONCEPT_C000008,
   CONCEPT_C000009,
+  CONCEPT_C000010,
+  CONCEPT_C000011,
 ];
 
 export function getConceptById(id: string): ConceptContent | undefined {
@@ -499,6 +552,56 @@ export const EXERCISE_EX000008: ExerciseContent = {
   classification: 'supplementary',
 };
 
+export const EXERCISE_EX000009: ExerciseContent = {
+  id: 'EX-000009',
+  title: 'Interval Probability on Discrete Distribution',
+  moduleId: 'M06',
+  category: 'numerical',
+  linkedConceptIds: ['C-000010', 'C-000011'],
+  prompt:
+    'A discrete random variable X has support {0, 1, 2} with probability masses P(X=0)=1/4, P(X=1)=1/2, and P(X=2)=1/4. Calculate the interval probability P(0 < X ≤ 2). Express your answer as a simplified fraction or decimal.',
+  promptLatex:
+    '\\begin{aligned} &S_X = \\{0, 1, 2\\}, \\quad P(X=0)=\\frac{1}{4}, \\quad P(X=1)=\\frac{1}{2}, \\quad P(X=2)=\\frac{1}{4} \\\\[4pt] &\\text{Find } P(0 < X \\le 2). \\end{aligned}',
+  expectedRational: { num: 3n, den: 4n },
+  explanation:
+    'Using the CDF relationship: P(0 < X ≤ 2) = F(2) - F(0). From the point masses, F(2) = 1 and F(0) = 1/4. Therefore, P(0 < X ≤ 2) = 1 - 1/4 = 3/4 (or 0.75). Equivalently, summing the masses of support points in (0, 2]: P(X=1) + P(X=2) = 1/2 + 1/4 = 3/4.',
+  explanationLatex:
+    'P(0 < X \\le 2) = F(2) - F(0) = 1 - \\frac{1}{4} = \\frac{3}{4} = 0.75',
+  sourceRef: {
+    id: 'SRC-P1-CH07-003',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 7: Cumulative distribution function',
+    note: 'Interval probability evaluation via CDF.',
+  },
+  classification: 'supplementary',
+};
+
+export const EXERCISE_EX000010: ExerciseContent = {
+  id: 'EX-000010',
+  title: 'Point Mass Retrieval from CDF Jump Discontinuity',
+  moduleId: 'M06',
+  category: 'numerical',
+  linkedConceptIds: ['C-000010', 'C-000011'],
+  prompt:
+    'A discrete random variable X has CDF F(x). At point x = 1, the CDF evaluates to F(1) = 3/4 (0.75), while the left-hand limit is F(1⁻) = lim_{t ↑ 1} F(t) = 1/4 (0.25). Calculate the exact point mass P(X = 1).',
+  promptLatex:
+    'F(1) = \\frac{3}{4}, \\quad F(1^-) = \\lim_{t \\uparrow 1} F(t) = \\frac{1}{4}. \\quad \\text{Find } P(X = 1).',
+  expectedRational: { num: 1n, den: 2n },
+  explanation:
+    'For any random variable, the point probability at x is the vertical jump discontinuity in its CDF: P(X = x) = F(x) - F(x⁻). Here, P(X = 1) = F(1) - F(1⁻) = 3/4 - 1/4 = 2/4 = 1/2 (or 0.50).',
+  explanationLatex:
+    'P(X = 1) = F(1) - F(1^-) = \\frac{3}{4} - \\frac{1}{4} = \\frac{2}{4} = \\frac{1}{2} = 0.50',
+  sourceRef: {
+    id: 'SRC-P1-CH07-004',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 7: Cumulative distribution function',
+    note: 'Point mass retrieval from jump size.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000001,
   EXERCISE_EX000002,
@@ -508,6 +611,8 @@ export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000006,
   EXERCISE_EX000007,
   EXERCISE_EX000008,
+  EXERCISE_EX000009,
+  EXERCISE_EX000010,
 ];
 
 export function getExerciseById(id: string): ExerciseContent | undefined {

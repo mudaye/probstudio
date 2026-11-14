@@ -63,5 +63,13 @@ describe('Module Catalog (A-001 §4.1 Integrity)', () => {
     expect(m05?.conceptCount).toBe(2);
     expect(m05?.exerciseCount).toBe(2);
     expect(m05?.labAssociation).toBe('PL-04');
+
+    const m06 = getModuleById('M06');
+    expect(m06).toBeDefined();
+    expect(m06?.title).toContain('Cumulative Distribution');
+    expect(m06?.status).toBe('active');
+    expect(m06?.conceptCount).toBe(2);
+    expect(m06?.exerciseCount).toBe(2);
+    expect(m06?.labAssociation).toBe('PL-05');
   });
 });

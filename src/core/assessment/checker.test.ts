@@ -207,4 +207,48 @@ describe('Assessment Checker - Prototype Rational Inputs', () => {
       expect(res.status).toBe('incorrect');
     });
   });
+
+  describe('EX-000009: Interval Probability Evaluation', () => {
+    const expInterval = createRational(3n, 4n);
+    const explanationLatex = 'P(0 < X ≤ 2) = F(2) - F(0) = 1 - 1/4 = 3/4 = 0.75';
+
+    it('accepts fraction "3/4"', () => {
+      const res = checkExactRationalAnswer('3/4', expInterval, explanationLatex);
+      expect(res.status).toBe('correct');
+      expect(res.parsedInput?.num).toBe(3n);
+      expect(res.parsedInput?.den).toBe(4n);
+    });
+
+    it('accepts equivalent decimal "0.75"', () => {
+      const res = checkExactRationalAnswer('0.75', expInterval, explanationLatex);
+      expect(res.status).toBe('correct');
+    });
+
+    it('evaluates incorrect response "1/4" as incorrect', () => {
+      const res = checkExactRationalAnswer('1/4', expInterval, explanationLatex);
+      expect(res.status).toBe('incorrect');
+    });
+  });
+
+  describe('EX-000010: CDF Jump Size Evaluation', () => {
+    const expJump = createRational(1n, 2n);
+    const explanationLatex = 'P(X = 1) = F(1) - F(1^-) = 3/4 - 1/4 = 1/2 = 0.50';
+
+    it('accepts fraction "1/2"', () => {
+      const res = checkExactRationalAnswer('1/2', expJump, explanationLatex);
+      expect(res.status).toBe('correct');
+      expect(res.parsedInput?.num).toBe(1n);
+      expect(res.parsedInput?.den).toBe(2n);
+    });
+
+    it('accepts equivalent decimal "0.5"', () => {
+      const res = checkExactRationalAnswer('0.5', expJump, explanationLatex);
+      expect(res.status).toBe('correct');
+    });
+
+    it('evaluates incorrect response "1/4" as incorrect', () => {
+      const res = checkExactRationalAnswer('1/4', expJump, explanationLatex);
+      expect(res.status).toBe('incorrect');
+    });
+  });
 });

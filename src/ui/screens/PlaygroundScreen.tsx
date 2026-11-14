@@ -3,8 +3,9 @@ import { LabPL01 } from '../components/LabPL01';
 import { LabPL02 } from '../components/LabPL02';
 import { LabPL03 } from '../components/LabPL03';
 import { LabPL04 } from '../components/LabPL04';
+import { LabPL05 } from '../components/LabPL05';
 
-export type GuidedLabId = 'PL-01' | 'PL-02' | 'PL-03' | 'PL-04';
+export type GuidedLabId = 'PL-01' | 'PL-02' | 'PL-03' | 'PL-04' | 'PL-05';
 
 export const PlaygroundScreen: React.FC = () => {
   const [activeLab, setActiveLab] = useState<GuidedLabId>('PL-01');
@@ -105,6 +106,26 @@ export const PlaygroundScreen: React.FC = () => {
           <span style={{ background: activeLab === 'PL-04' ? '#2563eb' : '#94a3b8', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>PL-04</span>
           <span>Random Variable Mapper</span>
         </button>
+
+        <button
+          onClick={() => setActiveLab('PL-05')}
+          style={{
+            padding: '8px 16px',
+            fontSize: '0.88rem',
+            fontWeight: 600,
+            borderRadius: '6px',
+            border: activeLab === 'PL-05' ? '1px solid #2563eb' : '1px solid #cbd5e1',
+            background: activeLab === 'PL-05' ? '#eff6ff' : '#ffffff',
+            color: activeLab === 'PL-05' ? '#1d4ed8' : '#475569',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          <span style={{ background: activeLab === 'PL-05' ? '#2563eb' : '#94a3b8', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem' }}>PL-05</span>
+          <span>CDF & PMF Explorer</span>
+        </button>
       </div>
 
       {/* Render Active Lab */}
@@ -112,6 +133,7 @@ export const PlaygroundScreen: React.FC = () => {
       {activeLab === 'PL-02' && <LabPL02 />}
       {activeLab === 'PL-03' && <LabPL03 />}
       {activeLab === 'PL-04' && <LabPL04 />}
+      {activeLab === 'PL-05' && <LabPL05 />}
     </div>
   );
 };
