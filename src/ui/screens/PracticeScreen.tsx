@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   ALL_EXERCISES,
+  ALL_CONCEPTS,
   getExerciseById,
   getExercisesByModule,
   getConceptById,
@@ -10,6 +11,7 @@ import { checkExactRationalAnswer, AssessmentCheckResult } from '../../core/asse
 import { LocalPersistenceService, StoredAttempt } from '../../core/storage/persistence';
 import { MathView } from '../components/MathView';
 import { ModuleNavDrawer } from '../components/ModuleNavDrawer';
+import { buildRevisionQueue } from '../../core/mastery/scheduler';
 
 const MODULE_TO_LAB: Record<string, { labId: string; labTitle: string }> = {
   M01: { labId: 'PL-01', labTitle: 'PL-01 Event & Probability Builder' },
@@ -62,11 +64,29 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
 
   const [resultsMap, setResultsMap] = useState<Record<string, AssessmentCheckResult | null>>({});
   const [history, setHistory] = useState<StoredAttempt[]>([]);
+  const [reviewOnly, setReviewOnly] = useState<boolean>(false);
+
+  const reviewDueConcepts = useMemo(() => {
+    const attempts = LocalPersistenceService.getAttempts();
+    const activities = LocalPersistenceService.getActivities();
+    const manualFlags = LocalPersistenceService.getManualReviewFlags();
+    const queue = buildRevisionQueue(ALL_CONCEPTS, attempts, activities, manualFlags);
+    return new Set(queue.map((q) => q.conceptId));
+  }, [history]);
 
   // Filter exercises
-  const visibleExercises = selectedModuleId
-    ? getExercisesByModule(selectedModuleId)
-    : ALL_EXERCISES;
+  const visibleExercises = useMemo(() => {
+    let list = selectedModuleId
+      ? getExercisesByModule(selectedModuleId)
+      : ALL_EXERCISES;
+
+    if (reviewOnly) {
+      list = list.filter((ex) =>
+        ex.linkedConceptIds.some((cid) => reviewDueConcepts.has(cid))
+      );
+    }
+    return list;
+  }, [selectedModuleId, reviewOnly, reviewDueConcepts]);
 
   const activeExercise =
     getExerciseById(selectedExerciseId) || visibleExercises[0] || ALL_EXERCISES[0];
@@ -130,7 +150,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
     <div className="practice-view">
       {/* Top Filter and Controls Bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           <button
             className="btn-secondary btn-sm"
             onClick={() => setIsDrawerOpen((prev) => !prev)}
@@ -138,6 +158,34 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
           >
             <span>{isDrawerOpen ? '✕ Hide Filter Panel' : '☰ Filter by Module'}</span>
             {selectedModuleId && <span className="mod-id-badge active">{selectedModuleId}</span>}
+          </button>
+
+          <button
+            className="btn-secondary btn-sm"
+            onClick={() => setReviewOnly((prev) => !prev)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              background: reviewOnly ? '#fef3c7' : '#ffffff',
+              color: reviewOnly ? '#b45309' : '#475569',
+              borderColor: reviewOnly ? '#fcd34d' : '#cbd5e1',
+              fontWeight: 600,
+            }}
+            title="Filter exercises to concepts currently due for revision (A-001 §2.3)"
+          >
+            <span>⏰ Review Due Only</span>
+            <span
+              style={{
+                background: reviewOnly ? '#b45309' : '#e2e8f0',
+                color: reviewOnly ? '#ffffff' : '#475569',
+                borderRadius: '10px',
+                padding: '1px 6px',
+                fontSize: '0.72rem',
+              }}
+            >
+              {reviewDueConcepts.size}
+            </span>
           </button>
 
           {selectedModuleId && (
@@ -356,22 +404,29 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
               )}
             </div>
           ) : (
-            /* Selected module has no exercises yet */
+            /* Selected module or review filter has no exercises */
             <div className="card" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
               <span className="badge badge-source" style={{ marginBottom: '1rem' }}>
-                {selectedModule?.id} &bull; {selectedModule?.partId}
+                {reviewOnly ? 'Spaced Revision' : `${selectedModule?.id} • ${selectedModule?.partId}`}
               </span>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-                No Exercises Authored Yet for {selectedModule?.id}
+                {reviewOnly
+                  ? 'No Exercises Currently Due for Review'
+                  : `No Exercises Authored Yet for ${selectedModule?.id}`}
               </h2>
               <p style={{ color: 'var(--text-muted)', maxWidth: '460px', margin: '0 auto 1.5rem', fontSize: '0.95rem' }}>
-                {selectedModule?.title} exercises will be added in upcoming curriculum increments.
+                {reviewOnly
+                  ? 'Great job! You have no outstanding review items in this filter. Switch off "Review Due Only" to practice any exercise.'
+                  : `${selectedModule?.title} exercises will be added in upcoming curriculum increments.`}
               </p>
               <button
                 className="btn-primary btn-sm"
-                onClick={() => handleSelectModule(null)}
+                onClick={() => {
+                  setReviewOnly(false);
+                  handleSelectModule(null);
+                }}
               >
-                Clear Filters & Browse Available Exercises
+                Clear Filters & Browse All Exercises
               </button>
             </div>
           )}

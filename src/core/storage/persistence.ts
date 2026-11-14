@@ -73,6 +73,7 @@ export interface LearnerStateExport {
   readonly activities: readonly ActivityEvent[];
   readonly labResumes: Readonly<Record<string, LabResumePayload>>;
   readonly snapshots: Readonly<Record<string, LabComparisonSnapshot>>;
+  readonly manualReviewFlags?: Readonly<Record<string, boolean>>;
   readonly statistics: {
     readonly totalAttempts: number;
     readonly correctAttempts: number;
@@ -86,6 +87,7 @@ const ATTEMPTS_KEY = `${STORAGE_PREFIX}attempts`;
 const ACTIVITIES_KEY = `${STORAGE_PREFIX}activities`;
 const LAB_RESUME_KEY_PREFIX = `${STORAGE_PREFIX}lab_resume_`;
 const LAB_SNAPSHOT_KEY_PREFIX = `${STORAGE_PREFIX}lab_snapshot_`;
+const MANUAL_FLAGS_KEY = `${STORAGE_PREFIX}manual_review_flags`;
 
 // In-memory fallback for environments without window.localStorage (e.g. Node/tests)
 const memoryStore = new Map<string, string>();
@@ -259,9 +261,49 @@ export class LocalPersistenceService {
     return snapshots;
   }
 
+  /**
+   * Retrieves all manual review flags conforming to A-002 §8.1 and A-005 §7
+   */
+  static getManualReviewFlags(): Record<string, boolean> {
+    try {
+      const raw = getItem(MANUAL_FLAGS_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  /**
+   * Sets or clears a manual review flag for a concept
+   */
+  static setManualReviewFlag(conceptId: string, flagged: boolean): void {
+    try {
+      const flags = this.getManualReviewFlags();
+      if (flagged) {
+        flags[conceptId] = true;
+      } else {
+        delete flags[conceptId];
+      }
+      setItem(MANUAL_FLAGS_KEY, JSON.stringify(flags));
+    } catch (err) {
+      console.error('Storage write error for manual review flag:', err);
+    }
+  }
+
+  /**
+   * Toggles a manual review flag for a concept
+   */
+  static toggleManualReviewFlag(conceptId: string): boolean {
+    const flags = this.getManualReviewFlags();
+    const newState = !flags[conceptId];
+    this.setManualReviewFlag(conceptId, newState);
+    return newState;
+  }
+
   static exportLearnerState(): LearnerStateExport {
     const attempts = this.getAttempts();
     const activities = this.getActivities();
+    const manualReviewFlags = this.getManualReviewFlags();
 
     const labResumes: Record<string, LabResumePayload> = {};
     for (const labId of ALL_SUPPORTED_LAB_IDS) {
@@ -285,6 +327,7 @@ export class LocalPersistenceService {
       activities,
       labResumes,
       snapshots,
+      manualReviewFlags,
       statistics: {
         totalAttempts,
         correctAttempts,
@@ -355,6 +398,11 @@ export class LocalPersistenceService {
             importedSnapshots++;
           }
         }
+      }
+
+      // Restore manual review flags
+      if (parsed.manualReviewFlags && typeof parsed.manualReviewFlags === 'object') {
+        setItem(MANUAL_FLAGS_KEY, JSON.stringify(parsed.manualReviewFlags));
       }
 
       return {

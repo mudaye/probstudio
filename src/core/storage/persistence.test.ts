@@ -140,4 +140,30 @@ describe('LocalPersistenceService', () => {
     LocalPersistenceService.deleteLabSnapshot('PL-01');
     expect(LocalPersistenceService.getLabSnapshot('PL-01')).toBeNull();
   });
+
+  it('manages, exports, and imports manual review flags conforming to A-002 §8.1', () => {
+    expect(LocalPersistenceService.getManualReviewFlags()).toEqual({});
+
+    const flagged = LocalPersistenceService.toggleManualReviewFlag('C-000001');
+    expect(flagged).toBe(true);
+    expect(LocalPersistenceService.getManualReviewFlags()['C-000001']).toBe(true);
+
+    LocalPersistenceService.setManualReviewFlag('C-000002', true);
+    expect(Object.keys(LocalPersistenceService.getManualReviewFlags()).length).toBe(2);
+
+    const json = LocalPersistenceService.exportLearnerStateJson();
+    expect(json).toContain('C-000001');
+
+    LocalPersistenceService.clearAll();
+    expect(LocalPersistenceService.getManualReviewFlags()).toEqual({});
+
+    const res = LocalPersistenceService.importLearnerStateJson(json);
+    expect(res.success).toBe(true);
+    expect(LocalPersistenceService.getManualReviewFlags()['C-000001']).toBe(true);
+    expect(LocalPersistenceService.getManualReviewFlags()['C-000002']).toBe(true);
+
+    const unflagged = LocalPersistenceService.toggleManualReviewFlag('C-000001');
+    expect(unflagged).toBe(false);
+    expect(LocalPersistenceService.getManualReviewFlags()['C-000001']).toBeUndefined();
+  });
 });

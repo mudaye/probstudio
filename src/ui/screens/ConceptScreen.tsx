@@ -9,6 +9,8 @@ import { getModuleById } from '../../core/content/modules';
 import { MathView } from '../components/MathView';
 import { LocalPersistenceService } from '../../core/storage/persistence';
 import { ModuleNavDrawer } from '../components/ModuleNavDrawer';
+import { computeConceptMastery } from '../../core/mastery/scheduler';
+import { ConceptMasteryRecord } from '../../core/mastery/types';
 
 const MODULE_TO_LAB: Record<string, { labId: string; labTitle: string }> = {
   M01: { labId: 'PL-01', labTitle: 'PL-01 Event & Probability Builder' },
@@ -51,6 +53,9 @@ export const ConceptScreen: React.FC<ConceptScreenProps> = ({
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(initialModuleId);
   const [selectedConceptId, setSelectedConceptId] = useState<string>(initialConceptId || 'C-000001');
+  const [manualFlags, setManualFlags] = useState<Record<string, boolean>>(() =>
+    LocalPersistenceService.getManualReviewFlags()
+  );
 
   // Load available concepts for the active filter
   const visibleConcepts = selectedModuleId
@@ -58,6 +63,18 @@ export const ConceptScreen: React.FC<ConceptScreenProps> = ({
     : ALL_CONCEPTS;
 
   const activeConcept = getConceptById(selectedConceptId) || visibleConcepts[0] || ALL_CONCEPTS[0];
+
+  const activeMastery: ConceptMasteryRecord = computeConceptMastery(
+    activeConcept,
+    LocalPersistenceService.getAttempts(),
+    LocalPersistenceService.getActivities(),
+    !!manualFlags[activeConcept.id]
+  );
+
+  const handleToggleManualReview = () => {
+    const nextState = LocalPersistenceService.toggleManualReviewFlag(activeConcept.id);
+    setManualFlags((prev) => ({ ...prev, [activeConcept.id]: nextState }));
+  };
 
   useEffect(() => {
     if (activeConcept) {
@@ -190,12 +207,87 @@ export const ConceptScreen: React.FC<ConceptScreenProps> = ({
                   </span>
                   <h1 className="card-title" style={{ marginTop: '0.25rem' }}>{activeConcept.title}</h1>
                 </div>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                  {/* Mastery Lifecycle Badge */}
+                  <span
+                    className="badge"
+                    style={{
+                      background:
+                        activeMastery.status === 'secure'
+                          ? '#dcfce7'
+                          : activeMastery.status === 'review_due'
+                          ? '#fef3c7'
+                          : activeMastery.status === 'practising'
+                          ? '#dbeafe'
+                          : activeMastery.status === 'exploring'
+                          ? '#ede9fe'
+                          : '#f1f5f9',
+                      color:
+                        activeMastery.status === 'secure'
+                          ? '#15803d'
+                          : activeMastery.status === 'review_due'
+                          ? '#b45309'
+                          : activeMastery.status === 'practising'
+                          ? '#1d4ed8'
+                          : activeMastery.status === 'exploring'
+                          ? '#6d28d9'
+                          : '#64748b',
+                      fontWeight: 600,
+                      padding: '3px 8px',
+                    }}
+                  >
+                    {activeMastery.status === 'secure' && 'Secure ✓'}
+                    {activeMastery.status === 'review_due' && 'Review Due ⏰'}
+                    {activeMastery.status === 'practising' && 'Practising'}
+                    {activeMastery.status === 'exploring' && 'Exploring'}
+                    {activeMastery.status === 'unseen' && 'Unseen'}
+                  </span>
+
+                  {/* Manual Mark for Review Button (A-002 §8.1) */}
+                  <button
+                    onClick={handleToggleManualReview}
+                    className="btn-secondary btn-sm"
+                    style={{
+                      background: activeMastery.isManualReviewFlagged ? '#fef3c7' : '#ffffff',
+                      borderColor: activeMastery.isManualReviewFlagged ? '#fcd34d' : '#cbd5e1',
+                      color: activeMastery.isManualReviewFlagged ? '#b45309' : '#475569',
+                      fontWeight: 600,
+                      fontSize: '0.78rem',
+                    }}
+                    title={activeMastery.isManualReviewFlagged ? 'Click to unflag from review list' : 'Click to flag for revision (A-002 §8.1)'}
+                  >
+                    {activeMastery.isManualReviewFlagged ? '🔖 Flagged for Review' : '🔖 Mark for Review'}
+                  </button>
+
                   <span className="badge badge-source">
                     Source Derived &bull; {activeConcept.sourceRef.part}
                   </span>
                 </div>
               </div>
+
+              {/* Revision Banner if review is due */}
+              {activeMastery.reasonsForReview.length > 0 && (
+                <div
+                  style={{
+                    background: '#fffbeb',
+                    border: '1px solid #fde68a',
+                    borderRadius: '6px',
+                    padding: '0.6rem 0.85rem',
+                    marginBottom: '1rem',
+                    fontSize: '0.85rem',
+                    color: '#92400e',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <span>⏰</span>
+                  <span>
+                    <strong>Spaced Revision Notice:</strong> {activeMastery.reasonsForReview.join(' • ')}
+                    {activeMastery.nextReviewDate && ` (Interval: ${activeMastery.currentIntervalDays}d)`}
+                  </span>
+                </div>
+              )}
 
               {/* Intuition Section */}
               <div className="card">

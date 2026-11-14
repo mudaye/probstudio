@@ -6,6 +6,12 @@ import {
   LabComparisonSnapshot,
   ALL_SUPPORTED_LAB_IDS,
 } from '../../core/storage/persistence';
+import { ALL_CONCEPTS } from '../../core/content/fixtures';
+import {
+  computeMasterySummary,
+  buildRevisionQueue,
+} from '../../core/mastery/scheduler';
+import { RevisionQueueItem, MasterySummary } from '../../core/mastery/types';
 
 interface DashboardScreenProps {
   onNavigate: (route: string, params?: Record<string, string>) => void;
@@ -30,11 +36,13 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) 
   const [attempts, setAttempts] = useState<StoredAttempt[]>([]);
   const [activities, setActivities] = useState<ActivityEvent[]>([]);
   const [snapshots, setSnapshots] = useState<Record<string, LabComparisonSnapshot>>({});
+  const [manualFlags, setManualFlags] = useState<Record<string, boolean>>({});
 
   const refreshHistory = () => {
     setAttempts(LocalPersistenceService.getAttempts());
     setActivities(LocalPersistenceService.getActivities());
     setSnapshots(LocalPersistenceService.getAllLabSnapshots());
+    setManualFlags(LocalPersistenceService.getManualReviewFlags());
   };
 
   useEffect(() => {
@@ -48,6 +56,20 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) 
     }
   };
 
+  const masterySummary: MasterySummary = computeMasterySummary(
+    ALL_CONCEPTS,
+    attempts,
+    activities,
+    manualFlags
+  );
+
+  const revisionQueue: RevisionQueueItem[] = buildRevisionQueue(
+    ALL_CONCEPTS,
+    attempts,
+    activities,
+    manualFlags
+  );
+
   const snapshotEntries = Object.entries(snapshots);
 
   return (
@@ -57,6 +79,55 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) 
         <p className="card-subtitle" style={{ fontSize: '1rem', marginTop: '0.5rem' }}>
           A self-paced, browser-based environment for understanding, practising, and experimenting with probability.
         </p>
+      </div>
+
+      {/* Curriculum Mastery Summary Bar */}
+      <div className="card" style={{ marginTop: '1.25rem', padding: '1.25rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '8px' }}>
+          <div>
+            <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text)' }}>
+              Curriculum Mastery Progress
+            </span>
+            <span style={{ fontSize: '0.82rem', color: '#64748b', marginLeft: '8px' }}>
+              ({masterySummary.totalConcepts} concepts across 22 modules)
+            </span>
+          </div>
+          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#16a34a' }}>
+            {masterySummary.completionPercentage}% Retained
+          </span>
+        </div>
+
+        {/* Visual Multi-segment Progress Bar */}
+        <div style={{ height: '10px', background: '#e2e8f0', borderRadius: '5px', overflow: 'hidden', display: 'flex' }}>
+          <div style={{ width: `${(masterySummary.secureCount / masterySummary.totalConcepts) * 100}%`, background: '#16a34a' }} title={`Secure: ${masterySummary.secureCount}`} />
+          <div style={{ width: `${(masterySummary.reviewDueCount / masterySummary.totalConcepts) * 100}%`, background: '#f59e0b' }} title={`Review Due: ${masterySummary.reviewDueCount}`} />
+          <div style={{ width: `${(masterySummary.practisingCount / masterySummary.totalConcepts) * 100}%`, background: '#3b82f6' }} title={`Practising: ${masterySummary.practisingCount}`} />
+          <div style={{ width: `${(masterySummary.exploringCount / masterySummary.totalConcepts) * 100}%`, background: '#8b5cf6' }} title={`Exploring: ${masterySummary.exploringCount}`} />
+        </div>
+
+        {/* Status Legend Pills */}
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '0.75rem', fontSize: '0.8rem' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#15803d' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#16a34a' }} />
+            <strong>{masterySummary.secureCount}</strong> Secure
+          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#b45309' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b' }} />
+            <strong>{masterySummary.reviewDueCount}</strong> Due for Review
+          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#1d4ed8' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#3b82f6' }} />
+            <strong>{masterySummary.practisingCount}</strong> Practising
+          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#6d28d9' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#8b5cf6' }} />
+            <strong>{masterySummary.exploringCount}</strong> Exploring
+          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#64748b' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#94a3b8' }} />
+            <strong>{masterySummary.unseenCount}</strong> Unseen
+          </span>
+        </div>
       </div>
 
       <h2 style={{ fontSize: '1.1rem', fontWeight: 600, margin: '1.5rem 0 1rem', color: 'var(--text-muted)' }}>
@@ -126,6 +197,107 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) 
             Launch Playground Labs &rarr;
           </button>
         </div>
+      </div>
+
+      {/* Spaced Revision Queue */}
+      <div style={{ marginTop: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-muted)', margin: 0 }}>
+            SPACED REVISION QUEUE (A-001 §2.3 & A-002 §8.2)
+          </h2>
+          {revisionQueue.length > 0 && (
+            <span className="badge" style={{ background: '#fef3c7', color: '#92400e', fontWeight: 600 }}>
+              {revisionQueue.length} Due for Practice
+            </span>
+          )}
+        </div>
+
+        {revisionQueue.length > 0 ? (
+          <div className="card" style={{ background: '#fffbeb', borderColor: '#fde68a' }}>
+            <p style={{ fontSize: '0.88rem', color: '#92400e', marginBottom: '1rem' }}>
+              Concepts requiring spaced practice reinforcement based on your study history, multi-day intervals, or manual review flags.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '0.75rem' }}>
+              {revisionQueue.map((item) => (
+                <div
+                  key={item.conceptId}
+                  style={{
+                    background: '#ffffff',
+                    padding: '0.85rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid #fcd34d',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#b45309', background: '#fef3c7', padding: '2px 6px', borderRadius: '4px' }}>
+                        {item.moduleId} &bull; {item.conceptId}
+                      </span>
+                      {item.daysOverdue > 0 ? (
+                        <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#dc2626' }}>
+                          ⏰ {item.daysOverdue}d overdue
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#d97706' }}>
+                          Due today
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontWeight: 700, fontSize: '0.92rem', color: '#1e293b' }}>
+                      {item.conceptTitle}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '4px' }}>
+                      Reason: {item.reason}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '0.85rem', flexWrap: 'wrap' }}>
+                    {item.primaryExerciseId && (
+                      <button
+                        className="btn-primary btn-sm"
+                        style={{ fontSize: '0.76rem', padding: '4px 8px' }}
+                        onClick={() => onNavigate('practice', { exerciseId: item.primaryExerciseId! })}
+                      >
+                        Practice Now &rarr;
+                      </button>
+                    )}
+                    <button
+                      className="btn-secondary btn-sm"
+                      style={{ fontSize: '0.76rem', padding: '4px 8px' }}
+                      onClick={() => onNavigate('atlas', { conceptId: item.conceptId })}
+                    >
+                      Review Theory
+                    </button>
+                    {item.linkedLabId && (
+                      <button
+                        className="btn-secondary btn-sm"
+                        style={{ fontSize: '0.76rem', padding: '4px 8px' }}
+                        onClick={() => onNavigate('playground', { labId: item.linkedLabId! })}
+                      >
+                        Open Lab ({item.linkedLabId!})
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="card" style={{ background: '#f0fdf4', borderColor: '#bbf7d0', padding: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '1.2rem' }}>🎉</span>
+              <div>
+                <strong style={{ color: '#166534', fontSize: '0.92rem' }}>All caught up on revisions!</strong>
+                <p style={{ margin: 0, fontSize: '0.82rem', color: '#15803d' }}>
+                  No concepts are currently overdue for spaced review. Continue exploring new concepts in the Atlas or practicing in the Gym.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Saved Snapshots & Quick Lab Access Hub */}
