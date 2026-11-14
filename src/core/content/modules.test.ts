@@ -95,5 +95,29 @@ describe('Module Catalog (A-001 §4.1 Integrity)', () => {
     expect(m08?.conceptCount).toBe(2);
     expect(m08?.exerciseCount).toBe(2);
     expect(m08?.labAssociation).toBe('PL-06');
+
+    const m09 = getModuleById('M09');
+    expect(m09).toBeDefined();
+    expect(m09?.title).toContain('Continuous Random Variables');
+    expect(m09?.status).toBe('active');
+    expect(m09?.conceptCount).toBe(2);
+    expect(m09?.exerciseCount).toBe(2);
+    expect(m09?.labAssociation).toBe('PL-07');
+
+    const m10 = getModuleById('M10');
+    expect(m10).toBeDefined();
+    expect(m10?.title).toContain('Common Continuous Distributions');
+    expect(m10?.status).toBe('active');
+    expect(m10?.conceptCount).toBe(2);
+    expect(m10?.exerciseCount).toBe(1);
+    expect(m10?.labAssociation).toBe('PL-07');
+
+    const m11 = getModuleById('M11');
+    expect(m11).toBeDefined();
+    expect(m11?.title).toContain('Functions and Transformations');
+    expect(m11?.status).toBe('active');
+    expect(m11?.conceptCount).toBe(2);
+    expect(m11?.exerciseCount).toBe(1);
+    expect(m11?.labAssociation).toBe('PL-07');
   });
 });

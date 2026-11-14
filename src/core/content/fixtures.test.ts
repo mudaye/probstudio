@@ -20,6 +20,12 @@ import {
   CONCEPT_C000015,
   CONCEPT_C000016,
   CONCEPT_C000017,
+  CONCEPT_C000018,
+  CONCEPT_C000019,
+  CONCEPT_C000020,
+  CONCEPT_C000021,
+  CONCEPT_C000022,
+  CONCEPT_C000023,
   ALL_EXERCISES,
   getExercisesByModule,
   getExerciseById,
@@ -29,11 +35,15 @@ import {
   EXERCISE_EX000014,
   EXERCISE_EX000015,
   EXERCISE_EX000016,
+  EXERCISE_EX000017,
+  EXERCISE_EX000018,
+  EXERCISE_EX000019,
+  EXERCISE_EX000020,
 } from './fixtures';
 
-describe('Concept Content Fixtures - Modules M01 through M08 (A-005 Compliance)', () => {
-  it('contains authored concepts for all Part 1 active modules', () => {
-    expect(ALL_CONCEPTS.length).toBe(17);
+describe('Concept Content Fixtures - Modules M01 through M11 (A-005 Compliance)', () => {
+  it('contains authored concepts for active modules across Part 1 and Part 2', () => {
+    expect(ALL_CONCEPTS.length).toBe(23);
     const m01Concepts = getConceptsByModule('M01');
     expect(m01Concepts.length).toBe(3);
     expect(m01Concepts.map((c) => c.id)).toEqual(['C-000001', 'C-000002', 'C-000003']);
@@ -65,6 +75,18 @@ describe('Concept Content Fixtures - Modules M01 through M08 (A-005 Compliance)'
     const m08Concepts = getConceptsByModule('M08');
     expect(m08Concepts.length).toBe(2);
     expect(m08Concepts.map((c) => c.id)).toEqual(['C-000012', 'C-000013']);
+
+    const m09Concepts = getConceptsByModule('M09');
+    expect(m09Concepts.length).toBe(2);
+    expect(m09Concepts.map((c) => c.id)).toEqual(['C-000018', 'C-000019']);
+
+    const m10Concepts = getConceptsByModule('M10');
+    expect(m10Concepts.length).toBe(2);
+    expect(m10Concepts.map((c) => c.id)).toEqual(['C-000020', 'C-000021']);
+
+    const m11Concepts = getConceptsByModule('M11');
+    expect(m11Concepts.length).toBe(2);
+    expect(m11Concepts.map((c) => c.id)).toEqual(['C-000022', 'C-000023']);
   });
 
   it('verifies C-000001: Sample Spaces and Events', () => {
@@ -117,6 +139,12 @@ describe('Concept Content Fixtures - Modules M01 through M08 (A-005 Compliance)'
       CONCEPT_C000015,
       CONCEPT_C000016,
       CONCEPT_C000017,
+      CONCEPT_C000018,
+      CONCEPT_C000019,
+      CONCEPT_C000020,
+      CONCEPT_C000021,
+      CONCEPT_C000022,
+      CONCEPT_C000023,
     ]) {
       expect(c.classification).toBe('source_derived');
       expect(c.intuition.length).toBeGreaterThan(20);
@@ -248,9 +276,58 @@ describe('Concept Content Fixtures - Modules M01 through M08 (A-005 Compliance)'
     expect(c?.formalDefinitionLatex).toContain('p_X(x_k) &= F_X(x_k) - F_X(x_k^-)');
   });
 
-  describe('Exercise Content Fixtures - Modules M01 through M08', () => {
-    it('contains authored exercises for all active modules in Part 1', () => {
-      expect(ALL_EXERCISES.length).toBe(16);
+  it('verifies C-000018: Continuous Random Variables & PDFs', () => {
+    const c = getConceptById('C-000018');
+    expect(c).toBeDefined();
+    expect(c?.title).toContain('Continuous Random Variables');
+    expect(c?.moduleId).toBe('M09');
+    expect(c?.formalDefinitionLatex).toContain('\\int_{-\\infty}^\\infty f_X(x) dx = 1');
+  });
+
+  it('verifies C-000019: Continuous CDFs & The Calculus Bridge', () => {
+    const c = getConceptById('C-000019');
+    expect(c).toBeDefined();
+    expect(c?.title).toContain('Continuous Cumulative Distribution');
+    expect(c?.moduleId).toBe('M09');
+    expect(c?.formalDefinitionLatex).toContain('f_X(x) = \\frac{d}{dx} F_X(x)');
+  });
+
+  it('verifies C-000020: Continuous Distribution Families: Uniform & Exponential', () => {
+    const c = getConceptById('C-000020');
+    expect(c).toBeDefined();
+    expect(c?.title).toContain('Uniform & Exponential');
+    expect(c?.moduleId).toBe('M10');
+    expect(c?.formalDefinitionLatex).toContain('\\frac{1}{b - a}');
+    expect(c?.formalDefinitionLatex).toContain('\\lambda e^{-\\lambda x}');
+  });
+
+  it('verifies C-000021: The Gaussian (Normal) Distribution & Standard Normal Table', () => {
+    const c = getConceptById('C-000021');
+    expect(c).toBeDefined();
+    expect(c?.title).toContain('Gaussian (Normal)');
+    expect(c?.moduleId).toBe('M10');
+    expect(c?.formalDefinitionLatex).toContain('\\sigma\\sqrt{2\\pi}');
+  });
+
+  it('verifies C-000022: Transformations of Random Variables & The Change-of-Variables Formula', () => {
+    const c = getConceptById('C-000022');
+    expect(c).toBeDefined();
+    expect(c?.title).toContain('Transformations of Random Variables');
+    expect(c?.moduleId).toBe('M11');
+    expect(c?.formalDefinitionLatex).toContain('g^{-1}(y)');
+  });
+
+  it('verifies C-000023: Linear Transformations & The General CDF Method', () => {
+    const c = getConceptById('C-000023');
+    expect(c).toBeDefined();
+    expect(c?.title).toContain('Linear Transformations');
+    expect(c?.moduleId).toBe('M11');
+    expect(c?.formalDefinitionLatex).toContain('\\frac{1}{|a|}');
+  });
+
+  describe('Exercise Content Fixtures - Modules M01 through M11', () => {
+    it('contains authored exercises across Part 1 and Part 2', () => {
+      expect(ALL_EXERCISES.length).toBe(20);
       const m01Ex = getExercisesByModule('M01');
       expect(m01Ex.length).toBe(3);
       expect(m01Ex.map((e) => e.id)).toEqual(['EX-000001', 'EX-000002', 'EX-000003']);
@@ -283,47 +360,52 @@ describe('Concept Content Fixtures - Modules M01 through M08 (A-005 Compliance)'
       expect(m08Ex.length).toBe(2);
       expect(m08Ex.map((e) => e.id)).toEqual(['EX-000011', 'EX-000012']);
 
-      const ex11 = getExerciseById('EX-000011');
-      expect(ex11).toBe(EXERCISE_EX000011);
-      expect(ex11?.title).toContain('Binomial Probability');
-      expect(ex11?.expectedRational.num).toBe(8n);
-      expect(ex11?.expectedRational.den).toBe(27n);
-      expect(ex11?.moduleId).toBe('M08');
+      expect(getExerciseById('EX-000011')).toBe(EXERCISE_EX000011);
+      expect(getExerciseById('EX-000012')).toBe(EXERCISE_EX000012);
+      expect(getExerciseById('EX-000013')).toBe(EXERCISE_EX000013);
+      expect(getExerciseById('EX-000014')).toBe(EXERCISE_EX000014);
+      expect(getExerciseById('EX-000015')).toBe(EXERCISE_EX000015);
+      expect(getExerciseById('EX-000016')).toBe(EXERCISE_EX000016);
 
-      const ex12 = getExerciseById('EX-000012');
-      expect(ex12).toBe(EXERCISE_EX000012);
-      expect(ex12?.title).toContain('Geometric Waiting Time');
-      expect(ex12?.expectedRational.num).toBe(9n);
-      expect(ex12?.expectedRational.den).toBe(64n);
-      expect(ex12?.moduleId).toBe('M08');
+      const m09Ex = getExercisesByModule('M09');
+      expect(m09Ex.length).toBe(2);
+      expect(m09Ex.map((e) => e.id)).toEqual(['EX-000017', 'EX-000018']);
 
-      const ex13 = getExerciseById('EX-000013');
-      expect(ex13).toBe(EXERCISE_EX000013);
-      expect(ex13?.title).toContain('Total Probability');
-      expect(ex13?.expectedRational.num).toBe(21n);
-      expect(ex13?.expectedRational.den).toBe(1000n);
-      expect(ex13?.moduleId).toBe('M03');
+      const m10Ex = getExercisesByModule('M10');
+      expect(m10Ex.length).toBe(1);
+      expect(m10Ex.map((e) => e.id)).toEqual(['EX-000019']);
 
-      const ex14 = getExerciseById('EX-000014');
-      expect(ex14).toBe(EXERCISE_EX000014);
-      expect(ex14?.title).toContain('Posterior Line Attribution');
-      expect(ex14?.expectedRational.num).toBe(10n);
-      expect(ex14?.expectedRational.den).toBe(21n);
-      expect(ex14?.moduleId).toBe('M03');
+      const m11Ex = getExercisesByModule('M11');
+      expect(m11Ex.length).toBe(1);
+      expect(m11Ex.map((e) => e.id)).toEqual(['EX-000020']);
 
-      const ex15 = getExerciseById('EX-000015');
-      expect(ex15).toBe(EXERCISE_EX000015);
-      expect(ex15?.title).toContain('PMF Normalization');
-      expect(ex15?.expectedRational.num).toBe(7n);
-      expect(ex15?.expectedRational.den).toBe(10n);
-      expect(ex15?.moduleId).toBe('M07');
+      const ex17 = getExerciseById('EX-000017');
+      expect(ex17).toBe(EXERCISE_EX000017);
+      expect(ex17?.title).toContain('Continuous PDF Normalization');
+      expect(ex17?.expectedRational.num).toBe(1n);
+      expect(ex17?.expectedRational.den).toBe(9n);
+      expect(ex17?.moduleId).toBe('M09');
 
-      const ex16 = getExerciseById('EX-000016');
-      expect(ex16).toBe(EXERCISE_EX000016);
-      expect(ex16?.title).toContain('Inverse Bridge');
-      expect(ex16?.expectedRational.num).toBe(9n);
-      expect(ex16?.expectedRational.den).toBe(20n);
-      expect(ex16?.moduleId).toBe('M07');
+      const ex18 = getExerciseById('EX-000018');
+      expect(ex18).toBe(EXERCISE_EX000018);
+      expect(ex18?.title).toContain('Uniform Distribution');
+      expect(ex18?.expectedRational.num).toBe(1n);
+      expect(ex18?.expectedRational.den).toBe(2n);
+      expect(ex18?.moduleId).toBe('M09');
+
+      const ex19 = getExerciseById('EX-000019');
+      expect(ex19).toBe(EXERCISE_EX000019);
+      expect(ex19?.title).toContain('Exponential-Decay');
+      expect(ex19?.expectedRational.num).toBe(3n);
+      expect(ex19?.expectedRational.den).toBe(16n);
+      expect(ex19?.moduleId).toBe('M10');
+
+      const ex20 = getExerciseById('EX-000020');
+      expect(ex20).toBe(EXERCISE_EX000020);
+      expect(ex20?.title).toContain('Linear Transformation');
+      expect(ex20?.expectedRational.num).toBe(1n);
+      expect(ex20?.expectedRational.den).toBe(8n);
+      expect(ex20?.moduleId).toBe('M11');
     });
   });
 });

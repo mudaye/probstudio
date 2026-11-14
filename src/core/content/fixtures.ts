@@ -480,6 +480,156 @@ export const CONCEPT_C000017: ConceptContent = {
   classification: 'source_derived',
 };
 
+export const CONCEPT_C000018: ConceptContent = {
+  id: 'C-000018',
+  title: 'Continuous Random Variables & Probability Density Functions',
+  moduleId: 'M09',
+  intuition:
+    'A continuous random variable takes values in an uncountable continuum (such as real intervals). Unlike discrete models, the probability of any exact single point is zero. Instead, probability is represented by the area under a non-negative curve called the Probability Density Function (PDF).',
+  formalDefinition:
+    'A random variable X is continuous if there exists a non-negative integrable function f_X: ℝ → [0, ∞) called the Probability Density Function (PDF) such that for any measurable set B ⊆ ℝ:\nP(X ∈ B) = ∫_B f_X(x) dx.\nAxioms: 1. f_X(x) ≥ 0 for all x ∈ ℝ; 2. ∫_{-∞}^∞ f_X(x) dx = 1.\nFor any single real value c: P(X = c) = ∫_c^c f_X(x) dx = 0.',
+  formalDefinitionLatex:
+    'f_X(x) \\ge 0, \\quad \\int_{-\\infty}^\\infty f_X(x) dx = 1, \\quad P(a \\le X \\le b) = \\int_a^b f_X(x) dx',
+  properties: [
+    'Density Height vs Probability: The value f_X(x) is not a probability; it is probability per unit length and can exceed 1.',
+    'Nullity of Singletons: P(X = c) = 0 for any single point c ∈ ℝ.',
+    'Endpoint Invariance: P(a ≤ X ≤ b) = P(a < X ≤ b) = P(a ≤ X < b) = P(a < X < b).',
+  ],
+  sourceRef: {
+    id: 'SRC-P2-CH02-001',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 2: Continuous random variables',
+    note: 'Continuous random variable and PDF definitions.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000019: ConceptContent = {
+  id: 'C-000019',
+  title: 'Continuous Cumulative Distribution Functions & The Calculus Bridge',
+  moduleId: 'M09',
+  intuition:
+    'The Cumulative Distribution Function F_X(x) gives the accumulated probability up to point x. For continuous random variables, F_X(x) is continuous everywhere. Integration transforms the PDF into the CDF, and differentiation recovers the PDF from the CDF by the Fundamental Theorem of Calculus.',
+  formalDefinition:
+    'For a continuous random variable X with PDF f_X(x):\nAccumulation Bridge: F_X(x) = P(X ≤ x) = ∫_{-∞}^x f_X(t) dt.\nDifferentiation Bridge: At every continuity point of f_X, f_X(x) = (d/dx) F_X(x).\nInterval Evaluation: P(a < X ≤ b) = F_X(b) - F_X(a).',
+  formalDefinitionLatex:
+    'F_X(x) = \\int_{-\\infty}^x f_X(t) dt, \\quad f_X(x) = \\frac{d}{dx} F_X(x), \\quad P(a \\le X \\le b) = F_X(b) - F_X(a)',
+  properties: [
+    'Everywhere Continuous: F_X(x) has no vertical jump discontinuities; jumps only exist when discrete point mass is present.',
+    'Limits at Infinity: lim_{x → -∞} F_X(x) = 0 and lim_{x → +∞} F_X(x) = 1.',
+    'Slope as Density: The instantaneous slope of the CDF is the probability density.',
+  ],
+  sourceRef: {
+    id: 'SRC-P2-CH03-001',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 3: PDF and CDF definitions',
+    note: 'CDF integration from PDF and differentiation relationship.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000020: ConceptContent = {
+  id: 'C-000020',
+  title: 'Continuous Distribution Families: Uniform & Exponential',
+  moduleId: 'M10',
+  intuition:
+    'The Uniform distribution models complete lack of preference over an interval [a, b] (flat constant density). The Exponential distribution models waiting times between independent Poisson events with constant hazard rate λ, uniquely characterized by its memoryless property.',
+  formalDefinition:
+    'Uniform Distribution: X ~ Uniform(a, b), a < b. f(x) = 1/(b-a) for x ∈ [a, b]. F(x) = (x-a)/(b-a) on [a, b]. E[X] = (a+b)/2, Var(X) = (b-a)^2 / 12.\nExponential Distribution: X ~ Exponential(λ), λ > 0. f(x) = λ e^(-λx) for x ≥ 0. F(x) = 1 - e^(-λx) for x ≥ 0. E[X] = 1/λ, Var(X) = 1/λ^2.',
+  formalDefinitionLatex:
+    '\\begin{aligned} &\\textbf{Uniform}(a, b): \\quad f(x) = \\frac{1}{b - a} \\; (a \\le x \\le b), \\quad E[X] = \\frac{a+b}{2}, \\quad \\text{Var}(X) = \\frac{(b-a)^2}{12} \\\\[6pt] &\\textbf{Exponential}(\\lambda): \\quad f(x) = \\lambda e^{-\\lambda x} \\; (x \\ge 0), \\quad E[X] = \\frac{1}{\\lambda}, \\quad \\text{Var}(X) = \\frac{1}{\\lambda^2} \\end{aligned}',
+  properties: [
+    'Memoryless Property of Exponential: P(X > s + t | X > s) = P(X > t).',
+    'Constant Hazard Rate: The conditional failure rate of an exponential random variable is constant λ over time.',
+    'Uniform Area: For Uniform(a, b), probability is simply the ratio of subinterval length to total length (b - a).',
+  ],
+  sourceRef: {
+    id: 'SRC-P2-CH04-001',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 4: Common distributions',
+    note: 'Uniform and Exponential distributions, PDF, CDF, expectation and variance.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000021: ConceptContent = {
+  id: 'C-000021',
+  title: 'The Gaussian (Normal) Distribution & Standard Normal Table',
+  moduleId: 'M10',
+  intuition:
+    'The Gaussian (Normal) distribution is the cornerstone of probability and statistics due to the Central Limit Theorem. Symmetrical and bell-shaped, it is completely determined by its mean μ and variance σ². Any normal variable can be standardized to Z ~ N(0, 1) using Z = (X - μ) / σ.',
+  formalDefinition:
+    'X ~ Normal(μ, σ²), σ > 0. Support ℝ.\nf_X(x) = (1 / (σ √(2π))) exp(-(x - μ)² / (2σ²)).\nMean E[X] = μ, Var(X) = σ².\nStandardization: Z = (X - μ) / σ ~ Normal(0, 1).\nStandard Normal CDF: Φ(z) = (1 / √(2π)) ∫_{-∞}^z e^(-t²/2) dt. Symmetry: Φ(-z) = 1 - Φ(z).',
+  formalDefinitionLatex:
+    'f_X(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}} \\exp\\left(-\\frac{(x - \\mu)^2}{2\\sigma^2}\\right), \\quad Z = \\frac{X - \\mu}{\\sigma}, \\quad \\Phi(-z) = 1 - \\Phi(z)',
+  properties: [
+    'Symmetry About the Mean: f(μ - x) = f(μ + x) for all x.',
+    'Empirical Rule: Approximately 68.27% of probability mass lies in [μ - σ, μ + σ], 95.45% in [μ - 2σ, μ + 2σ], and 99.73% in [μ - 3σ, μ + 3σ].',
+    'Invariance Under Affine Transforms: If X ~ N(μ, σ²), then aX + b ~ N(aμ + b, a²σ²).',
+  ],
+  sourceRef: {
+    id: 'SRC-P2-CH04-002',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 4: Common distributions',
+    note: 'Gaussian distribution, standardization, and standard normal CDF.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000022: ConceptContent = {
+  id: 'C-000022',
+  title: 'Transformations of Random Variables & The Change-of-Variables Formula',
+  moduleId: 'M11',
+  intuition:
+    'When a continuous random variable X is transformed by a smooth invertible function Y = g(X), the density changes not only by shifting values through g, but also by stretching or compressing probability space. The Jacobian scale factor |d/dy g⁻¹(y)| preserves probability mass.',
+  formalDefinition:
+    'Let X be a continuous random variable with PDF f_X(x), and let Y = g(X) where g: ℝ → ℝ is strictly monotonic and differentiable with inverse x = g⁻¹(y). Then the PDF of Y is:\nf_Y(y) = f_X(g⁻¹(y)) · |(d/dy) g⁻¹(y)| = f_X(g⁻¹(y)) / |g\'(g⁻¹(y))|.',
+  formalDefinitionLatex:
+    'f_Y(y) = f_X(g^{-1}(y)) \\left| \\frac{d}{dy} g^{-1}(y) \\right| = \\frac{f_X(x)}{|g\'(x)|} \\quad \\text{where } x = g^{-1}(y)',
+  properties: [
+    'Probability Conservation: P(y_1 ≤ Y ≤ y_2) = P(g⁻¹(y_1) ≤ X ≤ g⁻¹(y_2)).',
+    'Jacobian Scale Factor: The derivative accounts for the local stretch or compression of the infinitesimal interval dy.',
+    'Invertibility Requirement: The direct formula requires g to be strictly increasing or strictly decreasing.',
+  ],
+  sourceRef: {
+    id: 'SRC-P2-CH05-001',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 5: Functions of random variables',
+    note: 'Monotone transformation theorem and Jacobian scaling.',
+  },
+  classification: 'source_derived',
+};
+
+export const CONCEPT_C000023: ConceptContent = {
+  id: 'C-000023',
+  title: 'Linear Transformations & The General CDF Method',
+  moduleId: 'M11',
+  intuition:
+    'For linear/affine transformations Y = aX + b, the density scales by 1/|a|. For non-monotone transformations (such as Y = X²), the direct change-of-variables formula cannot be applied directly; instead, we use the foundational CDF method: determine F_Y(y) = P(Y ≤ y) by integrating over the pre-image, then differentiate.',
+  formalDefinition:
+    'Linear Transformation: If Y = aX + b (a ≠ 0), then f_Y(y) = (1 / |a|) f_X((y - b) / a).\nCDF Method for Non-Monotone Maps: 1. Express F_Y(y) = P(g(X) ≤ y) = ∫_{x: g(x) ≤ y} f_X(x) dx; 2. Differentiate F_Y(y) with respect to y to obtain f_Y(y) = (d/dy) F_Y(y).\nFor Y = X² (y ≥ 0): F_Y(y) = P(-√y ≤ X ≤ √y) = F_X(√y) - F_X(-√y), so f_Y(y) = (f_X(√y) + f_X(-√y)) / (2√y).',
+  formalDefinitionLatex:
+    '\\begin{aligned} &Y = aX + b \\implies f_Y(y) = \\frac{1}{|a|} f_X\\left(\\frac{y - b}{a}\\right) \\\\[4pt] &Y = X^2 \\implies f_Y(y) = \\frac{f_X(\\sqrt{y}) + f_X(-\\sqrt{y})}{2\\sqrt{y}} \\quad (y > 0) \\end{aligned}',
+  properties: [
+    'Universal Applicability of CDF Method: The CDF method works for any measurable transformation, monotone or non-monotone.',
+    'Scale Inversion: Scaling X by factor a compresses the density height by 1/|a|.',
+    'Support Tracking: Always determine the image domain S_Y = g(S_X) to know where f_Y(y) > 0.',
+  ],
+  sourceRef: {
+    id: 'SRC-P2-CH05-002',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 5: Functions of random variables',
+    note: 'Linear scaling formula and square transformation via CDF method.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000001,
   CONCEPT_C000002,
@@ -498,6 +648,12 @@ export const ALL_CONCEPTS: readonly ConceptContent[] = [
   CONCEPT_C000015,
   CONCEPT_C000016,
   CONCEPT_C000017,
+  CONCEPT_C000018,
+  CONCEPT_C000019,
+  CONCEPT_C000020,
+  CONCEPT_C000021,
+  CONCEPT_C000022,
+  CONCEPT_C000023,
 ];
 
 export function getConceptById(id: string): ConceptContent | undefined {
@@ -910,6 +1066,106 @@ export const EXERCISE_EX000016: ExerciseContent = {
   classification: 'supplementary',
 };
 
+export const EXERCISE_EX000017: ExerciseContent = {
+  id: 'EX-000017',
+  title: 'Continuous PDF Normalization Constant',
+  moduleId: 'M09',
+  category: 'numerical',
+  linkedConceptIds: ['C-000018', 'C-000019'],
+  prompt:
+    'A continuous random variable X has probability density function f_X(x) = c · x² for x ∈ [0, 3], and f_X(x) = 0 otherwise. Determine the exact value of the normalizing constant c such that f_X is a valid probability density function. Express your answer as a simplified fraction.',
+  promptLatex:
+    'f_X(x) = c x^2 \\quad (0 \\le x \\le 3), \\quad \\int_0^3 f_X(x) dx = 1. \\quad \\text{Find } c.',
+  expectedRational: { num: 1n, den: 9n },
+  explanation:
+    'By the normalization condition for a continuous PDF, the total area under f_X(x) must equal 1: ∫_0^3 c x² dx = c [x³/3]_0^3 = c (27/3) = 9c = 1. Therefore, c = 1/9.',
+  explanationLatex:
+    '\\int_0^3 c x^2 dx = c \\left[ \\frac{x^3}{3} \\right]_0^3 = 9c = 1 \\implies c = \\frac{1}{9}',
+  sourceRef: {
+    id: 'SRC-P2-CH02-002',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 2: Continuous random variables',
+    note: 'Polynomial density normalization on compact support.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000018: ExerciseContent = {
+  id: 'EX-000018',
+  title: 'Uniform Distribution Interval Probability',
+  moduleId: 'M09',
+  category: 'numerical',
+  linkedConceptIds: ['C-000018', 'C-000020'],
+  prompt:
+    'A continuous random variable X is uniformly distributed over the interval [2, 10] (X ~ Uniform(2, 10)) with constant density f_X(x) = 1/8. Calculate the interval probability P(4 ≤ X ≤ 8). Express your answer as a simplified fraction or decimal.',
+  promptLatex:
+    'X \\sim \\text{Uniform}(2, 10), \\quad f_X(x) = \\frac{1}{10 - 2} = \\frac{1}{8}. \\quad \\text{Find } P(4 \\le X \\le 8).',
+  expectedRational: { num: 1n, den: 2n },
+  explanation:
+    'For a Uniform(a, b) distribution, the interval probability is the length of the subinterval divided by the total support length: P(4 ≤ X ≤ 8) = ∫_4^8 (1/8) dx = (8 - 4) / 8 = 4/8 = 1/2 (or 0.50). In continuous models, endpoint inclusion does not change the probability.',
+  explanationLatex:
+    'P(4 \\le X \\le 8) = \\int_4^8 \\frac{1}{8} dx = \\frac{8 - 4}{8} = \\frac{4}{8} = \\frac{1}{2} = 0.50',
+  sourceRef: {
+    id: 'SRC-P2-CH04-003',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 4: Common distributions',
+    note: 'Uniform interval probability calculation and endpoint equivalence.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000019: ExerciseContent = {
+  id: 'EX-000019',
+  title: 'Continuous Exponential-Decay Interval Evaluation',
+  moduleId: 'M10',
+  category: 'numerical',
+  linkedConceptIds: ['C-000019', 'C-000020'],
+  prompt:
+    'A continuous random variable X has CDF given by F_X(x) = 1 - (1/4)^x for x ≥ 0 (and F_X(x) = 0 for x < 0). Calculate the exact interval probability P(1 ≤ X ≤ 2). Express your answer as a simplified fraction.',
+  promptLatex:
+    'F_X(x) = 1 - \\left(\\frac{1}{4}\\right)^x \\quad (x \\ge 0). \\quad \\text{Find } P(1 \\le X \\le 2) = F(2) - F(1).',
+  expectedRational: { num: 3n, den: 16n },
+  explanation:
+    'Using the CDF interval relation: P(1 ≤ X ≤ 2) = F(2) - F(1) = [1 - (1/4)²] - [1 - (1/4)¹] = (1/4) - (1/16) = 4/16 - 1/16 = 3/16 (or 0.1875).',
+  explanationLatex:
+    'P(1 \\le X \\le 2) = F(2) - F(1) = \\left[1 - \\frac{1}{16}\\right] - \\left[1 - \\frac{1}{4}\\right] = \\frac{1}{4} - \\frac{1}{16} = \\frac{3}{16} = 0.1875',
+  sourceRef: {
+    id: 'SRC-P2-CH03-002',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 3: PDF and CDF definitions',
+    note: 'Exponential-decay CDF interval difference evaluation.',
+  },
+  classification: 'supplementary',
+};
+
+export const EXERCISE_EX000020: ExerciseContent = {
+  id: 'EX-000020',
+  title: 'Linear Transformation Density Scale Factor',
+  moduleId: 'M11',
+  category: 'numerical',
+  linkedConceptIds: ['C-000022', 'C-000023'],
+  prompt:
+    'Let continuous random variable X be uniformly distributed on [0, 4] with density f_X(x) = 1/4. A new random variable Y is defined by the affine transformation Y = 2X + 3. Using the transformation formula f_Y(y) = (1 / |a|) f_X((y - b) / a) with a = 2, calculate the constant density height of f_Y(y) on its support [3, 11]. Express your answer as a simplified fraction.',
+  promptLatex:
+    'X \\sim \\text{Uniform}(0, 4), \\quad f_X(x) = \\frac{1}{4}, \\quad Y = 2X + 3.\\newline \\text{Find the density height } f_Y(y) \\text{ on support } [3, 11].',
+  expectedRational: { num: 1n, den: 8n },
+  explanation:
+    'By the linear transformation rule for continuous densities, stretching the variable by a factor of 2 compresses the density by 1/|a| = 1/2: f_Y(y) = (1/2) f_X((y - 3)/2) = (1/2) * (1/4) = 1/8. Notice that on support [3, 11] of width 8, the total area is (8) * (1/8) = 1.',
+  explanationLatex:
+    'f_Y(y) = \\frac{1}{|a|} f_X\\left(\\frac{y - b}{a}\\right) = \\frac{1}{2} \\times \\frac{1}{4} = \\frac{1}{8}',
+  sourceRef: {
+    id: 'SRC-P2-CH05-003',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 5: Functions of random variables',
+    note: 'Affine transformation density scaling factor.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000001,
   EXERCISE_EX000002,
@@ -927,6 +1183,10 @@ export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000014,
   EXERCISE_EX000015,
   EXERCISE_EX000016,
+  EXERCISE_EX000017,
+  EXERCISE_EX000018,
+  EXERCISE_EX000019,
+  EXERCISE_EX000020,
 ];
 
 export function getExerciseById(id: string): ExerciseContent | undefined {

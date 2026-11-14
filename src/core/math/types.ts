@@ -30,7 +30,11 @@ export type CalculationId =
   | 'CAL-DIST-001'
   | 'CAL-DIST-002'
   | 'CAL-DIST-003'
-  | 'CAL-DIST-004';
+  | 'CAL-DIST-004'
+  | 'CAL-CONT-001'
+  | 'CAL-CONT-002'
+  | 'CAL-CONT-003'
+  | 'CAL-CONT-004';
 
 export type ErrorCode =
   | 'E-PROB-RANGE'
