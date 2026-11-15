@@ -12,6 +12,7 @@ import { LabPL10 } from '../components/LabPL10';
 import { LabPL11 } from '../components/LabPL11';
 import { CustomExperimentBuilder } from '../components/CustomExperimentBuilder';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import { ContextualHelpBar } from '../components/ContextualHelpBar';
 import { LocalPersistenceService } from '../../core/storage/persistence';
 
 export type LabTabId =
@@ -187,6 +188,9 @@ export const PlaygroundScreen: React.FC<PlaygroundScreenProps> = ({
           {importStatus}
         </div>
       )}
+
+      {/* Ambient Contextual Help Guide */}
+      <ContextualHelpBar screen="playground" />
 
       {/* Guided Lab Selector Navigation Bar */}
       <div

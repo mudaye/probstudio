@@ -6,11 +6,12 @@ import {
   getExercisesByModule,
   getConceptById,
 } from '../../core/content/fixtures';
-import { getModuleById } from '../../core/content/modules';
+import { PARTS, MODULES, getModuleById } from '../../core/content/modules';
 import { checkExactRationalAnswer, AssessmentCheckResult } from '../../core/assessment/checker';
 import { LocalPersistenceService, StoredAttempt } from '../../core/storage/persistence';
 import { MathView } from '../components/MathView';
 import { ModuleNavDrawer } from '../components/ModuleNavDrawer';
+import { ContextualHelpBar } from '../components/ContextualHelpBar';
 import { buildRevisionQueue } from '../../core/mastery/scheduler';
 
 const MODULE_TO_LAB: Record<string, { labId: string; labTitle: string }> = {
@@ -65,6 +66,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
   const [resultsMap, setResultsMap] = useState<Record<string, AssessmentCheckResult | null>>({});
   const [history, setHistory] = useState<StoredAttempt[]>([]);
   const [reviewOnly, setReviewOnly] = useState<boolean>(false);
+  const [isGridViewOpen, setIsGridViewOpen] = useState<boolean>(false);
   const [selfAssessment, setSelfAssessment] = useState<'can_explain' | 'partly' | 'need_help' | null>(null);
   const [latestAttemptId, setLatestAttemptId] = useState<string | null>(null);
   const [manualFlags, setManualFlags] = useState<Record<string, boolean>>(() =>
@@ -95,6 +97,22 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
 
   const activeExercise =
     getExerciseById(selectedExerciseId) || visibleExercises[0] || ALL_EXERCISES[0];
+
+  const currentIndex = visibleExercises.findIndex((ex) => ex.id === activeExercise.id);
+  const hasPrev = currentIndex > 0;
+  const hasNext = currentIndex >= 0 && currentIndex < visibleExercises.length - 1;
+
+  const handlePrev = () => {
+    if (hasPrev) {
+      setSelectedExerciseId(visibleExercises[currentIndex - 1].id);
+    }
+  };
+
+  const handleNext = () => {
+    if (hasNext) {
+      setSelectedExerciseId(visibleExercises[currentIndex + 1].id);
+    }
+  };
 
   const currentInput = inputMap[activeExercise.id] ?? '';
   const currentResult = resultsMap[activeExercise.id] ?? null;
@@ -245,37 +263,142 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
 
         {/* Practice Problem Workspace */}
         <div className="drawer-layout-content">
+          {/* Ambient Contextual Help Guide */}
+          <ContextualHelpBar screen="practice" />
+
           {visibleExercises.length > 0 ? (
             <div>
-              {/* Exercise Selector Bar */}
+              {/* Exercise Selector: Stepper & Dropdown Combobox (No Clunky Horizontal Scrollbar) */}
               <div
                 style={{
                   display: 'flex',
-                  gap: '0.5rem',
-                  overflowX: 'auto',
-                  paddingBottom: '0.5rem',
+                  alignItems: 'center',
+                  gap: '0.6rem',
+                  padding: '0.6rem 0.8rem',
+                  background: '#f8fafc',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
                   marginBottom: '1.25rem',
+                  flexWrap: 'wrap',
                 }}
-                role="tablist"
-                aria-label="Available exercises"
               >
-                {visibleExercises.map((ex) => {
-                  const isSelected = ex.id === activeExercise.id;
-                  return (
-                    <button
-                      key={ex.id}
-                      role="tab"
-                      aria-selected={isSelected}
-                      className={`pill ${isSelected ? 'selected' : ''}`}
-                      onClick={() => setSelectedExerciseId(ex.id)}
-                      style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-                    >
-                      <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>{ex.id}</span>
-                      <span>{ex.title}</span>
-                    </button>
-                  );
-                })}
+                <button
+                  className="btn-secondary btn-sm"
+                  onClick={handlePrev}
+                  disabled={!hasPrev}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                  title="Previous Exercise"
+                >
+                  &larr; Prev
+                </button>
+
+                <div style={{ flex: '1 1 300px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <label htmlFor="exercise-select" style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569', whiteSpace: 'nowrap' }}>
+                    Problem:
+                  </label>
+                  <select
+                    id="exercise-select"
+                    value={activeExercise.id}
+                    onChange={(e) => setSelectedExerciseId(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.4rem 0.6rem',
+                      borderRadius: '6px',
+                      border: '1px solid #cbd5e1',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      color: '#0f172a',
+                      background: '#ffffff',
+                    }}
+                  >
+                    {PARTS.map((part) => {
+                      const partModules = MODULES.filter((m) => m.partId === part.id);
+                      return partModules.map((mod) => {
+                        const modExercises = visibleExercises.filter((ex) => ex.moduleId === mod.id);
+                        if (modExercises.length === 0) return null;
+                        return (
+                          <optgroup key={mod.id} label={`${part.id} • ${mod.id}: ${mod.title}`}>
+                            {modExercises.map((ex) => (
+                              <option key={ex.id} value={ex.id}>
+                                {ex.id}: {ex.title} ({ex.category})
+                              </option>
+                            ))}
+                          </optgroup>
+                        );
+                      });
+                    })}
+                  </select>
+                </div>
+
+                <button
+                  className="btn-secondary btn-sm"
+                  onClick={handleNext}
+                  disabled={!hasNext}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                  title="Next Exercise"
+                >
+                  Next &rarr;
+                </button>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto' }}>
+                  <span
+                    style={{
+                      fontSize: '0.78rem',
+                      fontWeight: 600,
+                      color: '#64748b',
+                      padding: '2px 8px',
+                      background: '#e2e8f0',
+                      borderRadius: '12px',
+                    }}
+                  >
+                    {currentIndex + 1} of {visibleExercises.length}
+                  </span>
+
+                  <button
+                    className="btn-secondary btn-sm"
+                    onClick={() => setIsGridViewOpen((prev) => !prev)}
+                    title={isGridViewOpen ? 'Hide problem chips' : 'Show problem chips as a clean wrapped grid'}
+                    style={{ fontSize: '0.78rem' }}
+                  >
+                    {isGridViewOpen ? '▲ Hide Chips' : '☷ Grid View'}
+                  </button>
+                </div>
               </div>
+
+              {/* Module-scoped pills (clean & compact) OR expanded grid view */}
+              {(selectedModuleId || isGridViewOpen) && (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '0.5rem',
+                    marginBottom: '1.25rem',
+                    padding: '0.75rem',
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                  }}
+                  role="tablist"
+                  aria-label="Available exercises"
+                >
+                  {visibleExercises.map((ex) => {
+                    const isSelected = ex.id === activeExercise.id;
+                    return (
+                      <button
+                        key={ex.id}
+                        role="tab"
+                        aria-selected={isSelected}
+                        className={`pill ${isSelected ? 'selected' : ''}`}
+                        onClick={() => setSelectedExerciseId(ex.id)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                      >
+                        <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>{ex.id}</span>
+                        <span>{ex.title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Exercise Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>

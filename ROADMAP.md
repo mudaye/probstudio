@@ -1,7 +1,7 @@
 # Probability Revision Studio — Roadmap
 
 **Purpose:** Track curriculum activation, laboratory capability, assessment expansion, and mastery engine evolution across Probability Revision Studio.  
-**Current Stage:** Stage 5 — Adaptive Mastery Engine & Spaced Revision Scheduler.  
+**Current Stage:** Stage 6 — Assessment Depth & Laboratory Harmonization (Stage 5 Completed).  
 **Core Principles:**
 - Grounded in source transcripts (`transcripts/Review of Basic Probability 1-3.md`).
 - 100% deterministic mathematical calculations, validation, and scoring.
@@ -18,10 +18,11 @@
 | **Concept Coverage** | **44 Concepts** (`C-000001`–`C-000044`) | Verified definitions, intuition, LaTeX formulas, examples, and cross-links |
 | **Practice Gym** | **31 Scored Exercises** (`EX-000001`–`EX-000031`) | Exact rational answer evaluation, step-by-step solutions, hint ladders |
 | **Guided Laboratories** | **11 Active Labs + Custom Builder** (`PL-01`–`PL-11`, `EXP-BUILDER`) | Interactive SVG/canvas visualizers, deterministic PRNG simulations |
-| **Test Suite Coverage** | **18 Suites, 192 Passing Tests** | Vitest automated golden vectors, domain boundaries, precision tests |
+| **Test Suite Coverage** | **19 Suites, 203 Passing Tests** | Vitest automated golden vectors, domain boundaries, precision tests |
 | **Build & Type Safety** | **Clean Production Build** | TypeScript (`tsc && vite build`) passing with zero errors |
 | **Routing & Navigation** | **Bi-directional Hash Routing** | Deep-links (`#/playground/:id`, `#/atlas/:id`, `#/practice/:id`) with state preserved |
 | **Persistence & Backup** | **Local-First JSON Export/Import** | Full learner attempts, activity logs, and laboratory comparison snapshots |
+| **Adaptive Mastery & Spaced Revision** | **4-Tier State Engine & Leitner Ladder** | Multi-day unassisted criteria for Secure, confidence calibration, manual review flags |
 
 ---
 
@@ -53,8 +54,8 @@
 | **Stage 2** | **Deterministic Core** | Exact rational arithmetic engine (`Rational`), deterministic simulation PRNG, error code taxonomy. | **Completed** |
 | **Stage 3** | **Vertical Slice** | 6-step prototype learner journey across Dashboard, Atlas, Gym, and `PL-01`. | **Completed** |
 | **Stage 4** | **Curriculum Activation & Lab Expansion** | 100% activation of Modules M01–M22, activation of Guided Labs `PL-02` through `PL-11`, Custom Builder, ErrorBoundary, and bi-directional deep-linking. | **Completed** |
-| **Stage 5** | **Adaptive Mastery & Spaced Revision Engine** | Deterministic 4-tier mastery state machine (`Unseen` $\to$ `Exploring` $\to$ `Practising` $\to$ `Secure` / `Review Due`), Leitner interval progression, Dashboard Revision Queue, manual review flags, and Practice Gym review filter. | **In Progress** |
-| **Stage 6** | **Assessment Depth & Laboratory Harmonization** | Multi-part exercise expansion (ensuring $\ge 2$ exercises per module), vector/interval answer checks, migrating `PL-03`–`PL-10` to shared `LabShell`. | **Planned** |
+| **Stage 5** | **Adaptive Mastery & Spaced Revision Engine** | Deterministic 4-tier mastery state machine (`Unseen` $\to$ `Exploring` $\to$ `Practising` $\to$ `Secure` / `Review Due`), Leitner interval progression, Dashboard Revision Queue, manual review flags, Practice Gym review filter, self-assessment confidence feedback, in-situ contextual help bars, and non-scrolling stepper/combobox item navigation. | **Completed** |
+| **Stage 6** | **Assessment Depth & Laboratory Harmonization** | Multi-part exercise expansion (ensuring $\ge 2$ exercises per module), vector/interval answer checks, migrating `PL-03`–`PL-10` to shared `LabShell`. | **Up Next** |
 | **Stage 7** | **Accessibility, Polish & Release** | WCAG 2.1 AA keyboard/screen-reader audit, code-splitting optimization, and offline PWA capability. | **Planned** |
 
 ---

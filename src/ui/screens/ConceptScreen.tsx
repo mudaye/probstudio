@@ -5,10 +5,11 @@ import {
   getConceptsByModule,
   getExercisesByConcept,
 } from '../../core/content/fixtures';
-import { getModuleById } from '../../core/content/modules';
+import { PARTS, MODULES, getModuleById } from '../../core/content/modules';
 import { MathView } from '../components/MathView';
 import { LocalPersistenceService } from '../../core/storage/persistence';
 import { ModuleNavDrawer } from '../components/ModuleNavDrawer';
+import { ContextualHelpBar } from '../components/ContextualHelpBar';
 import { computeConceptMastery } from '../../core/mastery/scheduler';
 import { ConceptMasteryRecord } from '../../core/mastery/types';
 
@@ -51,6 +52,7 @@ export const ConceptScreen: React.FC<ConceptScreenProps> = ({
   initialConceptId = null,
 }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
+  const [isGridViewOpen, setIsGridViewOpen] = useState(false);
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(initialModuleId);
   const [selectedConceptId, setSelectedConceptId] = useState<string>(initialConceptId || 'C-000001');
   const [manualFlags, setManualFlags] = useState<Record<string, boolean>>(() =>
@@ -63,6 +65,22 @@ export const ConceptScreen: React.FC<ConceptScreenProps> = ({
     : ALL_CONCEPTS;
 
   const activeConcept = getConceptById(selectedConceptId) || visibleConcepts[0] || ALL_CONCEPTS[0];
+
+  const currentIndex = visibleConcepts.findIndex((c) => c.id === activeConcept.id);
+  const hasPrev = currentIndex > 0;
+  const hasNext = currentIndex >= 0 && currentIndex < visibleConcepts.length - 1;
+
+  const handlePrev = () => {
+    if (hasPrev) {
+      setSelectedConceptId(visibleConcepts[currentIndex - 1].id);
+    }
+  };
+
+  const handleNext = () => {
+    if (hasNext) {
+      setSelectedConceptId(visibleConcepts[currentIndex + 1].id);
+    }
+  };
 
   const activeMastery: ConceptMasteryRecord = computeConceptMastery(
     activeConcept,
@@ -126,6 +144,45 @@ export const ConceptScreen: React.FC<ConceptScreenProps> = ({
         </div>
       )}
 
+      {/* Top Filter and Actions Bar */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1rem',
+          flexWrap: 'wrap',
+          gap: '0.75rem',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button
+            className="btn-secondary btn-sm"
+            onClick={() => setIsDrawerOpen((prev) => !prev)}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+            title={isDrawerOpen ? 'Collapse module filter drawer' : 'Expand module filter drawer'}
+          >
+            <span>{isDrawerOpen ? '✕ Hide Filter Drawer' : '📑 Filter by Module'}</span>
+            {selectedModuleId && <span className="mod-id-badge active">{selectedModuleId}</span>}
+          </button>
+
+          {selectedModuleId && (
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+              Filtering: <strong>{selectedModule?.id}: {selectedModule?.title}</strong> ({visibleConcepts.length} concepts)
+            </span>
+          )}
+        </div>
+
+        {selectedModuleId && (
+          <button
+            className="btn-secondary btn-sm"
+            onClick={() => handleSelectModule(null)}
+          >
+            ✕ Clear Filter (Browse All Concepts)
+          </button>
+        )}
+      </div>
+
       {/* Main Two-Column Drawer Layout */}
       <div className="drawer-layout">
         {/* Scoped Module Navigation Drawer */}
@@ -141,6 +198,9 @@ export const ConceptScreen: React.FC<ConceptScreenProps> = ({
 
         {/* Main Content Area */}
         <div className="drawer-layout-content">
+          {/* Ambient Contextual Help Guide */}
+          <ContextualHelpBar screen="atlas" />
+
           {/* Active Filter Bar if filtered by module */}
           {selectedModuleId && (
             <div
@@ -169,35 +229,138 @@ export const ConceptScreen: React.FC<ConceptScreenProps> = ({
 
           {visibleConcepts.length > 0 ? (
             <div>
-              {/* Concept Selector Tabs */}
+              {/* Concept Selector: Stepper & Dropdown Combobox (No Clunky Horizontal Scrollbar) */}
               <div
                 style={{
                   display: 'flex',
-                  gap: '0.5rem',
-                  overflowX: 'auto',
-                  paddingBottom: '0.5rem',
+                  alignItems: 'center',
+                  gap: '0.6rem',
+                  padding: '0.6rem 0.8rem',
+                  background: '#f8fafc',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
                   marginBottom: '1.25rem',
+                  flexWrap: 'wrap',
                 }}
-                role="tablist"
-                aria-label="Concepts in this section"
               >
-                {visibleConcepts.map((concept) => {
-                  const isSelected = concept.id === activeConcept.id;
-                  return (
-                    <button
-                      key={concept.id}
-                      role="tab"
-                      aria-selected={isSelected}
-                      className={`pill ${isSelected ? 'selected' : ''}`}
-                      onClick={() => setSelectedConceptId(concept.id)}
-                      style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-                    >
-                      <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>{concept.id}</span>
-                      <span>{concept.title}</span>
-                    </button>
-                  );
-                })}
+                <button
+                  className="btn-secondary btn-sm"
+                  onClick={handlePrev}
+                  disabled={!hasPrev}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                  title="Previous Concept"
+                >
+                  &larr; Prev
+                </button>
+
+                <div style={{ flex: '1 1 300px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <label htmlFor="concept-select" style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569', whiteSpace: 'nowrap' }}>
+                    Concept:
+                  </label>
+                  <select
+                    id="concept-select"
+                    value={activeConcept.id}
+                    onChange={(e) => setSelectedConceptId(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.4rem 0.6rem',
+                      borderRadius: '6px',
+                      border: '1px solid #cbd5e1',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      color: '#0f172a',
+                      background: '#ffffff',
+                    }}
+                  >
+                    {PARTS.map((part) => {
+                      const partModules = MODULES.filter((m) => m.partId === part.id);
+                      return partModules.map((mod) => {
+                        const modConcepts = visibleConcepts.filter((c) => c.moduleId === mod.id);
+                        if (modConcepts.length === 0) return null;
+                        return (
+                          <optgroup key={mod.id} label={`${part.id} • ${mod.id}: ${mod.title}`}>
+                            {modConcepts.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.id}: {c.title} {manualFlags[c.id] ? '🔖' : ''}
+                              </option>
+                            ))}
+                          </optgroup>
+                        );
+                      });
+                    })}
+                  </select>
+                </div>
+
+                <button
+                  className="btn-secondary btn-sm"
+                  onClick={handleNext}
+                  disabled={!hasNext}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                  title="Next Concept"
+                >
+                  Next &rarr;
+                </button>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto' }}>
+                  <span
+                    style={{
+                      fontSize: '0.78rem',
+                      fontWeight: 600,
+                      color: '#64748b',
+                      padding: '2px 8px',
+                      background: '#e2e8f0',
+                      borderRadius: '12px',
+                    }}
+                  >
+                    {currentIndex + 1} of {visibleConcepts.length}
+                  </span>
+
+                  <button
+                    className="btn-secondary btn-sm"
+                    onClick={() => setIsGridViewOpen((prev) => !prev)}
+                    title={isGridViewOpen ? 'Hide concept chips' : 'Show concept chips as a clean wrapped grid'}
+                    style={{ fontSize: '0.78rem' }}
+                  >
+                    {isGridViewOpen ? '▲ Hide Chips' : '☷ Grid View'}
+                  </button>
+                </div>
               </div>
+
+              {/* Module-scoped pills (always clean & compact) OR expanded grid view */}
+              {(selectedModuleId || isGridViewOpen) && (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '0.5rem',
+                    marginBottom: '1.25rem',
+                    padding: '0.75rem',
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                  }}
+                  role="tablist"
+                  aria-label="Concepts in current selection"
+                >
+                  {visibleConcepts.map((concept) => {
+                    const isSelected = concept.id === activeConcept.id;
+                    return (
+                      <button
+                        key={concept.id}
+                        role="tab"
+                        aria-selected={isSelected}
+                        className={`pill ${isSelected ? 'selected' : ''}`}
+                        onClick={() => setSelectedConceptId(concept.id)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                      >
+                        <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>{concept.id}</span>
+                        <span>{concept.title}</span>
+                        {manualFlags[concept.id] && <span title="Marked for review">🔖</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Active Concept Details Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>

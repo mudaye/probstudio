@@ -5,6 +5,7 @@ import {
   ActivityEvent,
   LabComparisonSnapshot,
 } from '../../core/storage/persistence';
+import { ContextualHelpBar } from '../components/ContextualHelpBar';
 
 interface SettingsScreenProps {
   onNavigate: (route: string, params?: Record<string, string>) => void;
@@ -98,6 +99,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onNavigate }) =>
           &larr; Back to Dashboard
         </button>
       </div>
+
+      {/* Ambient Contextual Help Guide */}
+      <ContextualHelpBar screen="settings" />
 
       {importStatus && (
         <div

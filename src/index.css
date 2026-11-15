@@ -297,8 +297,71 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 }
 
 .module-drawer.collapsed {
-  width: 48px;
+  width: 46px;
   overflow: hidden;
+  background: #f8fafc;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-color: #cbd5e1;
+  transition: all 0.2s ease;
+}
+
+.module-drawer.collapsed:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.drawer-collapsed-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 0;
+  outline: none;
+}
+
+.drawer-collapsed-btn {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: background 0.15s ease;
+}
+
+.drawer-collapsed-btn:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+}
+
+.drawer-collapsed-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.drawer-collapsed-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: #2563eb;
+  color: #ffffff;
+  padding: 2px 4px;
+  border-radius: 4px;
+  text-align: center;
 }
 
 .drawer-header {
