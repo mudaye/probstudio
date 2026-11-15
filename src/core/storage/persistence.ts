@@ -12,6 +12,8 @@ export interface StoredAttempt {
   readonly calculation_id: string;
   readonly feedback_summary: string;
   readonly schema_version: string;
+  readonly hints_used?: number;
+  readonly self_assessment?: 'can_explain' | 'partly' | 'need_help';
 }
 
 export interface ActivityEvent {
@@ -152,6 +154,21 @@ export class LocalPersistenceService {
     }
 
     return fullAttempt;
+  }
+
+  static updateAttemptSelfAssessment(
+    attemptId: string,
+    assessment: 'can_explain' | 'partly' | 'need_help'
+  ): void {
+    try {
+      const attempts = this.getAttempts();
+      const updated = attempts.map((a) =>
+        a.attempt_id === attemptId ? { ...a, self_assessment: assessment } : a
+      );
+      setItem(ATTEMPTS_KEY, JSON.stringify(updated));
+    } catch (err) {
+      console.error('Storage write error for self assessment:', err);
+    }
   }
 
   static getAttempts(exerciseId?: string): StoredAttempt[] {

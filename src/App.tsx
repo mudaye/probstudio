@@ -3,8 +3,10 @@ import { DashboardScreen } from './ui/screens/DashboardScreen';
 import { PracticeScreen } from './ui/screens/PracticeScreen';
 import { ConceptScreen } from './ui/screens/ConceptScreen';
 import { PlaygroundScreen } from './ui/screens/PlaygroundScreen';
+import { SettingsScreen } from './ui/screens/SettingsScreen';
+import { HelpModal } from './ui/components/HelpModal';
 
-type RouteType = 'dashboard' | 'practice' | 'atlas' | 'playground';
+type RouteType = 'dashboard' | 'practice' | 'atlas' | 'playground' | 'settings';
 
 function parseHash(): { route: RouteType; params: Record<string, string> } {
   if (typeof window === 'undefined') return { route: 'dashboard', params: {} };
@@ -29,7 +31,7 @@ function parseHash(): { route: RouteType; params: Record<string, string> } {
     });
   }
 
-  const validRoutes: RouteType[] = ['dashboard', 'practice', 'atlas', 'playground'];
+  const validRoutes: RouteType[] = ['dashboard', 'practice', 'atlas', 'playground', 'settings'];
   if (validRoutes.includes(routeName)) {
     return { route: routeName, params };
   }
@@ -39,6 +41,7 @@ function parseHash(): { route: RouteType; params: Record<string, string> } {
 export const App: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<RouteType>(() => parseHash().route);
   const [routeParams, setRouteParams] = useState<Record<string, string>>(() => parseHash().params);
+  const [isGuideOpen, setIsGuideOpen] = useState<boolean>(false);
 
   // Context preservation across navigation
   const [practiceInput, setPracticeInput] = useState<string>('');
@@ -112,18 +115,18 @@ export const App: React.FC = () => {
             </li>
             <li>
               <button
-                className={`nav-button ${currentRoute === 'practice' ? 'active' : ''}`}
-                onClick={() => navigateTo('practice')}
-              >
-                Practice Gym
-              </button>
-            </li>
-            <li>
-              <button
                 className={`nav-button ${currentRoute === 'atlas' ? 'active' : ''}`}
                 onClick={() => navigateTo('atlas')}
               >
                 Concept Atlas
+              </button>
+            </li>
+            <li>
+              <button
+                className={`nav-button ${currentRoute === 'practice' ? 'active' : ''}`}
+                onClick={() => navigateTo('practice')}
+              >
+                Practice Gym
               </button>
             </li>
             <li>
@@ -134,13 +137,37 @@ export const App: React.FC = () => {
                 Playground Labs
               </button>
             </li>
+            <li>
+              <button
+                className={`nav-button ${currentRoute === 'settings' ? 'active' : ''}`}
+                onClick={() => navigateTo('settings')}
+                title="Studio Settings & Data Management"
+              >
+                ⚙️ Settings
+              </button>
+            </li>
+            <li>
+              <button
+                className="nav-button"
+                style={{ background: '#f1f5f9', color: '#1e293b', fontWeight: 600 }}
+                onClick={() => setIsGuideOpen(true)}
+                title="Open Study Guide & Progression Modal"
+              >
+                📖 Guide
+              </button>
+            </li>
           </ul>
         </nav>
       </header>
 
       {/* Main Feature View */}
       <main className="main-content">
-        {currentRoute === 'dashboard' && <DashboardScreen onNavigate={navigateTo} />}
+        {currentRoute === 'dashboard' && (
+          <DashboardScreen
+            onNavigate={navigateTo}
+            onOpenGuide={() => setIsGuideOpen(true)}
+          />
+        )}
         {currentRoute === 'practice' && (
           <PracticeScreen
             onNavigate={navigateTo}
@@ -165,7 +192,16 @@ export const App: React.FC = () => {
             onNavigate={navigateTo}
           />
         )}
+        {currentRoute === 'settings' && <SettingsScreen onNavigate={navigateTo} />}
       </main>
+
+      {/* Persistent Help & Progression Modal */}
+      <HelpModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
+        currentRoute={currentRoute}
+        onNavigate={navigateTo}
+      />
 
       {/* Footer */}
       <footer style={{ borderTop: '1px solid var(--border)', padding: '1.25rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-muted)' }}>

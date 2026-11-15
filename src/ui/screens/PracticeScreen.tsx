@@ -65,14 +65,19 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
   const [resultsMap, setResultsMap] = useState<Record<string, AssessmentCheckResult | null>>({});
   const [history, setHistory] = useState<StoredAttempt[]>([]);
   const [reviewOnly, setReviewOnly] = useState<boolean>(false);
+  const [selfAssessment, setSelfAssessment] = useState<'can_explain' | 'partly' | 'need_help' | null>(null);
+  const [latestAttemptId, setLatestAttemptId] = useState<string | null>(null);
+  const [manualFlags, setManualFlags] = useState<Record<string, boolean>>(() =>
+    LocalPersistenceService.getManualReviewFlags()
+  );
 
   const reviewDueConcepts = useMemo(() => {
     const attempts = LocalPersistenceService.getAttempts();
     const activities = LocalPersistenceService.getActivities();
-    const manualFlags = LocalPersistenceService.getManualReviewFlags();
-    const queue = buildRevisionQueue(ALL_CONCEPTS, attempts, activities, manualFlags);
+    const flags = LocalPersistenceService.getManualReviewFlags();
+    const queue = buildRevisionQueue(ALL_CONCEPTS, attempts, activities, flags);
     return new Set(queue.map((q) => q.conceptId));
-  }, [history]);
+  }, [history, manualFlags]);
 
   // Filter exercises
   const visibleExercises = useMemo(() => {
@@ -96,6 +101,8 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
 
   useEffect(() => {
     setHistory(LocalPersistenceService.getAttempts(activeExercise.id));
+    setSelfAssessment(null);
+    setLatestAttemptId(null);
   }, [activeExercise.id]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,15 +130,34 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
     }));
 
     if (checkResult.status === 'correct' || checkResult.status === 'incorrect') {
-      LocalPersistenceService.recordAttempt({
+      const att = LocalPersistenceService.recordAttempt({
         exercise_id: activeExercise.id,
         raw_response: currentInput,
         outcome: checkResult.status,
         calculation_id: 'CAL-EVENT-001',
         feedback_summary: checkResult.message,
+        hints_used: 0,
       });
+      setLatestAttemptId(att.attempt_id);
       setHistory(LocalPersistenceService.getAttempts(activeExercise.id));
     }
+  };
+
+  const handleSelfAssess = (choice: 'can_explain' | 'partly' | 'need_help') => {
+    setSelfAssessment(choice);
+    if (latestAttemptId) {
+      LocalPersistenceService.updateAttemptSelfAssessment(latestAttemptId, choice);
+    }
+  };
+
+  const isConceptFlagged = activeExercise.linkedConceptIds.some((cid) => !!manualFlags[cid]);
+
+  const handleToggleGymReviewFlag = () => {
+    const nextFlagged = !isConceptFlagged;
+    for (const cid of activeExercise.linkedConceptIds) {
+      LocalPersistenceService.setManualReviewFlag(cid, nextFlagged);
+    }
+    setManualFlags(LocalPersistenceService.getManualReviewFlags());
   };
 
   const selectedModule = selectedModuleId ? getModuleById(selectedModuleId) : null;
@@ -334,6 +360,103 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
                       <div style={{ marginTop: '1rem', borderTop: '1px solid rgba(0,0,0,0.1)', paddingTop: '0.75rem' }}>
                         <strong>Mathematical Derivation:</strong>
                         <MathView math={currentResult.explanationLatex} block />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Self-Assessment & Review Flagging (A-002 §5.2 & A-005 §7) */}
+                {currentResult && (currentResult.status === 'correct' || currentResult.status === 'incorrect') && (
+                  <div
+                    style={{
+                      marginTop: '1rem',
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>
+                        Self-Assessment Feedback (A-002 §5.2):
+                      </span>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <button
+                          type="button"
+                          className={`pill ${selfAssessment === 'can_explain' ? 'selected' : ''}`}
+                          style={{
+                            fontSize: '0.78rem',
+                            padding: '4px 10px',
+                            background: selfAssessment === 'can_explain' ? '#dcfce7' : '#ffffff',
+                            color: selfAssessment === 'can_explain' ? '#15803d' : '#475569',
+                            borderColor: selfAssessment === 'can_explain' ? '#86efac' : '#cbd5e1',
+                          }}
+                          onClick={() => handleSelfAssess('can_explain')}
+                        >
+                          🟢 I can explain this
+                        </button>
+                        <button
+                          type="button"
+                          className={`pill ${selfAssessment === 'partly' ? 'selected' : ''}`}
+                          style={{
+                            fontSize: '0.78rem',
+                            padding: '4px 10px',
+                            background: selfAssessment === 'partly' ? '#fef3c7' : '#ffffff',
+                            color: selfAssessment === 'partly' ? '#b45309' : '#475569',
+                            borderColor: selfAssessment === 'partly' ? '#fcd34d' : '#cbd5e1',
+                          }}
+                          onClick={() => handleSelfAssess('partly')}
+                        >
+                          🟡 Partly
+                        </button>
+                        <button
+                          type="button"
+                          className={`pill ${selfAssessment === 'need_help' ? 'selected' : ''}`}
+                          style={{
+                            fontSize: '0.78rem',
+                            padding: '4px 10px',
+                            background: selfAssessment === 'need_help' ? '#fee2e2' : '#ffffff',
+                            color: selfAssessment === 'need_help' ? '#b91c1c' : '#475569',
+                            borderColor: selfAssessment === 'need_help' ? '#fca5a5' : '#cbd5e1',
+                          }}
+                          onClick={() => handleSelfAssess('need_help')}
+                        >
+                          🔴 I need help
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* "I need help" Action Banner */}
+                    {selfAssessment === 'need_help' && (
+                      <div
+                        style={{
+                          marginTop: '0.75rem',
+                          paddingTop: '0.75rem',
+                          borderTop: '1px dashed #cbd5e1',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          flexWrap: 'wrap',
+                          gap: '8px',
+                        }}
+                      >
+                        <span style={{ fontSize: '0.82rem', color: '#b91c1c' }}>
+                          Need reinforcement? Add this concept to your Dashboard review queue:
+                        </span>
+                        <button
+                          type="button"
+                          className="btn-secondary btn-sm"
+                          style={{
+                            background: isConceptFlagged ? '#fef3c7' : '#ffffff',
+                            borderColor: isConceptFlagged ? '#fcd34d' : '#fca5a5',
+                            color: isConceptFlagged ? '#b45309' : '#b91c1c',
+                            fontWeight: 600,
+                            fontSize: '0.78rem',
+                          }}
+                          onClick={handleToggleGymReviewFlag}
+                        >
+                          {isConceptFlagged ? '✓ Added to Review Queue' : '🔖 Add Concept to Review Queue'}
+                        </button>
                       </div>
                     )}
                   </div>

@@ -15,6 +15,7 @@ import { RevisionQueueItem, MasterySummary } from '../../core/mastery/types';
 
 interface DashboardScreenProps {
   onNavigate: (route: string, params?: Record<string, string>) => void;
+  onOpenGuide?: () => void;
 }
 
 const LAB_TITLES: Record<string, string> = {
@@ -32,7 +33,7 @@ const LAB_TITLES: Record<string, string> = {
   'EXP-BUILDER': 'Custom Experiment Builder',
 };
 
-export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) => {
+export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, onOpenGuide }) => {
   const [attempts, setAttempts] = useState<StoredAttempt[]>([]);
   const [activities, setActivities] = useState<ActivityEvent[]>([]);
   const [snapshots, setSnapshots] = useState<Record<string, LabComparisonSnapshot>>({});
@@ -49,12 +50,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) 
     refreshHistory();
   }, []);
 
-  const handleClear = () => {
-    if (window.confirm('Reset all prototype local activity, snapshots, and attempt records?')) {
-      LocalPersistenceService.clearAll();
-      refreshHistory();
-    }
-  };
 
   const masterySummary: MasterySummary = computeMasterySummary(
     ALL_CONCEPTS,
@@ -74,11 +69,22 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) 
 
   return (
     <div className="dashboard-view">
-      <div className="card" style={{ borderLeft: '4px solid var(--accent)' }}>
-        <h1 className="card-title">Welcome to ProbStudio</h1>
-        <p className="card-subtitle" style={{ fontSize: '1rem', marginTop: '0.5rem' }}>
-          A self-paced, browser-based environment for understanding, practising, and experimenting with probability.
-        </p>
+      <div className="card" style={{ borderLeft: '4px solid var(--accent)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h1 className="card-title">Welcome to ProbStudio</h1>
+          <p className="card-subtitle" style={{ fontSize: '1rem', marginTop: '0.5rem' }}>
+            A self-paced, browser-based environment for understanding, practising, and experimenting with probability.
+          </p>
+        </div>
+        {onOpenGuide && (
+          <button
+            onClick={onOpenGuide}
+            className="btn-secondary btn-sm"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 600, padding: '8px 14px' }}
+          >
+            <span>📖</span> Study Guide & Progression &rarr;
+          </button>
+        )}
       </div>
 
       {/* Curriculum Mastery Summary Bar */}
@@ -135,32 +141,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) 
       </h2>
 
       <div className="grid-cols-3">
-        {/* Practice Gym */}
+        {/* Concept Atlas (Theory) */}
         <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="tag-label">Practice</span>
-              <span className="badge badge-supplementary">31 Exercises Active</span>
-            </div>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0.75rem 0 0.5rem' }}>Practice Gym</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
-              Solve targeted probability exercises across Parts 1, 2, and 3 with instant exact checking, step-by-step mathematical explanations, and concept cross-links.
-            </p>
-          </div>
-          <button
-            className="btn-primary"
-            style={{ width: '100%' }}
-            onClick={() => onNavigate('practice', { exerciseId: 'EX-000001' })}
-          >
-            Enter Practice Gym &rarr;
-          </button>
-        </div>
-
-        {/* Concept Atlas */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="tag-label">Theory</span>
+              <span className="tag-label">1. Theory</span>
               <span className="badge badge-source">44 Concepts / 22 Modules</span>
             </div>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0.75rem 0 0.5rem' }}>Concept Atlas</h3>
@@ -169,7 +154,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) 
             </p>
           </div>
           <button
-            className="btn-secondary"
+            className="btn-primary"
             style={{ width: '100%' }}
             onClick={() => onNavigate('atlas', { conceptId: 'C-000001' })}
           >
@@ -177,11 +162,32 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) 
           </button>
         </div>
 
-        {/* Probability Playground */}
+        {/* Practice Gym (Practice) */}
         <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="tag-label">Laboratory</span>
+              <span className="tag-label">2. Practice</span>
+              <span className="badge badge-supplementary">31 Exercises Active</span>
+            </div>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0.75rem 0 0.5rem' }}>Practice Gym</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
+              Solve targeted probability exercises across Parts 1, 2, and 3 with instant exact checking, step-by-step mathematical explanations, and concept cross-links.
+            </p>
+          </div>
+          <button
+            className="btn-secondary"
+            style={{ width: '100%' }}
+            onClick={() => onNavigate('practice', { exerciseId: 'EX-000001' })}
+          >
+            Enter Practice Gym &rarr;
+          </button>
+        </div>
+
+        {/* Probability Playground (Laboratory) */}
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="tag-label">3. Laboratory</span>
               <span className="badge" style={{ background: '#e0e7ff', color: '#3730a3' }}>11 Labs + Builder</span>
             </div>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0.75rem 0 0.5rem' }}>Probability Playground</h3>
@@ -381,70 +387,36 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) 
         </div>
       </div>
 
-      {/* Local Activity and Verification Stream */}
-      <div style={{ marginTop: '1rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-            LOCAL ACTIVITY & PERSISTENCE RECORD
-          </h2>
-          {activities.length > 0 && (
-            <button className="btn-secondary btn-sm" onClick={handleClear}>
-              Reset Local Storage
-            </button>
-          )}
+      {/* Settings & Persistence Footer Banner */}
+      <div
+        className="card"
+        style={{
+          marginTop: '2.5rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          background: '#f8fafc',
+          borderColor: '#e2e8f0',
+          padding: '1.25rem 1.5rem',
+        }}
+      >
+        <div>
+          <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span>⚙️</span> Studio Preferences & Persistence Data
+          </span>
+          <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '4px' }}>
+            Manage offline storage, export or restore portable JSON state backups, and review complete attempt audit logs.
+          </div>
         </div>
-
-        <div className="card">
-          {attempts.length === 0 && activities.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-              No attempts recorded yet in this browser session. Enter Practice Gym or any Guided Lab to generate activity.
-            </p>
-          ) : (
-            <div>
-              <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-                Recent Attempts ({attempts.length})
-              </h4>
-              <table className="table-custom">
-                <thead>
-                  <tr>
-                    <th>Exercise</th>
-                    <th>Response</th>
-                    <th>Outcome</th>
-                    <th>Timestamp</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {attempts.map((att) => (
-                    <tr key={att.attempt_id}>
-                      <td><strong>{att.exercise_id}</strong></td>
-                      <td><code>{att.raw_response}</code></td>
-                      <td>
-                        <span className={`badge ${att.outcome === 'correct' ? 'alert-success' : 'alert-error'}`} style={{ padding: '0.15rem 0.5rem' }}>
-                          {att.outcome.toUpperCase()}
-                        </span>
-                      </td>
-                      <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                        {new Date(att.timestamp).toLocaleTimeString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginTop: '1.25rem', marginBottom: '0.5rem' }}>
-                Activity Stream ({activities.length})
-              </h4>
-              <ul style={{ listStyle: 'none', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                {activities.slice(0, 5).map((act) => (
-                  <li key={act.event_id} style={{ padding: '0.35rem 0', borderBottom: '1px solid var(--border)' }}>
-                    <span style={{ fontWeight: 600, color: 'var(--text)' }}>[{act.activity_type}]</span> {act.description}
-                    <span style={{ float: 'right', color: '#94a3b8' }}>{new Date(act.timestamp).toLocaleTimeString()}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
+        <button
+          className="btn-secondary btn-sm"
+          style={{ fontWeight: 600, padding: '8px 16px' }}
+          onClick={() => onNavigate('settings')}
+        >
+          Open Settings & Data &rarr;
+        </button>
       </div>
     </div>
   );
