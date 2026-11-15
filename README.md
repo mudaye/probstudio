@@ -1,6 +1,6 @@
-# Probability Revision Studio
+# ProbStudio
 
-Probability Revision Studio is a planned interactive learning environment for understanding, practising, revising, and experimenting with probability. It is based on the three-part *Review of Basic Probability* tutorial series.
+**ProbStudio** is an interactive, browser-based learning environment for understanding, practising, and experimenting with probability theory and stochastic models. It is based on the three-part *Review of Basic Probability* tutorial series (NPTEL).
 
 This folder contains the planning documents, source transcripts, and the interactive web application prototype.
 

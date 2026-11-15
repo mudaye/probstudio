@@ -75,7 +75,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) 
   return (
     <div className="dashboard-view">
       <div className="card" style={{ borderLeft: '4px solid var(--accent)' }}>
-        <h1 className="card-title">Welcome to Probability Revision Studio</h1>
+        <h1 className="card-title">Welcome to ProbStudio</h1>
         <p className="card-subtitle" style={{ fontSize: '1rem', marginTop: '0.5rem' }}>
           A self-paced, browser-based environment for understanding, practising, and experimenting with probability.
         </p>

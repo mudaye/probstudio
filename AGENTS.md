@@ -1,13 +1,13 @@
-# Probability Revision Studio — Agent Guidelines
+# ProbStudio — Agent Guidelines
 
 ## Project purpose
 
-This folder contains the planning and, eventually, implementation work for Probability Revision Studio: a self-paced, browser-based environment for learning, practising and experimenting with probability. The three tutorial transcripts in `transcripts/` are the primary curriculum sources. Product direction and screen proposals are documented in `Probability Revision Studio.md` and the current version of the A-001 blueprint.
+This folder contains the planning and implementation work for ProbStudio: a self-paced, browser-based environment for learning, practising and experimenting with probability. The three tutorial transcripts in `transcripts/` are the primary curriculum sources. Product direction and screen proposals are documented in `Probability Revision Studio.md` and the current version of the A-001 blueprint.
 
 ## Working agreements
 
 - The project is tracked in Git with standard version control conventions.
-- Keep project-specific documents and future application work inside this `probability/` folder unless the user directs otherwise.
+- Keep project-specific documents and future application work inside this repository folder unless the user directs otherwise.
 - Treat the transcripts as source material, not polished instructional copy. Verify mathematical statements and clean transcription artifacts before incorporating them into learner-facing content.
 - Preserve source attribution. Mark content that extends beyond the tutorial as supplementary; do not silently attribute it to the source.
 - Keep proposed design details distinct from approved product decisions. The screen blueprint is a draft where it says details remain open.

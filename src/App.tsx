@@ -96,8 +96,8 @@ export const App: React.FC = () => {
       {/* Global Top Navbar */}
       <header className="navbar">
         <div className="navbar-brand">
-          <span className="navbar-title">Probability Revision Studio</span>
-          <span className="navbar-badge">Prototype Slice</span>
+          <span className="navbar-title">ProbStudio</span>
+          <span className="navbar-badge">Interactive Learning & Lab</span>
         </div>
 
         <nav aria-label="Main Navigation">
@@ -169,7 +169,7 @@ export const App: React.FC = () => {
 
       {/* Footer */}
       <footer style={{ borderTop: '1px solid var(--border)', padding: '1.25rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-        Probability Revision Studio &bull; Stage 0 Prototype Vertical Slice &bull; Review of Basic Probability Series
+        ProbStudio &bull; Review of Basic Probability Series &bull; Deterministic Mathematical Laboratory
       </footer>
     </div>
   );
