@@ -41,12 +41,14 @@ export interface LabResumePayload {
 
 export interface LabComparisonSnapshot<TSettings = any, TOutput = any, TSim = any> {
   readonly lab_id: string;
-  readonly snapshot_id: string;
+  readonly snapshot_id?: string;
   readonly name: string;
   readonly timestamp: string;
-  readonly settings: TSettings;
+  readonly settings?: TSettings;
   readonly theoreticalOutputs?: TOutput;
   readonly simulationOutputs?: TSim;
+  readonly parameters?: any;
+  readonly results?: any;
   readonly metadata?: {
     readonly calculation_engine_version?: string;
     readonly schema_version?: string;

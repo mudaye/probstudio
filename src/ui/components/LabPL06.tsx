@@ -29,20 +29,16 @@ import {
   DisplayTableResult,
 } from '../../core/math/distributions';
 import { MathView } from './MathView';
-import { LocalPersistenceService } from '../../core/storage/persistence';
+import { LabShell } from './LabShell';
+import { ErrorCode } from '../../core/math/types';
+import { LocalPersistenceService, LabComparisonSnapshot } from '../../core/storage/persistence';
 
-interface PL06Snapshot {
-  timestamp: string;
-  name: string;
-  distType: DistributionType;
-  paramSummary: string;
-  mean: string;
-  variance: string;
-  simMean?: string;
-  simVariance?: string;
+export interface LabPL06Props {
+  onNavigate?: (route: string, params?: Record<string, string>) => void;
+  initialPreset?: string;
 }
 
-export const LabPL06: React.FC = () => {
+export const LabPL06: React.FC<LabPL06Props> = ({ onNavigate, initialPreset }) => {
   // Distribution selector
   const [distType, setDistType] = useState<DistributionType>('bernoulli');
 
@@ -61,9 +57,11 @@ export const LabPL06: React.FC = () => {
   const [seed, setSeed] = useState<number>(42);
   const [simResult, setSimResult] = useState<SimulationResult | null>(null);
 
-  // Comparison Snapshot
-  const [snapshotName, setSnapshotName] = useState<string>('Baseline Model');
-  const [snapshot, setSnapshot] = useState<PL06Snapshot | null>(null);
+  // Comparison Snapshot (LabShell managed)
+  const [snapshotName, setSnapshotName] = useState<string>('Discrete Baseline');
+  const [savedSnapshot, setSavedSnapshot] = useState<LabComparisonSnapshot | null>(() =>
+    LocalPersistenceService.getLabSnapshot('PL-06')
+  );
 
   useEffect(() => {
     LocalPersistenceService.recordActivity({
@@ -301,6 +299,24 @@ export const LabPL06: React.FC = () => {
     setBernoulliP('1.5'); // p > 1 triggers E-PARAM-DOMAIN
   };
 
+  useEffect(() => {
+    if (!initialPreset) return;
+    switch (initialPreset) {
+      case 'bernoulli':
+        applyPresetBernoulli();
+        break;
+      case 'binomial':
+        applyPresetBinomial();
+        break;
+      case 'geometric':
+        applyPresetGeometric();
+        break;
+      case 'poisson':
+        applyPresetPoisson();
+        break;
+    }
+  }, [initialPreset]);
+
   // Snapshot handling
   const handleSaveSnapshot = () => {
     let paramSummary = '';
@@ -319,16 +335,49 @@ export const LabPL06: React.FC = () => {
         break;
     }
 
-    setSnapshot({
-      timestamp: new Date().toLocaleTimeString(),
-      name: snapshotName || 'Snapshot',
-      distType: activeDist.type,
-      paramSummary,
-      mean: moments.displayMean,
-      variance: moments.displayVariance,
-      simMean: simResult ? simResult.empiricalMean.toFixed(4) : undefined,
-      simVariance: simResult ? simResult.empiricalVariance.toFixed(4) : undefined,
-    });
+    const snap: LabComparisonSnapshot = {
+      lab_id: 'PL-06',
+      name: snapshotName || 'Discrete Snapshot',
+      timestamp: new Date().toISOString(),
+      parameters: {
+        distType: activeDist.type,
+        bernoulliP,
+        binomialN,
+        binomialP,
+        geometricP,
+        poissonLambda,
+        queryK,
+      },
+      results: {
+        distType: activeDist.type,
+        paramSummary,
+        mean: moments.displayMean,
+        variance: moments.displayVariance,
+        simMean: simResult ? simResult.empiricalMean.toFixed(4) : undefined,
+        simVariance: simResult ? simResult.empiricalVariance.toFixed(4) : undefined,
+      },
+    };
+
+    LocalPersistenceService.saveLabSnapshot(snap);
+    setSavedSnapshot(snap);
+  };
+
+  const handleRestoreSnapshot = () => {
+    if (!savedSnapshot) return;
+    const p = savedSnapshot.parameters;
+    if (p.distType) setDistType(p.distType as DistributionType);
+    if (p.bernoulliP) setBernoulliP(String(p.bernoulliP));
+    if (p.binomialN) setBinomialN(String(p.binomialN));
+    if (p.binomialP) setBinomialP(String(p.binomialP));
+    if (p.geometricP) setGeometricP(String(p.geometricP));
+    if (p.poissonLambda) setPoissonLambda(String(p.poissonLambda));
+    if (p.queryK) setQueryK(String(p.queryK));
+    setSimResult(null);
+  };
+
+  const handleDeleteSnapshot = () => {
+    LocalPersistenceService.deleteLabSnapshot('PL-06');
+    setSavedSnapshot(null);
   };
 
   // SVG Chart Dimensions
@@ -351,66 +400,55 @@ export const LabPL06: React.FC = () => {
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Header */}
-      <div
-        style={{
-          padding: '16px 20px',
-          background: 'var(--surface, #ffffff)',
-          borderRadius: '8px',
-          border: '1px solid var(--border, #e2e8f0)',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            flexWrap: 'wrap',
-            gap: '12px',
-          }}
-        >
-          <div>
-            <h2
-              style={{
-                margin: '0 0 6px 0',
-                fontSize: '1.25rem',
-                color: 'var(--text-primary, #1e293b)',
-              }}
-            >
-              Guided Lab PL-06: Distribution Explorer
-            </h2>
-            <p
-              style={{
-                margin: 0,
-                fontSize: '0.9rem',
-                color: 'var(--text-secondary, #64748b)',
-              }}
-            >
-              <strong>Learning question:</strong> How do distribution parameters change a discrete model's probabilities, and how do repeated samples compare with its theoretical distribution?
-            </p>
+    <LabShell
+      labId="PL-06"
+      labTitle="Discrete Distribution Explorer"
+      labSubtitle="How do distribution parameters change a discrete model's probabilities, and how do repeated samples compare with its theoretical distribution?"
+      sourceAttribution={{
+        part: 'Part 1',
+        chapter: 'Chapter 8: Standard discrete distributions',
+        isIllustrative: true,
+      }}
+      linkedModuleIds={['M08']}
+      linkedConceptIds={['C-000013', 'C-000014', 'C-000015', 'C-000016']}
+      isStale={!parsedDistResult.valid}
+      errorCode={parsedDistResult.valid ? undefined : ((parsedDistResult.code as ErrorCode) || 'E-PARAM-DOMAIN')}
+      errorMessage={parsedDistResult.error ?? undefined}
+      snapshotName={snapshotName}
+      onSnapshotNameChange={setSnapshotName}
+      savedSnapshot={savedSnapshot}
+      onSaveSnapshot={handleSaveSnapshot}
+      onRestoreSnapshot={handleRestoreSnapshot}
+      onDeleteSnapshot={handleDeleteSnapshot}
+      onReset={applyPresetBernoulli}
+      onNavigate={onNavigate}
+      renderSnapshotComparison={(saved) => (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+          <div style={{ border: '1px solid #bfdbfe', borderRadius: '6px', padding: '1rem', background: '#eff6ff' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#1d4ed8' }}>Active Configuration</h4>
+            <div>Type: <strong>{activeDist.type.toUpperCase()}</strong></div>
+            <div>Mean: <strong>{moments.displayMean}</strong></div>
+            <div>Variance: <strong>{moments.displayVariance}</strong></div>
+            {simResult && <div>Empirical Mean: <strong>{simResult.empiricalMean.toFixed(4)}</strong></div>}
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={applyPresetBernoulli}
-              style={{
-                padding: '6px 12px',
-                fontSize: '0.8rem',
-                borderRadius: '6px',
-                border: '1px solid var(--border, #cbd5e1)',
-                background: '#f8fafc',
-                cursor: 'pointer',
-              }}
-            >
-              ↺ Reset Defaults
-            </button>
+          <div style={{ border: '1px solid #cbd5e1', borderRadius: '6px', padding: '1rem', background: '#f8fafc' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#334155' }}>Saved: {saved.name}</h4>
+            <div>Type: <strong>{String(saved.parameters.distType ?? '').toUpperCase()}</strong></div>
+            <div>Mean: <strong>{saved.results?.mean ?? 'N/A'}</strong></div>
+            <div>Variance: <strong>{saved.results?.variance ?? 'N/A'}</strong></div>
+            {saved.results?.empiricalMean && <div>Empirical Mean: <strong>{saved.results.empiricalMean}</strong></div>}
           </div>
         </div>
-
+      )}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Presets */}
         <div
           style={{
-            marginTop: '14px',
+            padding: '12px 16px',
+            background: 'var(--surface, #ffffff)',
+            borderRadius: '8px',
+            border: '1px solid var(--border, #e2e8f0)',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
@@ -493,7 +531,6 @@ export const LabPL06: React.FC = () => {
             Test Stale Error (p=1.5)
           </button>
         </div>
-      </div>
 
       {/* Main Grid: Left Controls & Right Displays */}
       <div
@@ -914,96 +951,6 @@ export const LabPL06: React.FC = () => {
                     <MathView math={`F(${queryResult.k}) = ${queryResult.cdfLatex}`} />
                   </strong>
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* Snapshot Comparison Card */}
-          <div
-            style={{
-              background: 'var(--surface, #ffffff)',
-              padding: '16px',
-              borderRadius: '8px',
-              border: '1px solid var(--border, #e2e8f0)',
-            }}
-          >
-            <h3
-              style={{
-                margin: '0 0 10px 0',
-                fontSize: '0.95rem',
-                color: 'var(--text-primary, #1e293b)',
-              }}
-            >
-              4. Saved Comparison Snapshot
-            </h3>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-              <input
-                type="text"
-                value={snapshotName}
-                onChange={(e) => setSnapshotName(e.target.value)}
-                placeholder="Snapshot name"
-                style={{
-                  flex: 1,
-                  padding: '4px 8px',
-                  fontSize: '0.82rem',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '4px',
-                }}
-              />
-              <button
-                onClick={handleSaveSnapshot}
-                style={{
-                  padding: '6px 12px',
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  background: '#0f172a',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}
-              >
-                📸 Save
-              </button>
-            </div>
-
-            {snapshot && (
-              <div
-                style={{
-                  padding: '10px',
-                  background: '#f8fafc',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '6px',
-                  fontSize: '0.8rem',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <strong>{snapshot.name}</strong>
-                  <button
-                    onClick={() => setSnapshot(null)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#dc2626',
-                      cursor: 'pointer',
-                      fontSize: '0.75rem',
-                      padding: 0,
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-                <div style={{ color: '#475569' }}>
-                  {snapshot.distType.toUpperCase()} ({snapshot.paramSummary})
-                </div>
-                <div style={{ marginTop: '4px', color: '#334155' }}>
-                  Mean: <strong>{snapshot.mean}</strong> | Var: <strong>{snapshot.variance}</strong>
-                </div>
-                {snapshot.simMean && (
-                  <div style={{ color: '#d97706', fontSize: '0.75rem' }}>
-                    Simulated: Mean {snapshot.simMean}, Var {snapshot.simVariance}
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -1519,5 +1466,6 @@ export const LabPL06: React.FC = () => {
         </div>
       </div>
     </div>
-  );
+  </LabShell>
+);
 };

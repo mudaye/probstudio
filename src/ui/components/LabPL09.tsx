@@ -12,21 +12,17 @@ import {
   JointSimulationResult,
 } from '../../core/math/joint';
 import { rationalToDecimal } from '../../core/math/rational';
-import { LocalPersistenceService } from '../../core/storage/persistence';
-
-interface PL09Snapshot {
-  timestamp: string;
-  name: string;
-  modelType: JointModelType;
-  queryDesc: string;
-  theoreticalProb: string;
-  independenceVerdict: string;
-  simProb?: string;
-}
+import { LabShell } from './LabShell';
+import { LocalPersistenceService, LabComparisonSnapshot } from '../../core/storage/persistence';
 
 export type QueryRegionType = 'rectangle' | 'boundary';
 
-export const LabPL09: React.FC = () => {
+export interface LabPL09Props {
+  onNavigate?: (route: string, params?: Record<string, string>) => void;
+  initialPreset?: string;
+}
+
+export const LabPL09: React.FC<LabPL09Props> = ({ onNavigate, initialPreset }) => {
   // Model selector
   const [modelType, setModelType] = useState<JointModelType>('discrete');
 
@@ -52,9 +48,11 @@ export const LabPL09: React.FC = () => {
   const [seed, setSeed] = useState<number>(42);
   const [simResult, setSimResult] = useState<JointSimulationResult | null>(null);
 
-  // Snapshot State
-  const [snapshotName, setSnapshotName] = useState<string>('Baseline Joint Model');
-  const [snapshot, setSnapshot] = useState<PL09Snapshot | null>(null);
+  // Snapshot State (LabShell managed)
+  const [snapshotName, setSnapshotName] = useState<string>('Joint Baseline');
+  const [savedSnapshot, setSavedSnapshot] = useState<LabComparisonSnapshot | null>(() =>
+    LocalPersistenceService.getLabSnapshot('PL-09')
+  );
 
   // Stale Results Cache
   const [lastValidDiscrete, setLastValidDiscrete] = useState<DiscreteJointResult | null>(null);
@@ -169,45 +167,92 @@ export const LabPL09: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (!initialPreset) return;
+    if (
+      initialPreset === 'indep_2x2' ||
+      initialPreset === 'diag_dependent' ||
+      initialPreset === 'triangular_boundary' ||
+      initialPreset === 'triangular_rect'
+    ) {
+      applyPreset(initialPreset);
+    }
+  }, [initialPreset]);
+
   // Snapshot handlers
   const handleSaveSnapshot = () => {
     if (!regionQueryResult || !indepResult) return;
-    const s: PL09Snapshot = {
-      timestamp: new Date().toLocaleTimeString(),
-      name: snapshotName || 'Snapshot',
-      modelType,
-      queryDesc:
-        modelType === 'continuous_triangular' && regionType === 'boundary'
-          ? `Boundary Y > X + ${boundaryC}`
-          : `Rect [${parsedBounds.xMin},${parsedBounds.xMax}]x[${parsedBounds.yMin},${parsedBounds.yMax}]`,
-      theoreticalProb: (regionQueryResult.value?.probability ?? 0).toFixed(4),
-      independenceVerdict: indepResult.value?.isIndependent ? 'Independent' : 'Dependent',
-      simProb:
-        simResult?.empiricalBoundaryProb !== undefined
-          ? simResult.empiricalBoundaryProb.toFixed(4)
-          : simResult?.empiricalRectangleProb !== undefined
-          ? simResult.empiricalRectangleProb.toFixed(4)
-          : undefined,
+    const snap: LabComparisonSnapshot = {
+      lab_id: 'PL-09',
+      name: snapshotName || 'Joint Snapshot',
+      timestamp: new Date().toISOString(),
+      parameters: {
+        modelType,
+        cell00,
+        cell01,
+        cell10,
+        cell11,
+        regionType,
+        rectXMin,
+        rectXMax,
+        rectYMin,
+        rectYMax,
+        boundaryC,
+        showIndependence,
+      },
+      results: {
+        modelType,
+        theoreticalProb: (regionQueryResult.value?.probability ?? 0).toFixed(4),
+        independenceVerdict: indepResult.value?.isIndependent ? 'Independent' : 'Dependent',
+        simProb:
+          simResult?.empiricalBoundaryProb !== undefined
+            ? simResult.empiricalBoundaryProb.toFixed(4)
+            : simResult?.empiricalRectangleProb !== undefined
+            ? simResult.empiricalRectangleProb.toFixed(4)
+            : undefined,
+      },
     };
-    setSnapshot(s);
+    LocalPersistenceService.saveLabSnapshot(snap);
+    setSavedSnapshot(snap);
+  };
+
+  const handleRestoreSnapshot = () => {
+    if (!savedSnapshot) return;
+    const p = savedSnapshot.parameters;
+    if (p.modelType) setModelType(p.modelType as JointModelType);
+    if (p.cell00) setCell00(String(p.cell00));
+    if (p.cell01) setCell01(String(p.cell01));
+    if (p.cell10) setCell10(String(p.cell10));
+    if (p.cell11) setCell11(String(p.cell11));
+    if (p.regionType) setRegionType(p.regionType as QueryRegionType);
+    if (p.rectXMin) setRectXMin(String(p.rectXMin));
+    if (p.rectXMax) setRectXMax(String(p.rectXMax));
+    if (p.rectYMin) setRectYMin(String(p.rectYMin));
+    if (p.rectYMax) setRectYMax(String(p.rectYMax));
+    if (p.boundaryC) setBoundaryC(String(p.boundaryC));
+    if (p.showIndependence !== undefined) setShowIndependence(Boolean(p.showIndependence));
+    setSimResult(null);
+  };
+
+  const handleDeleteSnapshot = () => {
+    LocalPersistenceService.deleteLabSnapshot('PL-09');
+    setSavedSnapshot(null);
   };
 
   const handleReset = () => {
-    if (window.confirm('Reset all controls to default 2x2 equal mass table?')) {
-      setModelType('discrete');
-      setCell00('0.25');
-      setCell01('0.25');
-      setCell10('0.25');
-      setCell11('0.25');
-      setRegionType('rectangle');
-      setRectXMin('0');
-      setRectXMax('1');
-      setRectYMin('0');
-      setRectYMax('1');
-      setBoundaryC('0.5');
-      setShowIndependence(false);
-      setSimResult(null);
-    }
+    setModelType('discrete');
+    setCell00('0.25');
+    setCell01('0.25');
+    setCell10('0.25');
+    setCell11('0.25');
+    setRegionType('rectangle');
+    setRectXMin('0');
+    setRectXMax('1');
+    setRectYMin('0');
+    setRectYMax('1');
+    setBoundaryC('0.5');
+    setShowIndependence(false);
+    setSimResult(null);
   };
 
   // Curriculum Presets
@@ -246,51 +291,76 @@ export const LabPL09: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-md flex flex-wrap justify-between items-center gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-white">PL-09: Joint Distribution and Marginals Lab</h2>
-            <span className="px-2.5 py-0.5 text-xs font-semibold rounded bg-sky-900/60 text-sky-300 border border-sky-700/50">
-              Part 3 Core
-            </span>
+    <LabShell
+      labId="PL-09"
+      labTitle="Joint and Marginals Lab"
+      labSubtitle="How do joint discrete tables and continuous densities collapse via marginalization into individual distributions, and how are non-rectangular regions integrated?"
+      sourceAttribution={{
+        part: 'Part 3',
+        chapter: 'Chapters 16–18: Joint distributions, continuous joint densities, and marginal densities',
+        isIllustrative: true,
+      }}
+      linkedModuleIds={['M16', 'M17', 'M18']}
+      linkedConceptIds={['C-000031', 'C-000032', 'C-000033', 'C-000034', 'C-000035', 'C-000036']}
+      isStale={modelType === 'discrete' && !isDiscreteValid}
+      errorCode={modelType === 'discrete' && !isDiscreteValid ? discreteCalc.error_code || 'E-PROB-SUM' : undefined}
+      errorMessage={modelType === 'discrete' && !isDiscreteValid ? discreteCalc.message || 'Invalid parameters.' : undefined}
+      repairEligible={modelType === 'discrete' && !isDiscreteValid}
+      onApplyRepair={handleNormalizeRepair}
+      snapshotName={snapshotName}
+      onSnapshotNameChange={setSnapshotName}
+      savedSnapshot={savedSnapshot}
+      onSaveSnapshot={handleSaveSnapshot}
+      onRestoreSnapshot={handleRestoreSnapshot}
+      onDeleteSnapshot={handleDeleteSnapshot}
+      onReset={handleReset}
+      onNavigate={onNavigate}
+      renderSnapshotComparison={(saved) => (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+          <div style={{ border: '1px solid #bfdbfe', borderRadius: '6px', padding: '1rem', background: '#eff6ff' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#1d4ed8' }}>Active Configuration</h4>
+            <div>Model: <strong>{modelType.toUpperCase()}</strong></div>
+            <div>Probability: <strong>{(regionQueryResult?.value?.probability ?? 0).toFixed(4)}</strong></div>
+            <div>Independence: <strong>{indepResult?.value?.isIndependent ? 'Independent' : 'Dependent'}</strong></div>
           </div>
-          <p className="text-slate-400 text-sm mt-1">
-            Explore bivariate joint PMFs and continuous joint PDFs, derive marginal distributions, evaluate 2D rectangle and boundary probabilities, and test joint factorization for independence.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleReset}
-            className="px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded transition"
-          >
-            Reset Defaults
-          </button>
-        </div>
-      </div>
-
-      {/* Validation Stale Alert */}
-      {modelType === 'discrete' && !isDiscreteValid && (
-        <div className="p-4 bg-amber-950/60 border border-amber-800/80 rounded-lg flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="px-2 py-0.5 text-xs font-bold rounded bg-amber-600 text-white">
-              {discreteCalc.error_code || 'INVALID_INPUT'}
-            </span>
-            <span className="text-amber-200 text-sm font-medium">
-              {discreteCalc.message || 'Invalid parameters.'} Showing stale results from last valid model.
-            </span>
+          <div style={{ border: '1px solid #cbd5e1', borderRadius: '6px', padding: '1rem', background: '#f8fafc' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#334155' }}>Saved: {saved.name}</h4>
+            <div>Model: <strong>{String(saved.parameters.modelType ?? '').toUpperCase()}</strong></div>
+            <div>Probability: <strong>{saved.results?.theoreticalProb ?? 'N/A'}</strong></div>
+            <div>Independence: <strong>{saved.results?.independenceVerdict ?? 'N/A'}</strong></div>
           </div>
-
-          <button
-            onClick={handleNormalizeRepair}
-            className="px-3 py-1 bg-amber-700 hover:bg-amber-600 text-white text-xs font-semibold rounded transition"
-          >
-            Repair → Normalize Masses
-          </button>
         </div>
       )}
+    >
+      <div className="space-y-6">
+        {/* Presets Strip */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold text-slate-400 mr-2">Presets:</span>
+          <button
+            onClick={() => applyPreset('indep_2x2')}
+            className="px-3 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+          >
+            2x2 Independent
+          </button>
+          <button
+            onClick={() => applyPreset('diag_dependent')}
+            className="px-3 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+          >
+            2x2 Diagonal Dependent
+          </button>
+          <button
+            onClick={() => applyPreset('triangular_boundary')}
+            className="px-3 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+          >
+            Continuous Triangular Boundary (Y &gt; X + c)
+          </button>
+          <button
+            onClick={() => applyPreset('triangular_rect')}
+            className="px-3 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+          >
+            Continuous Triangular Rectangle
+          </button>
+        </div>
 
       {/* Main Grid: Controls & Displays */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -898,59 +968,9 @@ export const LabPL09: React.FC = () => {
             )}
           </div>
 
-          {/* Snapshot Card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-                Comparison Snapshot
-              </h3>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={snapshotName}
-                  onChange={(e) => setSnapshotName(e.target.value)}
-                  placeholder="Snapshot Name"
-                  className="bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white"
-                />
-                <button
-                  onClick={handleSaveSnapshot}
-                  className="px-3 py-1 text-xs font-medium rounded bg-indigo-600 hover:bg-indigo-500 text-white transition"
-                >
-                  Save Snapshot
-                </button>
-              </div>
-            </div>
-
-            {snapshot && (
-              <div className="p-3.5 bg-slate-950 rounded-lg border border-slate-800 text-xs flex flex-wrap justify-between items-center gap-4">
-                <div>
-                  <div className="font-bold text-slate-200">{snapshot.name}</div>
-                  <div className="text-[11px] text-slate-500">Saved at {snapshot.timestamp}</div>
-                  <div className="font-mono text-sky-400 mt-1">
-                    {snapshot.modelType.toUpperCase()} — {snapshot.queryDesc}
-                  </div>
-                </div>
-                <div className="flex gap-4 font-mono">
-                  <div>
-                    <span className="text-slate-500 block text-[10px]">Probability</span>
-                    <span className="text-slate-200 font-bold">{snapshot.theoreticalProb}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 block text-[10px]">Independence</span>
-                    <span className="text-slate-200 font-bold">{snapshot.independenceVerdict}</span>
-                  </div>
-                  {snapshot.simProb && (
-                    <div>
-                      <span className="text-emerald-500 block text-[10px]">Sim Prob</span>
-                      <span className="text-emerald-400 font-bold">{snapshot.simProb}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>
-  );
+  </LabShell>
+);
 };

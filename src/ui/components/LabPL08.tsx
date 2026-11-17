@@ -12,26 +12,17 @@ import {
   TransformedMomentsResult,
   EmpiricalMomentsResult,
 } from '../../core/math/moments';
-import { LocalPersistenceService } from '../../core/storage/persistence';
-
-interface PL08Snapshot {
-  timestamp: string;
-  name: string;
-  sourceDesc: string;
-  transformDesc: string;
-  meanX: string;
-  varX: string;
-  meanY: string;
-  varY: string;
-  inequalityDesc?: string;
-  inequalityBound?: string;
-  simMeanY?: string;
-  simVarY?: string;
-}
+import { LabShell } from './LabShell';
+import { LocalPersistenceService, LabComparisonSnapshot } from '../../core/storage/persistence';
 
 export type InequalityMode = 'none' | 'markov' | 'chebyshev' | 'jensen';
 
-export const LabPL08: React.FC = () => {
+export interface LabPL08Props {
+  onNavigate?: (route: string, params?: Record<string, string>) => void;
+  initialPreset?: string;
+}
+
+export const LabPL08: React.FC<LabPL08Props> = ({ onNavigate, initialPreset }) => {
   // Source Model State
   const [sourceType, setSourceType] = useState<SourceModelType>('bernoulli');
   const [paramP, setParamP] = useState<string>('0.5');
@@ -58,9 +49,11 @@ export const LabPL08: React.FC = () => {
   const [seed, setSeed] = useState<number>(42);
   const [simResult, setSimResult] = useState<EmpiricalMomentsResult | null>(null);
 
-  // Snapshot State
-  const [snapshotName, setSnapshotName] = useState<string>('Baseline Model');
-  const [snapshot, setSnapshot] = useState<PL08Snapshot | null>(null);
+  // Snapshot State (LabShell managed)
+  const [snapshotName, setSnapshotName] = useState<string>('Moments Baseline');
+  const [savedSnapshot, setSavedSnapshot] = useState<LabComparisonSnapshot | null>(() =>
+    LocalPersistenceService.getLabSnapshot('PL-08')
+  );
 
   // Stale state cache
   const [lastValidResult, setLastValidResult] = useState<TransformedMomentsResult | null>(null);
@@ -156,37 +149,94 @@ export const LabPL08: React.FC = () => {
     setSimResult(res);
   };
 
+  useEffect(() => {
+    if (!initialPreset) return;
+    if (
+      initialPreset === 'coin_affine' ||
+      initialPreset === 'standard_normal_sq' ||
+      initialPreset === 'exponential_markov' ||
+      initialPreset === 'uniform_scaling'
+    ) {
+      applyPreset(initialPreset);
+    }
+  }, [initialPreset]);
+
   // Snapshot Handlers
   const handleSaveSnapshot = () => {
     if (!activeResult) return;
-    const s: PL08Snapshot = {
-      timestamp: new Date().toLocaleTimeString(),
-      name: snapshotName || 'Snapshot',
-      sourceDesc: `${sourceType.toUpperCase()}`,
-      transformDesc: activeResult.transformationFormula,
-      meanX: activeResult.sourceMoments.mean.toFixed(3),
-      varX: activeResult.sourceMoments.variance.toFixed(3),
-      meanY: activeResult.transformedMoments.mean.toFixed(3),
-      varY: activeResult.transformedMoments.variance.toFixed(3),
-      simMeanY: simResult ? simResult.empiricalMeanY.toFixed(3) : undefined,
-      simVarY: simResult ? simResult.empiricalVarY.toFixed(3) : undefined,
+    const snap: LabComparisonSnapshot = {
+      lab_id: 'PL-08',
+      name: snapshotName || 'Moments Snapshot',
+      timestamp: new Date().toISOString(),
+      parameters: {
+        sourceType,
+        paramP,
+        paramN,
+        paramLambda,
+        paramA,
+        paramB,
+        paramMu,
+        paramSigma,
+        transformType,
+        affineA,
+        affineB,
+        inequalityMode,
+        thresholdMarkov,
+        thresholdChebyshev,
+        jensenFunc,
+      },
+      results: {
+        sourceDesc: `${sourceType}`,
+        transformDesc: activeResult.transformationFormula,
+        meanX: activeResult.sourceMoments.mean.toFixed(3),
+        varX: activeResult.sourceMoments.variance.toFixed(3),
+        meanY: activeResult.transformedMoments.mean.toFixed(3),
+        varY: activeResult.transformedMoments.variance.toFixed(3),
+        simMeanY: simResult ? simResult.empiricalMeanY.toFixed(3) : undefined,
+        simVarY: simResult ? simResult.empiricalVarY.toFixed(3) : undefined,
+      },
     };
-    setSnapshot(s);
+    LocalPersistenceService.saveLabSnapshot(snap);
+    setSavedSnapshot(snap);
+  };
+
+  const handleRestoreSnapshot = () => {
+    if (!savedSnapshot) return;
+    const p = savedSnapshot.parameters;
+    if (p.sourceType) setSourceType(p.sourceType as SourceModelType);
+    if (p.paramP) setParamP(String(p.paramP));
+    if (p.paramN) setParamN(String(p.paramN));
+    if (p.paramLambda) setParamLambda(String(p.paramLambda));
+    if (p.paramA) setParamA(String(p.paramA));
+    if (p.paramB) setParamB(String(p.paramB));
+    if (p.paramMu) setParamMu(String(p.paramMu));
+    if (p.paramSigma) setParamSigma(String(p.paramSigma));
+    if (p.transformType) setTransformType(p.transformType as TransformationType);
+    if (p.affineA) setAffineA(String(p.affineA));
+    if (p.affineB) setAffineB(String(p.affineB));
+    if (p.inequalityMode) setInequalityMode(p.inequalityMode as InequalityMode);
+    if (p.thresholdMarkov) setThresholdMarkov(String(p.thresholdMarkov));
+    if (p.thresholdChebyshev) setThresholdChebyshev(String(p.thresholdChebyshev));
+    if (p.jensenFunc) setJensenFunc(p.jensenFunc as 'square' | 'exponential');
+    setSimResult(null);
+  };
+
+  const handleDeleteSnapshot = () => {
+    LocalPersistenceService.deleteLabSnapshot('PL-08');
+    setSavedSnapshot(null);
   };
 
   const handleReset = () => {
-    if (window.confirm('Reset all controls to baseline Bernoulli(0.5) and Affine(2X + 1)?')) {
-      setSourceType('bernoulli');
-      setParamP('0.5');
-      setTransformType('affine');
-      setAffineA('2');
-      setAffineB('1');
-      setInequalityMode('none');
-      setThresholdMarkov('2.0');
-      setThresholdChebyshev('2.0');
-      setJensenFunc('square');
-      setSimResult(null);
-    }
+    setSourceType('bernoulli');
+    setParamP('0.5');
+    setTransformType('affine');
+    setAffineA('2');
+    setAffineB('1');
+    setInequalityMode('none');
+    setThresholdMarkov('2.0');
+    setThresholdChebyshev('2.0');
+    setJensenFunc('square');
+    setSimResult(null);
   };
 
   // Preset Configurations
@@ -225,45 +275,76 @@ export const LabPL08: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-md flex flex-wrap justify-between items-center gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-white">PL-08: Transformation, Expectation and Variance Lab</h2>
-            <span className="px-2.5 py-0.5 text-xs font-semibold rounded bg-amber-900/60 text-amber-300 border border-amber-700/50">
-              Part 2 Core
-            </span>
+    <LabShell
+      labId="PL-08"
+      labTitle="Transform and Moments Workbench"
+      labSubtitle="How do linear and non-linear transformations Y = g(X) reshape expectation and variance via LOTUS, and how do tail bounds constrain dispersion?"
+      sourceAttribution={{
+        part: 'Part 2',
+        chapter: 'Chapters 11–14: Transformations, moments, variance, and inequalities',
+        isIllustrative: true,
+      }}
+      linkedModuleIds={['M11', 'M12', 'M13', 'M14']}
+      linkedConceptIds={['C-000021', 'C-000022', 'C-000023', 'C-000024', 'C-000025', 'C-000026', 'C-000027', 'C-000028']}
+      isStale={!isCalculationValid}
+      errorCode={isCalculationValid ? undefined : momentsCalc.error_code || 'E-PARAM-DOMAIN'}
+      errorMessage={isCalculationValid ? undefined : momentsCalc.message || 'Invalid parameters.'}
+      snapshotName={snapshotName}
+      onSnapshotNameChange={setSnapshotName}
+      savedSnapshot={savedSnapshot}
+      onSaveSnapshot={handleSaveSnapshot}
+      onRestoreSnapshot={handleRestoreSnapshot}
+      onDeleteSnapshot={handleDeleteSnapshot}
+      onReset={handleReset}
+      onNavigate={onNavigate}
+      renderSnapshotComparison={(saved) => (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+          <div style={{ border: '1px solid #bfdbfe', borderRadius: '6px', padding: '1rem', background: '#eff6ff' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#1d4ed8' }}>Active Configuration</h4>
+            <div>Source: <strong>{sourceType.toUpperCase()}</strong></div>
+            <div>Transform: <strong>{activeResult?.transformationFormula ?? 'N/A'}</strong></div>
+            <div>E[Y]: <strong>{activeResult?.transformedMoments.mean.toFixed(3) ?? 'N/A'}</strong></div>
+            <div>Var(Y): <strong>{activeResult?.transformedMoments.variance.toFixed(3) ?? 'N/A'}</strong></div>
           </div>
-          <p className="text-slate-400 text-sm mt-1">
-            Explore how transformations change random variables, verify the Law of the Unconscious Statistician (LOTUS), and test Markov, Chebyshev, and Jensen concentration bounds.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleReset}
-            className="px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded transition"
-          >
-            Reset Defaults
-          </button>
-        </div>
-      </div>
-
-      {/* Validation Stale Alert */}
-      {!isCalculationValid && (
-        <div className="p-4 bg-amber-950/60 border border-amber-800/80 rounded-lg flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="px-2 py-0.5 text-xs font-bold rounded bg-amber-600 text-white">
-              {momentsCalc.error_code || 'INVALID_INPUT'}
-            </span>
-            <span className="text-amber-200 text-sm font-medium">
-              {momentsCalc.message || 'Invalid parameters.'} Showing stale results from last valid model.
-            </span>
+          <div style={{ border: '1px solid #cbd5e1', borderRadius: '6px', padding: '1rem', background: '#f8fafc' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#334155' }}>Saved: {saved.name}</h4>
+            <div>Source: <strong>{String(saved.results?.sourceDesc ?? '').toUpperCase()}</strong></div>
+            <div>Transform: <strong>{String(saved.results?.transformDesc ?? 'N/A')}</strong></div>
+            <div>E[Y]: <strong>{saved.results?.meanY ?? 'N/A'}</strong></div>
+            <div>Var(Y): <strong>{saved.results?.varY ?? 'N/A'}</strong></div>
           </div>
-          <span className="text-xs text-amber-400 uppercase tracking-wide font-mono">Stale Result</span>
         </div>
       )}
+    >
+      <div className="space-y-6">
+        {/* Presets Strip */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold text-slate-400 mr-2">Presets:</span>
+          <button
+            onClick={() => applyPreset('coin_affine')}
+            className="px-3 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+          >
+            Bernoulli Affine (2X - 1)
+          </button>
+          <button
+            onClick={() => applyPreset('standard_normal_sq')}
+            className="px-3 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+          >
+            Normal Square (X²)
+          </button>
+          <button
+            onClick={() => applyPreset('exponential_markov')}
+            className="px-3 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+          >
+            Exponential Markov Bound
+          </button>
+          <button
+            onClick={() => applyPreset('uniform_scaling')}
+            className="px-3 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+          >
+            Uniform Jensen Inequality
+          </button>
+        </div>
 
       {/* Main Grid: Left Controls & Right Displays */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -1112,60 +1193,9 @@ export const LabPL08: React.FC = () => {
             )}
           </div>
 
-          {/* Comparison Snapshot Card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-                Comparison Snapshot
-              </h3>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={snapshotName}
-                  onChange={(e) => setSnapshotName(e.target.value)}
-                  placeholder="Snapshot Name"
-                  className="bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white"
-                />
-                <button
-                  onClick={handleSaveSnapshot}
-                  disabled={!activeResult}
-                  className="px-3 py-1 text-xs font-medium rounded bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50 transition"
-                >
-                  Save Snapshot
-                </button>
-              </div>
-            </div>
-
-            {snapshot && (
-              <div className="p-3.5 bg-slate-950 rounded-lg border border-slate-800 text-xs flex flex-wrap justify-between items-center gap-4">
-                <div>
-                  <div className="font-bold text-slate-200">{snapshot.name}</div>
-                  <div className="text-[11px] text-slate-500">Saved at {snapshot.timestamp}</div>
-                  <div className="font-mono text-indigo-400 mt-1">
-                    {snapshot.sourceDesc} → {snapshot.transformDesc}
-                  </div>
-                </div>
-                <div className="flex gap-4 font-mono">
-                  <div>
-                    <span className="text-slate-500 block text-[10px]">E[Y]</span>
-                    <span className="text-slate-200 font-bold">{snapshot.meanY}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 block text-[10px]">Var(Y)</span>
-                    <span className="text-slate-200 font-bold">{snapshot.varY}</span>
-                  </div>
-                  {snapshot.simMeanY && (
-                    <div>
-                      <span className="text-emerald-500 block text-[10px]">Sim E[Y]</span>
-                      <span className="text-emerald-400 font-bold">{snapshot.simMeanY}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>
-  );
+  </LabShell>
+);
 };

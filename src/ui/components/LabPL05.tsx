@@ -13,18 +13,17 @@ import {
   DiscreteDistribution,
 } from '../../core/math/distribution';
 import { MathView } from './MathView';
-import { LocalPersistenceService } from '../../core/storage/persistence';
+import { LabShell } from './LabShell';
+import { LocalPersistenceService, LabComparisonSnapshot } from '../../core/storage/persistence';
 
 export type LabPL05View = 'both' | 'pmf' | 'cdf';
 
-interface PL05Snapshot {
-  timestamp: string;
-  supportSummary: string;
-  intervalQuery: string;
-  intervalProb: string;
+interface LabPL05Props {
+  onNavigate?: (route: string, params?: Record<string, string>) => void;
+  initialPreset?: string;
 }
 
-export const LabPL05: React.FC = () => {
+export const LabPL05: React.FC<LabPL05Props> = ({ onNavigate }) => {
   // Support points and string mass inputs for editing
   const [supportRows, setSupportRows] = useState<{ x: string; mass: string }[]>([
     { x: '0', mass: '1/4' },
@@ -39,7 +38,11 @@ export const LabPL05: React.FC = () => {
   const [includeRight, setIncludeRight] = useState<boolean>(true);
 
   const [activeView, setActiveView] = useState<LabPL05View>('both');
-  const [snapshot, setSnapshot] = useState<PL05Snapshot | null>(null);
+  
+  const [snapshotName, setSnapshotName] = useState<string>('Baseline CDF/PMF Setup');
+  const [savedSnapshot, setSavedSnapshot] = useState<LabComparisonSnapshot | null>(() =>
+    LocalPersistenceService.getLabSnapshot('PL-05')
+  );
 
   useEffect(() => {
     LocalPersistenceService.recordActivity({
@@ -191,56 +194,99 @@ export const LabPL05: React.FC = () => {
     setBoundB('1'); // a > b triggers E-BOUNDS-ORDER
   };
 
-  const handleTakeSnapshot = () => {
-    if (!intervalResult || intervalResult.status !== 'valid' || !intervalResult.value) return;
-    const supportSummary = activeDist.points.map((p) => `${p.x}:${rationalToString(p.mass)}`).join(', ');
-    setSnapshot({
-      timestamp: new Date().toLocaleTimeString(),
-      supportSummary,
-      intervalQuery: intervalResult.value.intervalLabel,
-      intervalProb: `${rationalToString(intervalResult.value.probability)} (${(rationalToDecimal(intervalResult.value.probability, 4) * 100).toFixed(1)}%)`,
-    });
+  const handleSaveSnapshot = () => {
+    const snap: LabComparisonSnapshot = {
+      snapshot_id: `PL05-SNAP-${Date.now()}`,
+      lab_id: 'PL-05',
+      name: snapshotName.trim() || 'CDF/PMF Snapshot',
+      timestamp: new Date().toISOString(),
+      parameters: {
+        supportRows,
+        boundA,
+        boundB,
+        includeLeft,
+        includeRight,
+        activeView,
+      },
+      results: {
+        isValid: parsedDistResult.valid,
+        intervalProbability: intervalResult.value ? rationalToString(intervalResult.value.probability) : undefined,
+      },
+    };
+    LocalPersistenceService.saveLabSnapshot(snap);
+    setSavedSnapshot(snap);
+  };
+
+  const handleRestoreSnapshot = () => {
+    if (!savedSnapshot) return;
+    const p = savedSnapshot.parameters;
+    if (p.supportRows) setSupportRows(p.supportRows);
+    if (p.boundA !== undefined) setBoundA(p.boundA);
+    if (p.boundB !== undefined) setBoundB(p.boundB);
+    if (p.includeLeft !== undefined) setIncludeLeft(p.includeLeft);
+    if (p.includeRight !== undefined) setIncludeRight(p.includeRight);
+    if (p.activeView) setActiveView(p.activeView as LabPL05View);
+  };
+
+  const handleDeleteSnapshot = () => {
+    LocalPersistenceService.deleteLabSnapshot('PL-05');
+    setSavedSnapshot(null);
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Header */}
-      <div
-        style={{
-          padding: '16px 20px',
-          background: 'var(--surface, #ffffff)',
-          borderRadius: '8px',
-          border: '1px solid var(--border, #e2e8f0)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
-          <div>
-            <h2 style={{ margin: '0 0 6px 0', fontSize: '1.25rem', color: 'var(--text-primary, #1e293b)' }}>
-              Guided Lab PL-05: CDF and PMF Explorer
-            </h2>
-            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary, #64748b)' }}>
-              <strong>Learning question:</strong> How do point masses accumulate into a CDF, and how do support and endpoint choices affect interval probability?
-            </p>
+    <LabShell
+      labId="PL-05"
+      labTitle="CDF and PMF Explorer"
+      labSubtitle="How do the jump heights of a right-continuous CDF recover the discrete PMF, and how do interval queries [a, b] relate to CDF differences?"
+      sourceAttribution={{
+        part: 'Part 1',
+        chapter: 'Chapters 6–7: Cumulative distribution functions',
+        isIllustrative: true,
+      }}
+      linkedModuleIds={['M06', 'M07']}
+      linkedConceptIds={['C-000009', 'C-000010', 'C-000011', 'C-000012']}
+      isStale={!parsedDistResult.valid}
+      errorCode={parsedDistResult.valid ? undefined : 'E-PROB-SUM'}
+      errorMessage={parsedDistResult.error ?? undefined}
+      snapshotName={snapshotName}
+      onSnapshotNameChange={setSnapshotName}
+      savedSnapshot={savedSnapshot}
+      onSaveSnapshot={handleSaveSnapshot}
+      onRestoreSnapshot={handleRestoreSnapshot}
+      onDeleteSnapshot={handleDeleteSnapshot}
+      onReset={applyPresetDefault}
+      onNavigate={onNavigate}
+      renderSnapshotComparison={(saved) => (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+          <div style={{ border: '1px solid #bfdbfe', borderRadius: '6px', padding: '1rem', background: '#eff6ff' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#1d4ed8' }}>Active Configuration</h4>
+            <div>Support: <code>{`{${supportRows.map((r) => r.x).join(', ')}}`}</code></div>
+            <div>Interval: <strong>{includeLeft ? '[' : '('}{boundA}, {boundB}{includeRight ? ']' : ')'}</strong></div>
+            <div>P(Interval): <strong>{intervalResult.value ? rationalToString(intervalResult.value.probability) : 'N/A'}</strong></div>
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={applyPresetDefault}
-              style={{
-                padding: '6px 12px',
-                fontSize: '0.8rem',
-                borderRadius: '6px',
-                border: '1px solid var(--border, #cbd5e1)',
-                background: '#f8fafc',
-                cursor: 'pointer',
-              }}
-            >
-              ↺ Reset Defaults
-            </button>
+          <div style={{ border: '1px solid #cbd5e1', borderRadius: '6px', padding: '1rem', background: '#f8fafc' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#334155' }}>Saved: {saved.name}</h4>
+            <div>Support: <code>{JSON.stringify(Array.isArray(saved.parameters.supportRows) ? saved.parameters.supportRows.map((r: any) => r.x) : [])}</code></div>
+            <div>Interval: <strong>{saved.parameters.includeLeft ? '[' : '('}{String(saved.parameters.boundA)}, {String(saved.parameters.boundB)}{saved.parameters.includeRight ? ']' : ')'}</strong></div>
+            <div>P(Interval): <strong>{saved.results?.intervalProbability ?? 'N/A'}</strong></div>
           </div>
         </div>
-
+      )}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Presets */}
-        <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        <div
+          style={{
+            padding: '12px 16px',
+            background: 'var(--surface, #ffffff)',
+            borderRadius: '8px',
+            border: '1px solid var(--border, #e2e8f0)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            flexWrap: 'wrap',
+          }}
+        >
           <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary, #475569)' }}>Presets:</span>
           <button
             onClick={applyPresetDefault}
@@ -296,7 +342,6 @@ export const LabPL05: React.FC = () => {
             Reversed Bounds Error (E-BOUNDS-ORDER)
           </button>
         </div>
-      </div>
 
       {/* Validation warning */}
       {isStale && (
@@ -534,7 +579,7 @@ export const LabPL05: React.FC = () => {
 
             {/* Snapshot Button */}
             <button
-              onClick={handleTakeSnapshot}
+              onClick={handleSaveSnapshot}
               style={{
                 marginTop: '4px',
                 padding: '8px 14px',
@@ -844,46 +889,9 @@ export const LabPL05: React.FC = () => {
               For continuous random variables, single points have zero probability, so <MathView math="P(a \le X \le b) = P(a < X < b)" />. But for discrete random variables, point masses cause instantaneous jump discontinuities in the CDF! Therefore, whether an interval endpoint is open or closed directly includes or excludes that point mass: <MathView math="P(a \le X \le b) = F(b) - F(a^-)" /> whereas <MathView math="P(a < X \le b) = F(b) - F(a)" />.
             </p>
           </div>
-
-          {/* Comparison Snapshot Card */}
-          {snapshot && (
-            <div
-              style={{
-                background: 'var(--surface, #ffffff)',
-                padding: '16px',
-                borderRadius: '8px',
-                border: '1px solid var(--border, #e2e8f0)',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#1e293b' }}>
-                  Snapshot Comparison (Saved at {snapshot.timestamp})
-                </h4>
-                <button
-                  onClick={() => setSnapshot(null)}
-                  style={{
-                    padding: '2px 8px',
-                    fontSize: '0.75rem',
-                    border: '1px solid #cbd5e1',
-                    background: '#f8fafc',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Clear
-                </button>
-              </div>
-              <div style={{ fontSize: '0.84rem', color: '#334155' }}>
-                <div><strong>Support:</strong> {snapshot.supportSummary}</div>
-                <div><strong>Query:</strong> {snapshot.intervalQuery}</div>
-                <div style={{ color: '#166534', marginTop: '4px', fontWeight: 600 }}>
-                  Probability: {snapshot.intervalProb}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
-  );
+  </LabShell>
+);
 };

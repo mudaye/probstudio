@@ -412,14 +412,14 @@ describe('Concept Content Fixtures - Modules M01 through M21 (A-005 Compliance)'
 
   describe('Exercise Content Fixtures - Modules M01 through M22', () => {
     it('contains authored exercises across Part 1, Part 2, and Part 3', () => {
-      expect(ALL_EXERCISES.length).toBe(31);
+      expect(ALL_EXERCISES.length).toBe(45);
       const m01Ex = getExercisesByModule('M01');
       expect(m01Ex.length).toBe(3);
       expect(m01Ex.map((e) => e.id)).toEqual(['EX-000001', 'EX-000002', 'EX-000003']);
 
       const m02Ex = getExercisesByModule('M02');
-      expect(m02Ex.length).toBe(1);
-      expect(m02Ex.map((e) => e.id)).toEqual(['EX-000004']);
+      expect(m02Ex.length).toBe(2);
+      expect(m02Ex.map((e) => e.id)).toEqual(['EX-000004', 'EX-000032']);
 
       const m03Ex = getExercisesByModule('M03');
       expect(m03Ex.length).toBe(2);
@@ -457,56 +457,56 @@ describe('Concept Content Fixtures - Modules M01 through M21 (A-005 Compliance)'
       expect(m09Ex.map((e) => e.id)).toEqual(['EX-000017', 'EX-000018']);
 
       const m10Ex = getExercisesByModule('M10');
-      expect(m10Ex.length).toBe(1);
-      expect(m10Ex.map((e) => e.id)).toEqual(['EX-000019']);
+      expect(m10Ex.length).toBe(2);
+      expect(m10Ex.map((e) => e.id)).toEqual(['EX-000019', 'EX-000033']);
 
       const m11Ex = getExercisesByModule('M11');
-      expect(m11Ex.length).toBe(1);
-      expect(m11Ex.map((e) => e.id)).toEqual(['EX-000020']);
+      expect(m11Ex.length).toBe(2);
+      expect(m11Ex.map((e) => e.id)).toEqual(['EX-000020', 'EX-000034']);
 
       const m12Ex = getExercisesByModule('M12');
-      expect(m12Ex.length).toBe(1);
-      expect(m12Ex.map((e) => e.id)).toEqual(['EX-000021']);
+      expect(m12Ex.length).toBe(2);
+      expect(m12Ex.map((e) => e.id)).toEqual(['EX-000021', 'EX-000035']);
 
       const m13Ex = getExercisesByModule('M13');
-      expect(m13Ex.length).toBe(1);
-      expect(m13Ex.map((e) => e.id)).toEqual(['EX-000022']);
+      expect(m13Ex.length).toBe(2);
+      expect(m13Ex.map((e) => e.id)).toEqual(['EX-000022', 'EX-000036']);
 
       const m14Ex = getExercisesByModule('M14');
-      expect(m14Ex.length).toBe(1);
-      expect(m14Ex.map((e) => e.id)).toEqual(['EX-000023']);
+      expect(m14Ex.length).toBe(2);
+      expect(m14Ex.map((e) => e.id)).toEqual(['EX-000023', 'EX-000037']);
 
       const m15Ex = getExercisesByModule('M15');
-      expect(m15Ex.length).toBe(1);
-      expect(m15Ex.map((e) => e.id)).toEqual(['EX-000024']);
+      expect(m15Ex.length).toBe(2);
+      expect(m15Ex.map((e) => e.id)).toEqual(['EX-000024', 'EX-000038']);
 
       const m16Ex = getExercisesByModule('M16');
-      expect(m16Ex.length).toBe(1);
-      expect(m16Ex.map((e) => e.id)).toEqual(['EX-000025']);
+      expect(m16Ex.length).toBe(2);
+      expect(m16Ex.map((e) => e.id)).toEqual(['EX-000025', 'EX-000039']);
 
       const m17Ex = getExercisesByModule('M17');
-      expect(m17Ex.length).toBe(1);
-      expect(m17Ex.map((e) => e.id)).toEqual(['EX-000026']);
+      expect(m17Ex.length).toBe(2);
+      expect(m17Ex.map((e) => e.id)).toEqual(['EX-000026', 'EX-000040']);
 
       const m18Ex = getExercisesByModule('M18');
-      expect(m18Ex.length).toBe(1);
-      expect(m18Ex.map((e) => e.id)).toEqual(['EX-000027']);
+      expect(m18Ex.length).toBe(2);
+      expect(m18Ex.map((e) => e.id)).toEqual(['EX-000027', 'EX-000041']);
 
       const m19Ex = getExercisesByModule('M19');
-      expect(m19Ex.length).toBe(1);
-      expect(m19Ex.map((e) => e.id)).toEqual(['EX-000029']);
+      expect(m19Ex.length).toBe(2);
+      expect(m19Ex.map((e) => e.id)).toEqual(['EX-000029', 'EX-000042']);
 
       const m20Ex = getExercisesByModule('M20');
-      expect(m20Ex.length).toBe(1);
-      expect(m20Ex.map((e) => e.id)).toEqual(['EX-000030']);
+      expect(m20Ex.length).toBe(2);
+      expect(m20Ex.map((e) => e.id)).toEqual(['EX-000030', 'EX-000043']);
 
       const m21Ex = getExercisesByModule('M21');
-      expect(m21Ex.length).toBe(1);
-      expect(m21Ex.map((e) => e.id)).toEqual(['EX-000028']);
+      expect(m21Ex.length).toBe(2);
+      expect(m21Ex.map((e) => e.id)).toEqual(['EX-000028', 'EX-000044']);
 
       const m22Ex = getExercisesByModule('M22');
-      expect(m22Ex.length).toBe(1);
-      expect(m22Ex.map((e) => e.id)).toEqual(['EX-000031']);
+      expect(m22Ex.length).toBe(2);
+      expect(m22Ex.map((e) => e.id)).toEqual(['EX-000031', 'EX-000045']);
 
       const ex17 = getExerciseById('EX-000017');
       expect(ex17).toBe(EXERCISE_EX000017);

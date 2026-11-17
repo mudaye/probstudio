@@ -7,7 +7,11 @@ import {
   getConceptById,
 } from '../../core/content/fixtures';
 import { PARTS, MODULES, getModuleById } from '../../core/content/modules';
-import { checkExactRationalAnswer, AssessmentCheckResult } from '../../core/assessment/checker';
+import {
+  checkExactRationalAnswer,
+  checkMultiPartRationalAnswer,
+  AssessmentCheckResult,
+} from '../../core/assessment/checker';
 import { LocalPersistenceService, StoredAttempt } from '../../core/storage/persistence';
 import { MathView } from '../components/MathView';
 import { ModuleNavDrawer } from '../components/ModuleNavDrawer';
@@ -64,6 +68,8 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
   });
 
   const [resultsMap, setResultsMap] = useState<Record<string, AssessmentCheckResult | null>>({});
+  const [multiPartInputs, setMultiPartInputs] = useState<Record<string, Record<string, string>>>({});
+  const [revealedHints, setRevealedHints] = useState<Record<string, number>>({});
   const [history, setHistory] = useState<StoredAttempt[]>([]);
   const [reviewOnly, setReviewOnly] = useState<boolean>(false);
   const [isGridViewOpen, setIsGridViewOpen] = useState<boolean>(false);
@@ -134,27 +140,53 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
     }
   };
 
+  const handleMultiPartChange = (partId: string, val: string) => {
+    setMultiPartInputs((prev) => ({
+      ...prev,
+      [activeExercise.id]: {
+        ...(prev[activeExercise.id] ?? {}),
+        [partId]: val,
+      },
+    }));
+  };
+
   const handleCheck = (e: React.FormEvent) => {
     e.preventDefault();
-    const checkResult = checkExactRationalAnswer(
-      currentInput,
-      activeExercise.expectedRational,
-      activeExercise.explanationLatex
-    );
+    const isMultiPart = !!(activeExercise.parts && activeExercise.parts.length > 0);
+    const checkResult = isMultiPart
+      ? checkMultiPartRationalAnswer(
+          multiPartInputs[activeExercise.id] ?? {},
+          activeExercise.parts!,
+          activeExercise.explanationLatex
+        )
+      : checkExactRationalAnswer(
+          currentInput,
+          activeExercise.expectedRational ?? { num: 0n, den: 1n },
+          activeExercise.explanationLatex,
+          activeExercise.domain ?? 'probability'
+        );
 
     setResultsMap((prev) => ({
       ...prev,
       [activeExercise.id]: checkResult,
     }));
 
-    if (checkResult.status === 'correct' || checkResult.status === 'incorrect') {
+    if (
+      checkResult.status === 'correct' ||
+      checkResult.status === 'partially_correct' ||
+      checkResult.status === 'incorrect'
+    ) {
+      const recordedResponse = isMultiPart
+        ? JSON.stringify(multiPartInputs[activeExercise.id] ?? {})
+        : currentInput;
+
       const att = LocalPersistenceService.recordAttempt({
         exercise_id: activeExercise.id,
-        raw_response: currentInput,
-        outcome: checkResult.status,
+        raw_response: recordedResponse,
+        outcome: checkResult.status === 'partially_correct' ? 'incorrect' : checkResult.status,
         calculation_id: 'CAL-EVENT-001',
         feedback_summary: checkResult.message,
-        hints_used: 0,
+        hints_used: revealedHints[activeExercise.id] ?? 0,
       });
       setLatestAttemptId(att.attempt_id);
       setHistory(LocalPersistenceService.getAttempts(activeExercise.id));
@@ -430,36 +462,145 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
                   <MathView math={activeExercise.promptLatex} block />
                 </div>
 
-                {/* Input Form */}
-                <form onSubmit={handleCheck} style={{ marginTop: '1.5rem' }}>
-                  <label
-                    htmlFor={`answer-input-${activeExercise.id}`}
-                    style={{ display: 'block', fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.5rem' }}
+                {/* Progressive Hints Section (A-006 §3.1) */}
+                {activeExercise.hints && activeExercise.hints.length > 0 && (
+                  <div
+                    style={{
+                      margin: '1.25rem 0',
+                      padding: '0.85rem 1rem',
+                      background: '#fffbeb',
+                      border: '1px solid #fef3c7',
+                      borderRadius: '8px',
+                    }}
                   >
-                    Your exact answer: (e.g. <code>1/2</code>, <code>0.97</code>, or <code>2/3</code>)
-                  </label>
-                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <input
-                      id={`answer-input-${activeExercise.id}`}
-                      type="text"
-                      value={currentInput}
-                      onChange={handleInputChange}
-                      placeholder="e.g. 1/2 or 0.97"
-                      style={{
-                        padding: '0.6rem 0.9rem',
-                        border: '1px solid var(--border)',
-                        borderRadius: '6px',
-                        fontSize: '1.05rem',
-                        minWidth: '180px',
-                        maxWidth: '240px',
-                      }}
-                      autoFocus
-                    />
-                    <button type="submit" className="btn-primary">
-                      Check Answer
-                    </button>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                      <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#92400e' }}>
+                        💡 Guided Scaffolding Hints ({revealedHints[activeExercise.id] ?? 0} of {activeExercise.hints.length} revealed):
+                      </span>
+                      {(revealedHints[activeExercise.id] ?? 0) < activeExercise.hints.length && (
+                        <button
+                          type="button"
+                          className="btn-secondary btn-sm"
+                          onClick={() =>
+                            setRevealedHints((prev) => ({
+                              ...prev,
+                              [activeExercise.id]: (prev[activeExercise.id] ?? 0) + 1,
+                            }))
+                          }
+                          style={{ fontSize: '0.78rem' }}
+                        >
+                          Reveal Next Hint &rarr;
+                        </button>
+                      )}
+                    </div>
+                    {(revealedHints[activeExercise.id] ?? 0) > 0 && (
+                      <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {activeExercise.hints.slice(0, revealedHints[activeExercise.id] ?? 0).map((hint, idx) => (
+                          <div
+                            key={idx}
+                            style={{
+                              fontSize: '0.85rem',
+                              color: '#78350f',
+                              background: '#ffffff',
+                              padding: '6px 12px',
+                              borderRadius: '4px',
+                              border: '1px solid #fde68a',
+                            }}
+                          >
+                            <strong>Hint {idx + 1}:</strong> {hint}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </form>
+                )}
+
+                {/* Input Form: Multi-Part vs. Single Scalar */}
+                {activeExercise.parts && activeExercise.parts.length > 0 ? (
+                  <form onSubmit={handleCheck} style={{ marginTop: '1.5rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      {activeExercise.parts.map((part) => {
+                        const partRes = currentResult?.partResults?.[part.id];
+                        return (
+                          <div
+                            key={part.id}
+                            style={{
+                              background: '#f8fafc',
+                              padding: '0.85rem 1rem',
+                              borderRadius: '6px',
+                              border: '1px solid var(--border)',
+                            }}
+                          >
+                            <div style={{ fontWeight: 600, fontSize: '0.92rem', color: '#1e293b', marginBottom: '0.25rem' }}>
+                              {part.label}
+                            </div>
+                            <p style={{ fontSize: '0.88rem', color: '#475569', margin: '0 0 0.5rem 0' }}>{part.prompt}</p>
+                            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                              <input
+                                type="text"
+                                value={multiPartInputs[activeExercise.id]?.[part.id] ?? ''}
+                                onChange={(e) => handleMultiPartChange(part.id, e.target.value)}
+                                placeholder="e.g. 1/3 or 0.25"
+                                style={{
+                                  padding: '0.5rem 0.8rem',
+                                  border: '1px solid var(--border)',
+                                  borderRadius: '6px',
+                                  fontSize: '0.95rem',
+                                  minWidth: '160px',
+                                  maxWidth: '220px',
+                                }}
+                              />
+                              {partRes && (
+                                <span
+                                  style={{
+                                    fontSize: '0.85rem',
+                                    fontWeight: 600,
+                                    color: partRes.status === 'correct' ? '#15803d' : '#b91c1c',
+                                  }}
+                                >
+                                  {partRes.status === 'correct' ? '✓ Correct' : `✗ ${partRes.message}`}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <button type="submit" className="btn-primary" style={{ marginTop: '1rem' }}>
+                      Check Multi-Part Answers
+                    </button>
+                  </form>
+                ) : (
+                  <form onSubmit={handleCheck} style={{ marginTop: '1.5rem' }}>
+                    <label
+                      htmlFor={`answer-input-${activeExercise.id}`}
+                      style={{ display: 'block', fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.5rem' }}
+                    >
+                      Your exact answer: (e.g. <code>1/2</code>, <code>0.97</code>, or <code>2/3</code>)
+                    </label>
+                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <input
+                        id={`answer-input-${activeExercise.id}`}
+                        type="text"
+                        value={currentInput}
+                        onChange={handleInputChange}
+                        placeholder="e.g. 1/2 or 0.97"
+                        style={{
+                          padding: '0.6rem 0.9rem',
+                          border: '1px solid var(--border)',
+                          borderRadius: '6px',
+                          fontSize: '1.05rem',
+                          minWidth: '180px',
+                          maxWidth: '240px',
+                        }}
+                        autoFocus
+                      />
+                      <button type="submit" className="btn-primary">
+                        Check Answer
+                      </button>
+                    </div>
+                  </form>
+                )}
 
                 {/* Feedback / Result Banner */}
                 {currentResult && (
@@ -467,6 +608,8 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
                     className={`alert ${
                       currentResult.status === 'correct'
                         ? 'alert-success'
+                        : currentResult.status === 'partially_correct'
+                        ? 'alert-warning'
                         : currentResult.status === 'incorrect'
                         ? 'alert-error'
                         : 'alert-warning'
@@ -475,6 +618,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
                   >
                     <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.35rem' }}>
                       {currentResult.status === 'correct' && '✓ Correct!'}
+                      {currentResult.status === 'partially_correct' && '🟡 Partially Correct'}
                       {currentResult.status === 'incorrect' && '✗ Incorrect'}
                       {currentResult.status === 'invalid_input' && '⚠ Invalid Input'}
                     </div>
@@ -489,7 +633,10 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
                 )}
 
                 {/* Self-Assessment & Review Flagging (A-002 §5.2 & A-005 §7) */}
-                {currentResult && (currentResult.status === 'correct' || currentResult.status === 'incorrect') && (
+                {currentResult &&
+                  (currentResult.status === 'correct' ||
+                    currentResult.status === 'partially_correct' ||
+                    currentResult.status === 'incorrect') && (
                   <div
                     style={{
                       marginTop: '1rem',

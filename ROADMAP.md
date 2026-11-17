@@ -1,7 +1,7 @@
 # Probability Revision Studio — Roadmap
 
 **Purpose:** Track curriculum activation, laboratory capability, assessment expansion, and mastery engine evolution across Probability Revision Studio.  
-**Current Stage:** Stage 6 — Assessment Depth & Laboratory Harmonization (Stage 5 Completed).  
+**Current Stage:** Stage 7 — Accessibility, Polish & Release (Stage 6 Completed).  
 **Core Principles:**
 - Grounded in source transcripts (`transcripts/Review of Basic Probability 1-3.md`).
 - 100% deterministic mathematical calculations, validation, and scoring.
@@ -16,9 +16,9 @@
 |---|---|---|
 | **Curriculum Activation** | **22 of 22 Modules (100%)** | Fully activated across Parts 1, 2, and 3 (`M01`–`M22`) |
 | **Concept Coverage** | **44 Concepts** (`C-000001`–`C-000044`) | Verified definitions, intuition, LaTeX formulas, examples, and cross-links |
-| **Practice Gym** | **31 Scored Exercises** (`EX-000001`–`EX-000031`) | Exact rational answer evaluation, step-by-step solutions, hint ladders |
-| **Guided Laboratories** | **11 Active Labs + Custom Builder** (`PL-01`–`PL-11`, `EXP-BUILDER`) | Interactive SVG/canvas visualizers, deterministic PRNG simulations |
-| **Test Suite Coverage** | **19 Suites, 203 Passing Tests** | Vitest automated golden vectors, domain boundaries, precision tests |
+| **Practice Gym** | **45 Scored Exercises** (`EX-000001`–`EX-000045`) | Multi-part exercises, interval & vector/tuple evaluation, progressive hints, partial credit, $\ge 2$ exercises for every module `M01`–`M22` |
+| **Guided Laboratories** | **11 Active Labs + Custom Builder** (`PL-01`–`PL-11`, `EXP-BUILDER`) | 100% harmonized under unified `LabShell` architecture with persistent snapshot comparisons & normative error states |
+| **Test Suite Coverage** | **19 Suites, 219 Passing Tests** | Vitest automated golden vectors, domain boundaries, precision tests, multi-part assessment checks |
 | **Build & Type Safety** | **Clean Production Build** | TypeScript (`tsc && vite build`) passing with zero errors |
 | **Routing & Navigation** | **Bi-directional Hash Routing** | Deep-links (`#/playground/:id`, `#/atlas/:id`, `#/practice/:id`) with state preserved |
 | **Persistence & Backup** | **Local-First JSON Export/Import** | Full learner attempts, activity logs, and laboratory comparison snapshots |
@@ -55,20 +55,17 @@
 | **Stage 3** | **Vertical Slice** | 6-step prototype learner journey across Dashboard, Atlas, Gym, and `PL-01`. | **Completed** |
 | **Stage 4** | **Curriculum Activation & Lab Expansion** | 100% activation of Modules M01–M22, activation of Guided Labs `PL-02` through `PL-11`, Custom Builder, ErrorBoundary, and bi-directional deep-linking. | **Completed** |
 | **Stage 5** | **Adaptive Mastery & Spaced Revision Engine** | Deterministic 4-tier mastery state machine (`Unseen` $\to$ `Exploring` $\to$ `Practising` $\to$ `Secure` / `Review Due`), Leitner interval progression, Dashboard Revision Queue, manual review flags, Practice Gym review filter, self-assessment confidence feedback, in-situ contextual help bars, and non-scrolling stepper/combobox item navigation. | **Completed** |
-| **Stage 6** | **Assessment Depth & Laboratory Harmonization** | Multi-part exercise expansion (ensuring $\ge 2$ exercises per module), vector/interval answer checks, migrating `PL-03`–`PL-10` to shared `LabShell`. | **Up Next** |
-| **Stage 7** | **Accessibility, Polish & Release** | WCAG 2.1 AA keyboard/screen-reader audit, code-splitting optimization, and offline PWA capability. | **Planned** |
+| **Stage 6** | **Assessment Depth & Laboratory Harmonization** | Multi-part exercise expansion (ensuring $\ge 2$ exercises per module, totaling 45 exercises), domain-bounded rational evaluation, progressive hint revealing with partial credit scoring, and complete migration of all guided labs `PL-01` through `PL-11` into the unified `LabShell` architecture. | **Completed** |
+| **Stage 7** | **Accessibility, Polish & Release** | WCAG 2.1 AA keyboard/screen-reader audit, code-splitting optimization, and offline PWA capability. | **Up Next** |
 
 ---
 
-## 4. Current Sprint Objectives (Stage 5)
+## 4. Current Sprint Objectives (Stage 7)
 
-1. **Mastery & Revision Engine (`src/core/mastery/`):**
-   - Implement `types.ts`, `scheduler.ts`, and comprehensive Vitest unit tests (`scheduler.test.ts`).
-   - Criteria for `Secure`: $\ge 3$ correct attempts, $\ge 2$ separate calendar days, $\ge 2$ distinct formats, unassisted (no hint advancement).
-   - Leitner review intervals ($1, 3, 7, 14, 30$ days) with decay on errors and manual review flags.
-2. **Dashboard Spaced Revision Queue:**
-   - Display concepts currently due for review with reason tags and 1-click review action.
-   - Display a global curriculum mastery progress bar.
-3. **Concept Atlas & Practice Gym Review Features:**
-   - Add status badges and the explicit "🔖 Mark for Review" toggle button to Concept Atlas.
-   - Add the "Quick Review Set" filter to Practice Gym.
+1. **Accessibility & WCAG 2.1 AA Audit:**
+   - Full keyboard navigation across all canvas/SVG interactive components.
+   - Screen-reader aria attributes and contrast ratio checks.
+2. **Performance & Code-Splitting:**
+   - Dynamic lazy import of guided laboratory modules (`React.lazy` / `Suspense`) to optimize initial bundle size.
+3. **Offline & Packaging:**
+   - Offline service worker caching and PWA manifest configuration.

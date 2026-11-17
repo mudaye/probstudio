@@ -18,17 +18,15 @@ import {
   InducedDistributionResult,
 } from '../../core/math/randomVariable';
 import { MathView } from './MathView';
-import { LocalPersistenceService } from '../../core/storage/persistence';
+import { LabShell } from './LabShell';
+import { LocalPersistenceService, LabComparisonSnapshot } from '../../core/storage/persistence';
 
-interface PL04Snapshot {
-  timestamp: string;
-  varName: string;
-  presetName: string;
-  distinctValues: number[];
-  pmfSummary: string;
+interface LabPL04Props {
+  onNavigate?: (route: string, params?: Record<string, string>) => void;
+  initialPreset?: string;
 }
 
-export const LabPL04: React.FC = () => {
+export const LabPL04: React.FC<LabPL04Props> = ({ onNavigate }) => {
   // Outcomes and masses
   const [outcomes, setOutcomes] = useState<string[]>([
     'HHH', 'HHT', 'HTH', 'HTT', 'THH', 'THT', 'TTH', 'TTT',
@@ -49,7 +47,11 @@ export const LabPL04: React.FC = () => {
 
   const [varName, setVarName] = useState<string>('X');
   const [hoveredValue, setHoveredValue] = useState<number | null>(null);
-  const [snapshot, setSnapshot] = useState<PL04Snapshot | null>(null);
+
+  const [snapshotName, setSnapshotName] = useState<string>('Baseline RV Mapping');
+  const [savedSnapshot, setSavedSnapshot] = useState<LabComparisonSnapshot | null>(() =>
+    LocalPersistenceService.getLabSnapshot('PL-04')
+  );
 
   useEffect(() => {
     LocalPersistenceService.recordActivity({
@@ -175,60 +177,95 @@ export const LabPL04: React.FC = () => {
     setMappingInput((prev) => ({ ...prev, TTT: '' })); // make TTT blank
   };
 
-  // Snapshot handler
-  const handleTakeSnapshot = () => {
-    if (!calcResult) return;
-    const summary = calcResult.pmf
-      .map((p) => `P(${varName}=${p.value})=${rationalToString(p.mass)}`)
-      .join(', ');
-    setSnapshot({
-      timestamp: new Date().toLocaleTimeString(),
-      varName,
-      presetName: `${outcomes.length} outcomes → ${calcResult.distinctValues.length} values`,
-      distinctValues: [...calcResult.distinctValues],
-      pmfSummary: summary,
-    });
+  const handleSaveSnapshot = () => {
+    const snap: LabComparisonSnapshot = {
+      snapshot_id: `PL04-SNAP-${Date.now()}`,
+      lab_id: 'PL-04',
+      name: snapshotName.trim() || 'RV Mapping Snapshot',
+      timestamp: new Date().toISOString(),
+      parameters: {
+        varName,
+        outcomes,
+        massesInput,
+        mappingInput,
+      },
+      results: {
+        distinctCount: calcResult?.distinctValues.length ?? 0,
+        values: calcResult?.distinctValues ?? [],
+      },
+    };
+    LocalPersistenceService.saveLabSnapshot(snap);
+    setSavedSnapshot(snap);
+  };
+
+  const handleRestoreSnapshot = () => {
+    if (!savedSnapshot) return;
+    const p = savedSnapshot.parameters;
+    if (p.varName) setVarName(p.varName);
+    if (p.outcomes) setOutcomes(p.outcomes);
+    if (p.massesInput) setMassesInput(p.massesInput);
+    if (p.mappingInput) setMappingInput(p.mappingInput);
+  };
+
+  const handleDeleteSnapshot = () => {
+    LocalPersistenceService.deleteLabSnapshot('PL-04');
+    setSavedSnapshot(null);
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Header */}
-      <div
-        style={{
-          padding: '16px 20px',
-          background: 'var(--surface, #ffffff)',
-          borderRadius: '8px',
-          border: '1px solid var(--border, #e2e8f0)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
-          <div>
-            <h2 style={{ margin: '0 0 6px 0', fontSize: '1.25rem', color: 'var(--text-primary, #1e293b)' }}>
-              Guided Lab PL-04: Random Variable Mapper
-            </h2>
-            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary, #64748b)' }}>
-              <strong>Learning question:</strong> How does a numerical mapping on outcomes induce a distribution, and how can multiple outcomes map to one value?
-            </p>
+    <LabShell
+      labId="PL-04"
+      labTitle="Random Variable Mapper"
+      labSubtitle="How does a rule X: Ω → ℝ map outcomes to real values, and how does inverse-image fiber aggregation induce the probability mass function (PMF)?"
+      sourceAttribution={{
+        part: 'Part 1',
+        chapter: 'Chapter 5: Random variables and induced probability distributions',
+        isIllustrative: true,
+      }}
+      linkedModuleIds={['M05']}
+      linkedConceptIds={['C-000007', 'C-000008']}
+      isStale={isStale}
+      errorCode={isStale ? 'E-PARAM-DOMAIN' : undefined}
+      errorMessage={errorMsg ?? undefined}
+      snapshotName={snapshotName}
+      onSnapshotNameChange={setSnapshotName}
+      savedSnapshot={savedSnapshot}
+      onSaveSnapshot={handleSaveSnapshot}
+      onRestoreSnapshot={handleRestoreSnapshot}
+      onDeleteSnapshot={handleDeleteSnapshot}
+      onReset={applyPresetHeads}
+      onNavigate={onNavigate}
+      renderSnapshotComparison={(saved) => (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+          <div style={{ border: '1px solid #bfdbfe', borderRadius: '6px', padding: '1rem', background: '#eff6ff' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#1d4ed8' }}>Active Configuration</h4>
+            <div>Variable: <strong>{varName}</strong></div>
+            <div>Support: <code>&#123;{(calcResult?.distinctValues ?? []).join(', ')}&#125;</code></div>
+            <div>Outcomes mapped: <strong>{outcomes.length}</strong></div>
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={applyPresetHeads}
-              style={{
-                padding: '6px 12px',
-                fontSize: '0.8rem',
-                borderRadius: '6px',
-                border: '1px solid var(--border, #cbd5e1)',
-                background: '#f8fafc',
-                cursor: 'pointer',
-              }}
-            >
-              ↺ Reset Defaults
-            </button>
+          <div style={{ border: '1px solid #cbd5e1', borderRadius: '6px', padding: '1rem', background: '#f8fafc' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#334155' }}>Saved: {saved.name}</h4>
+            <div>Variable: <strong>{saved.parameters?.varName ?? 'X'}</strong></div>
+            <div>Support: <code>&#123;{(saved.results?.values ?? []).join(', ')}&#125;</code></div>
+            <div>Outcomes mapped: <strong>{(saved.parameters?.outcomes ?? []).length}</strong></div>
           </div>
         </div>
-
+      )}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Presets */}
-        <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        <div
+          style={{
+            padding: '12px 16px',
+            background: 'var(--surface, #ffffff)',
+            borderRadius: '8px',
+            border: '1px solid var(--border, #e2e8f0)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            flexWrap: 'wrap',
+          }}
+        >
           <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary, #475569)' }}>Presets:</span>
           <button
             onClick={applyPresetHeads}
@@ -429,7 +466,7 @@ export const LabPL04: React.FC = () => {
 
           {/* Snapshot Button */}
           <button
-            onClick={handleTakeSnapshot}
+            onClick={handleSaveSnapshot}
             disabled={!calcResult}
             style={{
               padding: '8px 14px',
@@ -614,44 +651,8 @@ export const LabPL04: React.FC = () => {
               A random variable is a deterministic mapping <MathView math="X: \Omega \to \mathbb{R}" />. It partitions the sample space <MathView math="\Omega" /> into fibers (pre-image sets) <MathView math="X^{-1}(\{x\}) = \{\omega : X(\omega) = x\}" />. The probability mass <MathView math="P(X = x)" /> is simply the total probability of all outcomes in its fiber. This induces a brand new, valid probability space on the real numbers.
             </p>
           </div>
-
-          {/* Comparison Snapshot Card */}
-          {snapshot && (
-            <div
-              style={{
-                background: 'var(--surface, #ffffff)',
-                padding: '16px',
-                borderRadius: '8px',
-                border: '1px solid var(--border, #e2e8f0)',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#1e293b' }}>
-                  Snapshot Comparison (Saved at {snapshot.timestamp})
-                </h4>
-                <button
-                  onClick={() => setSnapshot(null)}
-                  style={{
-                    padding: '2px 8px',
-                    fontSize: '0.75rem',
-                    border: '1px solid #cbd5e1',
-                    background: '#f8fafc',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Clear
-                </button>
-              </div>
-              <div style={{ fontSize: '0.84rem', color: '#334155' }}>
-                <div><strong>Preset:</strong> {snapshot.presetName}</div>
-                <div><strong>Values:</strong> {snapshot.distinctValues.join(', ')}</div>
-                <div style={{ color: '#0369a1', marginTop: '4px' }}>{snapshot.pmfSummary}</div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
-    </div>
+    </LabShell>
   );
 };

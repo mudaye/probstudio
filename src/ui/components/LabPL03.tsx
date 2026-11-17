@@ -20,18 +20,17 @@ import {
   calculateConditionalIndependence,
 } from '../../core/math/independence';
 import { MathView } from './MathView';
-import { LocalPersistenceService } from '../../core/storage/persistence';
+import { LabShell } from './LabShell';
+import { LocalPersistenceService, LabComparisonSnapshot } from '../../core/storage/persistence';
 
 export type LabPL03Mode = 'pairwise' | 'mutual' | 'conditional';
 
-interface PL03Snapshot {
-  timestamp: string;
-  mode: LabPL03Mode;
-  verdict: string;
-  summary: string;
+interface LabPL03Props {
+  onNavigate?: (route: string, params?: Record<string, string>) => void;
+  initialPreset?: string;
 }
 
-export const LabPL03: React.FC = () => {
+export const LabPL03: React.FC<LabPL03Props> = ({ onNavigate }) => {
   // Outcomes & masses
   const [outcomes, setOutcomes] = useState<string[]>(['HH', 'HT', 'TH', 'TT']);
   const [massesInput, setMassesInput] = useState<string[]>(['1/4', '1/4', '1/4', '1/4']);
@@ -43,7 +42,11 @@ export const LabPL03: React.FC = () => {
 
   const [mode, setMode] = useState<LabPL03Mode>('pairwise');
   const [conditioningEventChoice, setConditioningEventChoice] = useState<'A' | 'B' | 'C'>('C');
-  const [snapshot, setSnapshot] = useState<PL03Snapshot | null>(null);
+  
+  const [snapshotName, setSnapshotName] = useState<string>('Baseline Independence Setup');
+  const [savedSnapshot, setSavedSnapshot] = useState<LabComparisonSnapshot | null>(() =>
+    LocalPersistenceService.getLabSnapshot('PL-03')
+  );
 
   useEffect(() => {
     LocalPersistenceService.recordActivity({
@@ -200,77 +203,104 @@ export const LabPL03: React.FC = () => {
     return calculateConditionalIndependence(activeSpace, condOther1, condOther2, condEventOutcomes);
   }, [activeSpace, condOther1, condOther2, condEventOutcomes]);
 
-  // Snapshot handler
-  const handleTakeSnapshot = () => {
-    let verdict = '';
-    let summary = '';
-    if (mode === 'pairwise') {
-      verdict = pairwiseAB.isIndependent ? 'A ⊥ B (Independent)' : 'A ⊥̸ B (Dependent)';
-      summary = `P(A)=${rationalToString(pairwiseAB.probA)}, P(B)=${rationalToString(pairwiseAB.probB)}, P(A∩B)=${rationalToString(pairwiseAB.probIntersection)}`;
-    } else if (mode === 'mutual') {
-      verdict = mutualResult.isMutuallyIndependent
-        ? 'Mutually Independent'
-        : mutualResult.isPairwiseIndependent
-        ? 'Pairwise Independent ONLY'
-        : 'Dependent';
-      summary = mutualResult.message;
-    } else {
-      verdict =
-        conditionalResult.status === 'undefined'
-          ? 'Undefined (E-COND-ZERO)'
-          : conditionalResult.isConditionallyIndependent
-          ? 'Conditionally Independent'
-          : 'Conditionally Dependent';
-      summary = `Given ${conditioningEventChoice}: P(${condOther1Name}∩${condOther2Name}|${conditioningEventChoice}) vs product`;
-    }
+  const handleSaveSnapshot = () => {
+    const snap: LabComparisonSnapshot = {
+      snapshot_id: `PL03-SNAP-${Date.now()}`,
+      lab_id: 'PL-03',
+      name: snapshotName.trim() || 'Independence Snapshot',
+      timestamp: new Date().toISOString(),
+      parameters: {
+        mode,
+        outcomes,
+        massesInput,
+        eventA,
+        eventB,
+        eventC,
+        conditioningEventChoice,
+      },
+      results: {
+        isPairwiseIndependent: pairwiseAB.isIndependent,
+        isMutuallyIndependent: mutualResult.isMutuallyIndependent,
+        isConditionallyIndependent: conditionalResult.isConditionallyIndependent,
+      },
+    };
+    LocalPersistenceService.saveLabSnapshot(snap);
+    setSavedSnapshot(snap);
+  };
 
-    setSnapshot({
-      timestamp: new Date().toLocaleTimeString(),
-      mode,
-      verdict,
-      summary,
-    });
+  const handleRestoreSnapshot = () => {
+    if (!savedSnapshot) return;
+    const p = savedSnapshot.parameters;
+    if (p.mode) setMode(p.mode as LabPL03Mode);
+    if (p.outcomes) setOutcomes(p.outcomes);
+    if (p.massesInput) setMassesInput(p.massesInput);
+    if (p.eventA) setEventA(p.eventA);
+    if (p.eventB) setEventB(p.eventB);
+    if (p.eventC) setEventC(p.eventC);
+    if (p.conditioningEventChoice) setConditioningEventChoice(p.conditioningEventChoice);
+  };
+
+  const handleDeleteSnapshot = () => {
+    LocalPersistenceService.deleteLabSnapshot('PL-03');
+    setSavedSnapshot(null);
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Header */}
-      <div
-        style={{
-          padding: '16px 20px',
-          background: 'var(--surface, #ffffff)',
-          borderRadius: '8px',
-          border: '1px solid var(--border, #e2e8f0)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
-          <div>
-            <h2 style={{ margin: '0 0 6px 0', fontSize: '1.25rem', color: 'var(--text-primary, #1e293b)' }}>
-              Guided Lab PL-03: Independence Laboratory
-            </h2>
-            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary, #64748b)' }}>
-              <strong>Learning question:</strong> Which independence claims hold for the selected events, and how can pairwise, mutual, and conditional independence differ?
-            </p>
+    <LabShell
+      labId="PL-03"
+      labTitle="Independence Laboratory"
+      labSubtitle="Which independence claims hold for the selected events, and how can pairwise, mutual, and conditional independence differ?"
+      sourceAttribution={{
+        part: 'Part 1',
+        chapter: 'Chapter 4: Independence and conditional independence',
+        isIllustrative: true,
+      }}
+      linkedModuleIds={['M04']}
+      linkedConceptIds={['C-000005', 'C-000006']}
+      isStale={!parsedSpaceResult.valid}
+      errorCode={parsedSpaceResult.valid ? undefined : 'E-PROB-SUM'}
+      errorMessage={parsedSpaceResult.error ?? undefined}
+      snapshotName={snapshotName}
+      onSnapshotNameChange={setSnapshotName}
+      savedSnapshot={savedSnapshot}
+      onSaveSnapshot={handleSaveSnapshot}
+      onRestoreSnapshot={handleRestoreSnapshot}
+      onDeleteSnapshot={handleDeleteSnapshot}
+      onReset={applyPreset1}
+      onNavigate={onNavigate}
+      renderSnapshotComparison={(saved) => (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+          <div style={{ border: '1px solid #bfdbfe', borderRadius: '6px', padding: '1rem', background: '#eff6ff' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#1d4ed8' }}>Active Configuration</h4>
+            <div>Mode: <strong>{mode.toUpperCase()}</strong></div>
+            <div>Pairwise: <strong>{pairwiseAB.isIndependent ? 'Independent' : 'Dependent'}</strong></div>
+            <div>Mutual: <strong>{mutualResult.isMutuallyIndependent ? 'Independent' : 'Dependent'}</strong></div>
+            <div>Conditional: <strong>{conditionalResult.isConditionallyIndependent ? 'Independent' : 'Dependent'}</strong></div>
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={applyPreset1}
-              style={{
-                padding: '6px 12px',
-                fontSize: '0.8rem',
-                borderRadius: '6px',
-                border: '1px solid var(--border, #cbd5e1)',
-                background: '#f8fafc',
-                cursor: 'pointer',
-              }}
-            >
-              ↺ Reset Defaults
-            </button>
+          <div style={{ border: '1px solid #cbd5e1', borderRadius: '6px', padding: '1rem', background: '#f8fafc' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#334155' }}>Saved: {saved.name}</h4>
+            <div>Mode: <strong>{String(saved.parameters?.mode).toUpperCase()}</strong></div>
+            <div>Pairwise: <strong>{saved.results?.isPairwiseIndependent ? 'Independent' : 'Dependent'}</strong></div>
+            <div>Mutual: <strong>{saved.results?.isMutuallyIndependent ? 'Independent' : 'Dependent'}</strong></div>
+            <div>Conditional: <strong>{saved.results?.isConditionallyIndependent ? 'Independent' : 'Dependent'}</strong></div>
           </div>
         </div>
-
+      )}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Presets */}
-        <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        <div
+          style={{
+            padding: '12px 16px',
+            background: 'var(--surface, #ffffff)',
+            borderRadius: '8px',
+            border: '1px solid var(--border, #e2e8f0)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            flexWrap: 'wrap',
+          }}
+        >
           <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary, #475569)' }}>Presets:</span>
           <button
             onClick={applyPreset1}
@@ -570,7 +600,7 @@ export const LabPL03: React.FC = () => {
 
           {/* Snapshot Button */}
           <button
-            onClick={handleTakeSnapshot}
+            onClick={handleSaveSnapshot}
             style={{
               padding: '8px 14px',
               fontSize: '0.85rem',
@@ -926,44 +956,8 @@ export const LabPL03: React.FC = () => {
               In the default two-coin toss setup, <MathView math="A" /> (first toss H), <MathView math="B" /> (second toss H), and <MathView math="C" /> (tosses match) are <em>pairwise independent</em>: knowing any single event gives no information about either of the other two. However, knowing both <MathView math="A" /> and <MathView math="C" /> completely determines <MathView math="B" />! Hence, the triple is <strong>not mutually independent</strong>, and conditioning on <MathView math="C" /> breaks the unconditional independence between <MathView math="A" /> and <MathView math="B" />.
             </p>
           </div>
-
-          {/* Comparison Snapshot Card */}
-          {snapshot && (
-            <div
-              style={{
-                background: 'var(--surface, #ffffff)',
-                padding: '16px',
-                borderRadius: '8px',
-                border: '1px solid var(--border, #e2e8f0)',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#1e293b' }}>
-                  Snapshot Comparison (Saved at {snapshot.timestamp})
-                </h4>
-                <button
-                  onClick={() => setSnapshot(null)}
-                  style={{
-                    padding: '2px 8px',
-                    fontSize: '0.75rem',
-                    border: '1px solid #cbd5e1',
-                    background: '#f8fafc',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Clear
-                </button>
-              </div>
-              <div style={{ fontSize: '0.84rem', color: '#334155' }}>
-                <div><strong>Mode:</strong> {snapshot.mode}</div>
-                <div><strong>Verdict:</strong> {snapshot.verdict}</div>
-                <div style={{ color: '#64748b', marginTop: '4px' }}>{snapshot.summary}</div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
-    </div>
+    </LabShell>
   );
 };

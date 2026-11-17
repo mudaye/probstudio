@@ -10,15 +10,15 @@ import {
   JacobianTransformResult,
 } from '../../core/math/multivariate';
 
-interface PL10Snapshot {
-  timestamp: string;
-  name: string;
-  activeTab: 'conditional' | 'channel' | 'transform';
-  summary: string;
-  keyMetric: string;
+import { LabShell } from './LabShell';
+import { LocalPersistenceService, LabComparisonSnapshot } from '../../core/storage/persistence';
+
+export interface LabPL10Props {
+  onNavigate?: (route: string, params?: Record<string, string>) => void;
+  initialPreset?: string;
 }
 
-export const LabPL10: React.FC = () => {
+export const LabPL10: React.FC<LabPL10Props> = ({ onNavigate, initialPreset }) => {
   const [activeTab, setActiveTab] = useState<'conditional' | 'channel' | 'transform'>('conditional');
 
   // --- Tab 1: Conditional Distributions State ---
@@ -44,9 +44,11 @@ export const LabPL10: React.FC = () => {
   const [a21, setA21] = useState<number>(1);
   const [a22, setA22] = useState<number>(-1);
 
-  // Snapshot & Stale state
-  const [snapshot, setSnapshot] = useState<PL10Snapshot | null>(null);
-  const [snapshotName, setSnapshotName] = useState<string>('My PL-10 Snapshot');
+  // Snapshot State (LabShell managed)
+  const [snapshotName, setSnapshotName] = useState<string>('Multivariate Baseline');
+  const [savedSnapshot, setSavedSnapshot] = useState<LabComparisonSnapshot | null>(() =>
+    LocalPersistenceService.getLabSnapshot('PL-10')
+  );
 
   // --- Math Calculations ---
   const conditionalCalc = useMemo(() => {
@@ -92,17 +94,12 @@ export const LabPL10: React.FC = () => {
 
   const isStale = validationError !== null;
 
-  // Load saved snapshot on mount
   useEffect(() => {
-    try {
-      const savedStr = localStorage.getItem('prs_lab_snapshot_PL-10');
-      if (savedStr) {
-        setSnapshot(JSON.parse(savedStr));
-      }
-    } catch {
-      // ignore
+    if (!initialPreset) return;
+    if (initialPreset === 'conditional' || initialPreset === 'channel' || initialPreset === 'transform') {
+      setActiveTab(initialPreset);
     }
-  }, []);
+  }, [initialPreset]);
 
   const handleRunSimulation = () => {
     const res = simulateCommunicationChannel(
@@ -136,19 +133,57 @@ export const LabPL10: React.FC = () => {
       keyMetric = `|det J| = ${jacobianResult.absJacobianDeterminant.toFixed(4)}`;
     }
 
-    const snap: PL10Snapshot = {
-      timestamp: new Date().toLocaleTimeString(),
-      name: snapshotName.trim() || 'Snapshot PL-10',
-      activeTab,
-      summary,
-      keyMetric,
+    const snap: LabComparisonSnapshot = {
+      lab_id: 'PL-10',
+      name: snapshotName || 'Multivariate Snapshot',
+      timestamp: new Date().toISOString(),
+      parameters: {
+        activeTab,
+        givenAxis,
+        givenValue,
+        queryCutoff,
+        queryDirection,
+        priorBit1,
+        noiseType,
+        noiseParam,
+        threshold,
+        a11,
+        a12,
+        a21,
+        a22,
+      },
+      results: {
+        activeTab,
+        summary,
+        keyMetric,
+      },
     };
-    setSnapshot(snap);
-    try {
-      localStorage.setItem('prs_lab_snapshot_PL-10', JSON.stringify(snap));
-    } catch {
-      // ignore
-    }
+    LocalPersistenceService.saveLabSnapshot(snap);
+    setSavedSnapshot(snap);
+  };
+
+  const handleRestoreSnapshot = () => {
+    if (!savedSnapshot) return;
+    const p = savedSnapshot.parameters;
+    if (p.activeTab) setActiveTab(p.activeTab as 'conditional' | 'channel' | 'transform');
+    if (p.givenAxis) setGivenAxis(p.givenAxis as 'X' | 'Y');
+    if (typeof p.givenValue === 'number') setGivenValue(p.givenValue);
+    if (typeof p.queryCutoff === 'number') setQueryCutoff(p.queryCutoff);
+    if (p.queryDirection) setQueryDirection(p.queryDirection as 'greater' | 'less');
+    if (typeof p.priorBit1 === 'number') setPriorBit1(p.priorBit1);
+    if (p.noiseType) setNoiseType(p.noiseType as 'gaussian' | 'uniform');
+    if (typeof p.noiseParam === 'number') setNoiseParam(p.noiseParam);
+    if (typeof p.threshold === 'number') setThreshold(p.threshold);
+    if (typeof p.a11 === 'number') setA11(p.a11);
+    if (typeof p.a12 === 'number') setA12(p.a12);
+    if (typeof p.a21 === 'number') setA21(p.a21);
+    if (typeof p.a22 === 'number') setA22(p.a22);
+    setChannelSim(null);
+  };
+
+  const handleDeleteSnapshot = () => {
+    LocalPersistenceService.deleteLabSnapshot('PL-10');
+    setSavedSnapshot(null);
   };
 
   const handleResetDefaults = () => {
@@ -170,79 +205,81 @@ export const LabPL10: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header & Mode Tabs */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-2">
-              Guided Laboratory PL-10
+    <LabShell
+      labId="PL-10"
+      labTitle="Conditionals, Channels and 2D Transforms Lab"
+      labSubtitle="How do conditional densities restrict supports, how does channel noise govern error rates, and how does the Jacobian determinant scale bivariate transformations?"
+      sourceAttribution={{
+        part: 'Part 3',
+        chapter: 'Chapters 19–20, 22: Conditional distributions, communication channels, Bayes rules, and 2D Jacobian',
+        isIllustrative: true,
+      }}
+      linkedModuleIds={['M19', 'M20', 'M22']}
+      linkedConceptIds={['C-000037', 'C-000038', 'C-000039', 'C-000040', 'C-000043', 'C-000044']}
+      isStale={isStale}
+      errorCode={isStale ? 'E-PARAM-DOMAIN' : undefined}
+      errorMessage={validationError ?? undefined}
+      snapshotName={snapshotName}
+      onSnapshotNameChange={setSnapshotName}
+      savedSnapshot={savedSnapshot}
+      onSaveSnapshot={handleSaveSnapshot}
+      onRestoreSnapshot={handleRestoreSnapshot}
+      onDeleteSnapshot={handleDeleteSnapshot}
+      onReset={handleResetDefaults}
+      onNavigate={onNavigate}
+      renderSnapshotComparison={(saved) => (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+          <div style={{ border: '1px solid #bfdbfe', borderRadius: '6px', padding: '1rem', background: '#eff6ff' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#1d4ed8' }}>Active Configuration</h4>
+            <div>Tab: <strong>{activeTab.toUpperCase()}</strong></div>
+            <div>
+              {activeTab === 'conditional' && conditionalResult && `P = ${conditionalResult.theoreticalProbability.toFixed(4)}`}
+              {activeTab === 'channel' && channelResult && `BER = ${(channelResult.theoreticalBitErrorRate * 100).toFixed(2)}%`}
+              {activeTab === 'transform' && jacobianResult && `|det J| = ${jacobianResult.absJacobianDeterminant.toFixed(4)}`}
             </div>
-            <h2 className="text-2xl font-bold text-slate-800">
-              Conditionals, Communication Channels & 2D Transformations
-            </h2>
-            <p className="text-sm text-slate-600 mt-1">
-              Explore continuous conditional densities, noisy binary signaling mixture models, and multidimensional Jacobian transformations.
-            </p>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleResetDefaults}
-              className="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
-            >
-              Reset Defaults
-            </button>
+          <div style={{ border: '1px solid #cbd5e1', borderRadius: '6px', padding: '1rem', background: '#f8fafc' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#334155' }}>Saved: {saved.name}</h4>
+            <div>Summary: <strong>{String(saved.results?.summary ?? 'N/A')}</strong></div>
+            <div>Metric: <strong>{String(saved.results?.keyMetric ?? 'N/A')}</strong></div>
           </div>
         </div>
-
+      )}
+    >
+      <div className="space-y-6">
         {/* Navigation Tabs */}
-        <div className="flex border-b border-slate-200">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-2 flex border-b border-slate-200">
           <button
             onClick={() => setActiveTab('conditional')}
-            className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${
+            className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
               activeTab === 'conditional'
-                ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50'
-                : 'border-transparent text-slate-600 hover:text-slate-800'
+                ? 'bg-emerald-600 text-white'
+                : 'text-slate-600 hover:text-slate-800'
             }`}
           >
             1. Continuous Conditional Slicing
           </button>
           <button
             onClick={() => setActiveTab('channel')}
-            className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${
+            className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
               activeTab === 'channel'
-                ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50'
-                : 'border-transparent text-slate-600 hover:text-slate-800'
+                ? 'bg-emerald-600 text-white'
+                : 'text-slate-600 hover:text-slate-800'
             }`}
           >
-            2. Communication Channel & Mixture Model
+            2. Communication Channel &amp; Mixture Model
           </button>
           <button
             onClick={() => setActiveTab('transform')}
-            className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${
+            className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
               activeTab === 'transform'
-                ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50'
-                : 'border-transparent text-slate-600 hover:text-slate-800'
+                ? 'bg-emerald-600 text-white'
+                : 'text-slate-600 hover:text-slate-800'
             }`}
           >
-            3. 2D Transformations & Jacobian
+            3. 2D Transformations &amp; Jacobian
           </button>
         </div>
-      </div>
-
-      {/* Validation Warning / Stale Banner */}
-      {isStale && validationError && (
-        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg shadow-sm">
-          <div className="flex items-start">
-            <div className="ml-3">
-              <p className="text-sm font-semibold text-amber-800">
-                Stale result — based on last valid settings
-              </p>
-              <p className="text-xs text-amber-700 mt-1">{validationError}</p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* TAB 1: CONDITIONAL DISTRIBUTIONS */}
       {activeTab === 'conditional' && (
@@ -997,7 +1034,7 @@ export const LabPL10: React.FC = () => {
                   <div className="text-xs text-slate-600 pt-2 border-t border-slate-200">
                     Density Transformation Theorem:{' '}
                     <span className="font-mono font-semibold">
-                      f_{'{Y₁, Y₂}'}(y₁, y₂) = f_{'{X₁, X₂}'}(A⁻¹y) · |det(J)|
+                      f_Y(y₁, y₂) = f_X(A⁻¹y) · |det(J)|
                     </span>
                     . For uniform inputs on the unit square, the transformed density is constant and equal to{' '}
                     <span className="font-bold font-mono">{jacobianResult.absJacobianDeterminant.toFixed(4)}</span> across
@@ -1010,35 +1047,8 @@ export const LabPL10: React.FC = () => {
         </div>
       )}
 
-      {/* Snapshot Comparison Footer */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <input
-              type="text"
-              value={snapshotName}
-              onChange={(e) => setSnapshotName(e.target.value)}
-              className="px-3 py-1.5 text-xs border border-slate-300 rounded-lg w-52"
-              placeholder="Snapshot Name"
-            />
-            <button
-              onClick={handleSaveSnapshot}
-              className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors"
-            >
-              Save Snapshot
-            </button>
-          </div>
-
-          {snapshot && (
-            <div className="flex items-center gap-3 text-xs bg-slate-50 border border-slate-200 px-4 py-2 rounded-lg">
-              <span className="font-bold text-slate-700">Saved: {snapshot.name}</span>
-              <span className="text-slate-500">({snapshot.summary})</span>
-              <span className="font-semibold text-emerald-700">{snapshot.keyMetric}</span>
-            </div>
-          )}
-        </div>
       </div>
-    </div>
+    </LabShell>
   );
 };
 export default LabPL10;

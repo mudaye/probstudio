@@ -23,16 +23,28 @@ export interface ConceptContent {
   readonly classification: 'source_derived' | 'supplementary' | 'editorial';
 }
 
+export interface ExercisePartContent {
+  readonly id: string;
+  readonly label: string;
+  readonly prompt: string;
+  readonly expectedRational: { num: bigint; den: bigint };
+  readonly domain?: 'probability' | 'non_negative' | 'real';
+  readonly explanationLatex?: string;
+}
+
 export interface ExerciseContent {
   readonly id: string;
   readonly title: string;
   readonly moduleId: string;
-  readonly category: 'numerical' | 'concept_identification' | 'formula_selection' | 'error_detection';
+  readonly category: 'numerical' | 'concept_identification' | 'formula_selection' | 'error_detection' | 'multi_part';
   readonly linkedConceptIds: readonly string[];
   readonly prompt: string;
   readonly promptLatex: string;
   readonly sampleSpaceLatex?: string;
   readonly expectedRational: { num: bigint; den: bigint };
+  readonly domain?: 'probability' | 'non_negative' | 'real';
+  readonly parts?: readonly ExercisePartContent[];
+  readonly hints?: readonly string[];
   readonly explanation: string;
   readonly explanationLatex: string;
   readonly sourceRef: SourceReference;
@@ -1987,6 +1999,474 @@ export const EXERCISE_EX000031: ExerciseContent = {
   classification: 'source_derived',
 };
 
+export const EXERCISE_EX000032: ExerciseContent = {
+  id: 'EX-000032',
+  title: 'Sequential Card Draw Without Replacement',
+  moduleId: 'M02',
+  category: 'numerical',
+  linkedConceptIds: ['C-000004'],
+  prompt:
+    'Two cards are dealt sequentially without replacement from a thoroughly shuffled standard 52-card deck. Let A be the event that the first card dealt is an Ace, and let B be the event that the second card dealt is an Ace. Find the exact conditional probability P(B | A). Express your answer as a simplified fraction.',
+  promptLatex:
+    'P(B \\mid A) = \\frac{P(A \\cap B)}{P(A)}.\\newline \\text{Find } P(B \\mid A) \\text{ for sequential card draws without replacement.}',
+  expectedRational: { num: 1n, den: 17n },
+  domain: 'probability',
+  hints: [
+    'A standard deck contains 4 Aces among 52 cards.',
+    'Given that the first card was an Ace, exactly 1 Ace has been removed from the deck.',
+    'How many Aces and how many total cards remain in the deck for the second draw?',
+  ],
+  explanation:
+    'Initially, there are 4 Aces in 52 cards. Once an Ace is drawn on the first deal, 3 Aces remain among the 51 remaining cards. Thus, the conditional probability that the second card is an Ace given the first was an Ace is 3/51 = 1/17.',
+  explanationLatex:
+    'P(B \\mid A) = \\frac{3}{51} = \\frac{1}{17} \\approx 0.0588',
+  sourceRef: {
+    id: 'SRC-P1-CH3-002',
+    part: 'Part 1',
+    transcript_file: 'Review of Basic Probability 1.md',
+    chapter: 'Chapter 3: Conditional probability and conditioning',
+    note: 'Sequential sampling without replacement and conditional event probability.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000033: ExerciseContent = {
+  id: 'EX-000033',
+  title: 'Memoryless Property of the Continuous Exponential Distribution',
+  moduleId: 'M10',
+  category: 'numerical',
+  linkedConceptIds: ['C-000019', 'C-000020'],
+  prompt:
+    'A continuous random variable X follows an Exponential distribution X ~ Exp(λ) with rate parameter λ = 2. By the memoryless property, the conditional survival probability satisfies P(X > s + t | X > s) = P(X > t) = e^(-λt). For t = ln(2)/2, compute the exact conditional probability P(X > s + t | X > s). Express your answer as a simplified fraction.',
+  promptLatex:
+    'X \\sim \\text{Exp}(\\lambda = 2).\\newline P(X > s + t \\mid X > s) = P(X > t) = e^{-\\lambda t}.\\newline \\text{Compute } P(X > s + t \\mid X > s) \\text{ when } t = \\frac{\\ln 2}{2}.',
+  expectedRational: { num: 1n, den: 2n },
+  domain: 'probability',
+  hints: [
+    'Recall the memoryless property: past survival does not degrade future lifetime for exponential distributions.',
+    'Calculate e^(-λt) by substituting λ = 2 and t = ln(2)/2.',
+    'Note that -2 · (ln(2)/2) = -ln(2) = ln(1/2).',
+  ],
+  explanation:
+    'By the memoryless property of the exponential distribution, P(X > s + t | X > s) = P(X > t) = e^(-λt). Substituting λ = 2 and t = ln(2)/2 yields e^(-2 · ln(2)/2) = e^(-ln 2) = 1/2.',
+  explanationLatex:
+    'P(X > s + t \\mid X > s) = e^{-2 \\cdot \\frac{\\ln 2}{2}} = e^{-\\ln 2} = \\frac{1}{2} = 0.50',
+  sourceRef: {
+    id: 'SRC-P2-CH3-003',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 3: Continuous Uniform and Exponential distributions',
+    note: 'Exponential memoryless conditional survival probability.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000034: ExerciseContent = {
+  id: 'EX-000034',
+  title: 'Square Transformation on Symmetric Uniform Distribution',
+  moduleId: 'M11',
+  category: 'numerical',
+  linkedConceptIds: ['C-000021', 'C-000022'],
+  prompt:
+    'Let X ~ Uniform(-1, 1) with constant density f_X(x) = 1/2 for -1 <= x <= 1. Define the transformed variable Y = X². Find the cumulative probability P(Y <= 1/4). Express your answer as a simplified fraction.',
+  promptLatex:
+    'X \\sim \\text{Uniform}(-1, 1), \\quad Y = X^2.\\newline \\text{Find } P\\left(Y \\le \\frac{1}{4}\\right) = P\\left(X^2 \\le \\frac{1}{4}\\right).',
+  expectedRational: { num: 1n, den: 2n },
+  domain: 'probability',
+  hints: [
+    'The inequality X² <= 1/4 is equivalent to -1/2 <= X <= 1/2.',
+    'Integrate the uniform PDF f_X(x) = 1/2 over the interval [-1/2, 1/2].',
+  ],
+  explanation:
+    'The event {Y <= 1/4} corresponds to {X² <= 1/4}, which is the interval -1/2 <= X <= 1/2. The length of this interval is 1/2 - (-1/2) = 1. Since X is uniform on [-1, 1] of total length 2, P(-1/2 <= X <= 1/2) = 1/2.',
+  explanationLatex:
+    'P(Y \\le 1/4) = P\\left(-\\frac{1}{2} \\le X \\le \\frac{1}{2}\\right) = \\int_{-1/2}^{1/2} \\frac{1}{2} \\, dx = \\frac{1}{2} = 0.50',
+  sourceRef: {
+    id: 'SRC-P2-CH4-002',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 4: Transformations of continuous random variables',
+    note: 'Nonlinear square transformation of continuous symmetric uniform variable.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000035: ExerciseContent = {
+  id: 'EX-000035',
+  title: 'Second Moment via LOTUS on Continuous Uniform Variable',
+  moduleId: 'M12',
+  category: 'numerical',
+  linkedConceptIds: ['C-000023', 'C-000024'],
+  prompt:
+    'Let X ~ Uniform(0, 3) with density f_X(x) = 1/3 for 0 <= x <= 3. Compute the second moment E[X²] = ∫₀³ x² f_X(x) dx directly using the Law of the Unconscious Statistician (LOTUS). Express your answer as an exact integer.',
+  promptLatex:
+    'X \\sim \\text{Uniform}(0, 3), \\quad f_X(x) = \\frac{1}{3} \\; (0 \\le x \\le 3).\\newline \\text{Compute } E[X^2] = \\int_0^3 x^2 f_X(x) \\, dx.',
+  expectedRational: { num: 3n, den: 1n },
+  domain: 'non_negative',
+  hints: [
+    'Apply LOTUS: E[g(X)] = ∫ g(x) f_X(x) dx with g(x) = x².',
+    'Evaluate the integral of (1/3) x² from 0 to 3.',
+    'Notice that ∫₀³ x² dx = [x³/3]₀³ = 27/3 = 9.',
+  ],
+  explanation:
+    'Using LOTUS, E[X²] = ∫₀³ x² (1/3) dx = (1/3) [x³/3]₀³ = (1/3)(27/3) = (1/3)(9) = 3.',
+  explanationLatex:
+    'E[X^2] = \\int_0^3 x^2 \\cdot \\frac{1}{3} \\, dx = \\frac{1}{3} \\left[ \\frac{x^3}{3} \\right]_0^3 = \\frac{1}{9} (27 - 0) = 3',
+  sourceRef: {
+    id: 'SRC-P2-CH5-002',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 5: Expectation and moments',
+    note: 'Second moment calculation of uniform random variable via LOTUS.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000036: ExerciseContent = {
+  id: 'EX-000036',
+  title: 'Variance Decomposition for an Asymmetric Bernoulli Indicator',
+  moduleId: 'M13',
+  category: 'multi_part',
+  linkedConceptIds: ['C-000025', 'C-000026'],
+  prompt:
+    'A biased indicator random variable X ~ Bernoulli(p) has success probability p = 1/3, meaning P(X = 1) = 1/3 and P(X = 0) = 2/3. Derive its variance through the two-step moment decomposition Var(X) = E[X²] - (E[X])².',
+  promptLatex:
+    'X \\sim \\text{Bernoulli}(p = 1/3).\\newline \\text{Part A: Find } E[X].\\newline \\text{Part B: Find } \\text{Var}(X) = E[X^2] - (E[X])^2.',
+  parts: [
+    {
+      id: 'part_a',
+      label: 'Part A: Expected Value E[X]',
+      prompt: 'Find the first moment E[X]:',
+      expectedRational: { num: 1n, den: 3n },
+      domain: 'probability',
+      explanationLatex: 'E[X] = 1 \\cdot (1/3) + 0 \\cdot (2/3) = 1/3',
+    },
+    {
+      id: 'part_b',
+      label: 'Part B: Variance Var(X)',
+      prompt: 'Find the variance Var(X) = E[X²] - (E[X])²:',
+      expectedRational: { num: 2n, den: 9n },
+      domain: 'probability',
+      explanationLatex: '\\text{Var}(X) = p(1 - p) = \\frac{1}{3} \\cdot \\frac{2}{3} = \\frac{2}{9}',
+    },
+  ],
+  expectedRational: { num: 2n, den: 9n },
+  domain: 'probability',
+  hints: [
+    'For any Bernoulli variable, X² = X because 0² = 0 and 1² = 1.',
+    'Therefore E[X²] = E[X] = p = 1/3.',
+    'Then Var(X) = p - p² = p(1 - p) = (1/3)(2/3).',
+  ],
+  explanation:
+    'For a Bernoulli variable with parameter p = 1/3, E[X] = p = 1/3. Because X takes values in {0, 1}, X² = X, giving E[X²] = E[X] = 1/3. Hence Var(X) = E[X²] - (E[X])² = 1/3 - (1/3)² = 1/3 - 1/9 = 2/9.',
+  explanationLatex:
+    'E[X] = \\frac{1}{3}, \\quad E[X^2] = \\frac{1}{3}, \\quad \\text{Var}(X) = \\frac{1}{3} - \\left(\\frac{1}{3}\\right)^2 = \\frac{2}{9} \\approx 0.2222',
+  sourceRef: {
+    id: 'SRC-P2-CH5-004',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 5: Expectation and moments',
+    note: 'Variance derivation for Bernoulli random variable using moment definition.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000037: ExerciseContent = {
+  id: 'EX-000037',
+  title: 'Markov Inequality Tail Bound Comparison',
+  moduleId: 'M14',
+  category: 'numerical',
+  linkedConceptIds: ['C-000027', 'C-000028'],
+  prompt:
+    'A non-negative continuous random variable X has expectation E[X] = 2. Evaluate the upper bound on the tail probability P(X >= 6) given by Markov\'s inequality: P(X >= a) <= E[X]/a. Express your answer as a simplified fraction.',
+  promptLatex:
+    'X \\ge 0, \\quad E[X] = 2.\\newline \\text{Apply Markov\'s Inequality: } P(X \\ge 6) \\le \\frac{E[X]}{6}.',
+  expectedRational: { num: 1n, den: 3n },
+  domain: 'probability',
+  hints: [
+    'Markov\'s inequality applies to any non-negative random variable: P(X >= a) <= E[X]/a.',
+    'Substitute E[X] = 2 and a = 6 into the inequality.',
+    'Simplify 2/6 to its lowest terms.',
+  ],
+  explanation:
+    'Markov\'s inequality guarantees that for any non-negative random variable X and threshold a > 0, P(X >= a) <= E[X]/a. With E[X] = 2 and a = 6, the upper bound is 2/6 = 1/3.',
+  explanationLatex:
+    'P(X \\ge 6) \\le \\frac{E[X]}{6} = \\frac{2}{6} = \\frac{1}{3} \\approx 0.3333',
+  sourceRef: {
+    id: 'SRC-P2-CH6-002',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 6: Markov and Chebyshev inequalities',
+    note: 'Markov inequality tail probability upper bound evaluation.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000038: ExerciseContent = {
+  id: 'EX-000038',
+  title: 'Sample Mean Variance for IID Sequence',
+  moduleId: 'M15',
+  category: 'numerical',
+  linkedConceptIds: ['C-000029', 'C-000030'],
+  prompt:
+    'Consider a sequence of n = 16 independent and identically distributed (IID) measurements X₁, ..., X₁₆, each with individual variance Var(X_i) = 4. What is the variance of the sample average X̄₁₆ = (1/16) ∑_{i=1}¹⁶ X_i? Express your answer as a simplified fraction.',
+  promptLatex:
+    'X_1, \\dots, X_{16} \\text{ IID with } \\text{Var}(X_i) = 4.\\newline \\text{Find } \\text{Var}(\\bar{X}_{16}) = \\text{Var}\\left(\\frac{1}{16} \\sum_{i=1}^{16} X_i\\right).',
+  expectedRational: { num: 1n, den: 4n },
+  domain: 'non_negative',
+  hints: [
+    'For independent variables, the variance of the sum is the sum of variances: Var(∑ X_i) = 16 · 4 = 64.',
+    'Recall the variance scaling law: Var(a · Z) = a² · Var(Z).',
+    'Here a = 1/16, so Var(X̄₁₆) = (1/16)² · 64 = 64 / 256.',
+  ],
+  explanation:
+    'For n IID variables each with variance σ², the sample mean X̄_n has variance Var(X̄_n) = σ²/n. Substituting σ² = 4 and n = 16 gives Var(X̄₁₆) = 4/16 = 1/4.',
+  explanationLatex:
+    '\\text{Var}(\\bar{X}_{16}) = \\frac{\\sigma^2}{n} = \\frac{4}{16} = \\frac{1}{4} = 0.25',
+  sourceRef: {
+    id: 'SRC-P2-CH7-002',
+    part: 'Part 2',
+    transcript_file: 'Review of Basic Probability 2.md',
+    chapter: 'Chapter 7: Law of large numbers and convergence',
+    note: 'Variance of the empirical sample mean for IID sequence.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000039: ExerciseContent = {
+  id: 'EX-000039',
+  title: 'Joint Probability and Diagonal Event from Contingency Table',
+  moduleId: 'M16',
+  category: 'multi_part',
+  linkedConceptIds: ['C-000031', 'C-000032'],
+  prompt:
+    'Two discrete binary variables X, Y ∈ {0, 1} have the joint probability mass distribution: p(0,0) = 1/8, p(0,1) = 2/8, p(1,0) = 3/8, and p(1,1) = 2/8. Answer both parts below.',
+  promptLatex:
+    'p_{X,Y}(0,0) = 1/8, \\; p_{X,Y}(0,1) = 2/8, \\; p_{X,Y}(1,0) = 3/8, \\; p_{X,Y}(1,1) = 2/8.\\newline \\text{Part A: Find } P(X = Y).\\newline \\text{Part B: Find } P(X + Y \\le 1).',
+  parts: [
+    {
+      id: 'part_a',
+      label: 'Part A: Diagonal Event P(X = Y)',
+      prompt: 'Find P(X = Y) = p(0,0) + p(1,1):',
+      expectedRational: { num: 3n, den: 8n },
+      domain: 'probability',
+      explanationLatex: 'P(X = Y) = \\frac{1}{8} + \\frac{2}{8} = \\frac{3}{8}',
+    },
+    {
+      id: 'part_b',
+      label: 'Part B: Sub-diagonal Event P(X + Y <= 1)',
+      prompt: 'Find P(X + Y <= 1):',
+      expectedRational: { num: 3n, den: 4n },
+      domain: 'probability',
+      explanationLatex: 'P(X + Y \\le 1) = 1 - p(1,1) = 1 - \\frac{2}{8} = \\frac{6}{8} = \\frac{3}{4}',
+    },
+  ],
+  expectedRational: { num: 3n, den: 8n },
+  domain: 'probability',
+  hints: [
+    'The event {X = Y} consists of pairs (0,0) and (1,1). Sum their masses.',
+    'The event {X + Y <= 1} includes (0,0), (0,1), and (1,0), or simply 1 - p(1,1).',
+  ],
+  explanation:
+    'For Part A: P(X = Y) = p(0,0) + p(1,1) = 1/8 + 2/8 = 3/8. For Part B: P(X + Y <= 1) = p(0,0) + p(0,1) + p(1,0) = 1/8 + 2/8 + 3/8 = 6/8 = 3/4.',
+  explanationLatex:
+    'P(X = Y) = \\frac{3}{8}, \\quad P(X + Y \\le 1) = \\frac{6}{8} = \\frac{3}{4} = 0.75',
+  sourceRef: {
+    id: 'SRC-P3-CH8-002',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 8: Joint distributions of random variables',
+    note: 'Discrete joint contingency table compound event probability evaluation.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000040: ExerciseContent = {
+  id: 'EX-000040',
+  title: 'Non-Rectangular Boundary Probability on Triangular Joint Density',
+  moduleId: 'M17',
+  category: 'numerical',
+  linkedConceptIds: ['C-000033', 'C-000034'],
+  prompt:
+    'The continuous random vector (X, Y) has joint probability density function f_{X,Y}(x, y) = 2 on the triangular domain 0 < x < y < 1, and 0 elsewhere. Calculate the probability of the sub-triangular region P(Y <= 2X). Express your answer as a simplified fraction.',
+  promptLatex:
+    'f_{X,Y}(x, y) = 2 \\quad (0 < x < y < 1).\\newline \\text{Compute } P(Y \\le 2X) = \\iint_{0 < x < y < 1, \\, y \\le 2x} 2 \\, dx \\, dy.',
+  expectedRational: { num: 1n, den: 2n },
+  domain: 'probability',
+  hints: [
+    'The condition y <= 2x is equivalent to x >= y/2.',
+    'In the (x, y) plane, for each y ∈ (0, 1), x varies from y/2 up to y.',
+    'Set up the iterated integral: ∫₀¹ [ ∫_{y/2}^y 2 dx ] dy.',
+  ],
+  explanation:
+    'Within the triangular region 0 < x < y < 1, the event {Y <= 2X} translates to x >= y/2. For fixed y, x ranges from y/2 to y. Integrating: ∫₀¹ [ ∫_{y/2}^y 2 dx ] dy = ∫₀¹ 2(y - y/2) dy = ∫₀¹ y dy = [y²/2]₀¹ = 1/2.',
+  explanationLatex:
+    'P(Y \\le 2X) = \\int_0^1 \\int_{y/2}^y 2 \\, dx \\, dy = \\int_0^1 2\\left(y - \\frac{y}{2}\\right) dy = \\int_0^1 y \\, dy = \\left[ \\frac{y^2}{2} \\right]_0^1 = \\frac{1}{2} = 0.50',
+  sourceRef: {
+    id: 'SRC-P3-CH8-004',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 8: Joint distributions of random variables',
+    note: 'Continuous triangular joint density non-rectangular boundary probability integration.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000041: ExerciseContent = {
+  id: 'EX-000041',
+  title: 'Continuous Marginal Density via Vertical Slice Integration',
+  moduleId: 'M18',
+  category: 'numerical',
+  linkedConceptIds: ['C-000035', 'C-000036'],
+  prompt:
+    'For the continuous triangular joint density f_{X,Y}(x, y) = 2 on 0 < x < y < 1, integrating out y yields the marginal density f_X(x) = ∫_x¹ 2 dy = 2(1 - x) for 0 < x < 1. Evaluate the marginal tail probability P(X > 1/2) = ∫_{1/2}¹ 2(1 - x) dx. Express your answer as a simplified fraction.',
+  promptLatex:
+    'f_X(x) = 2(1 - x) \\quad (0 < x < 1).\\newline \\text{Compute } P(X > 1/2) = \\int_{1/2}^1 2(1 - x) \\, dx.',
+  expectedRational: { num: 1n, den: 4n },
+  domain: 'probability',
+  hints: [
+    'Integrate 2(1 - x) from 1/2 to 1.',
+    'Use substitution u = 1 - x, so du = -dx, or expand to 2x - x².',
+    'Notice that [-(1 - x)²]_{1/2}¹ = 0 - (-(1/2)²) = 1/4.',
+  ],
+  explanation:
+    'Integrating the marginal density: ∫_{1/2}¹ 2(1 - x) dx = [2x - x²]_{1/2}¹ = (2 - 1) - (2(1/2) - (1/2)²) = 1 - (1 - 1/4) = 1/4.',
+  explanationLatex:
+    'P(X > 1/2) = \\int_{1/2}^1 2(1 - x) \\, dx = \\left[ -(1 - x)^2 \\right]_{1/2}^1 = 0 - \\left(-\\frac{1}{4}\\right) = \\frac{1}{4} = 0.25',
+  sourceRef: {
+    id: 'SRC-P3-CH9-002',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 9: Conditional distributions and marginals',
+    note: 'Marginal density extraction from joint distribution via vertical slicing.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000042: ExerciseContent = {
+  id: 'EX-000042',
+  title: 'Continuous Conditional Density Height on Triangular Domain',
+  moduleId: 'M19',
+  category: 'numerical',
+  linkedConceptIds: ['C-000037', 'C-000038'],
+  prompt:
+    'Given joint density f_{X,Y}(x, y) = 2 on 0 < x < y < 1 and marginal f_X(x) = 2(1 - x), the conditional density of Y given X = x is f_{Y|X}(y | x) = f_{X,Y}(x, y) / f_X(x) = 1 / (1 - x) for x < y < 1. For x = 1/4, calculate the uniform conditional density height f_{Y|X}(y | 1/4). Express your answer as a simplified fraction.',
+  promptLatex:
+    'f_{Y \\mid X}(y \\mid x) = \\frac{1}{1 - x} \\quad (x < y < 1).\\newline \\text{Evaluate } f_{Y \\mid X}(y \\mid 1/4).',
+  expectedRational: { num: 4n, den: 3n },
+  domain: 'non_negative',
+  hints: [
+    'Substitute x = 1/4 into 1 / (1 - x).',
+    'Calculate 1 - 1/4 = 3/4.',
+    'Take the reciprocal of 3/4.',
+  ],
+  explanation:
+    'Given X = 1/4, Y is uniformly distributed on the interval (1/4, 1), which has length 1 - 1/4 = 3/4. The height of the uniform conditional density is therefore 1 / (3/4) = 4/3.',
+  explanationLatex:
+    'f_{Y \\mid X}(y \\mid 1/4) = \\frac{1}{1 - 1/4} = \\frac{1}{3/4} = \\frac{4}{3} \\approx 1.3333',
+  sourceRef: {
+    id: 'SRC-P3-CH9-004',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 9: Conditional distributions and marginals',
+    note: 'Conditional PDF slice normalization and evaluation.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000043: ExerciseContent = {
+  id: 'EX-000043',
+  title: 'Total Error Rate in Binary Communication System',
+  moduleId: 'M20',
+  category: 'numerical',
+  linkedConceptIds: ['C-000039', 'C-000040'],
+  prompt:
+    'A binary digital transmitter sends symbol 0 with prior probability P(X = 0) = 3/4, and symbol 1 with prior probability P(X = 1) = 1/4. Due to additive channel noise, the conditional crossover error probabilities are P(Error | 0) = 1/12 and P(Error | 1) = 1/4. Calculate the total overall error probability P(E). Express your answer as a simplified fraction.',
+  promptLatex:
+    'P(X=0) = 3/4, \\; P(X=1) = 1/4.\\newline P(E \\mid 0) = 1/12, \\; P(E \\mid 1) = 1/4.\\newline \\text{Find } P(E) = P(X=0)P(E \\mid 0) + P(X=1)P(E \\mid 1).',
+  expectedRational: { num: 1n, den: 8n },
+  domain: 'probability',
+  hints: [
+    'Apply the Law of Total Probability over the transmission partition {X = 0, X = 1}.',
+    'Calculate (3/4) · (1/12) = 3/48 = 1/16.',
+    'Calculate (1/4) · (1/4) = 1/16, and sum the two terms.',
+  ],
+  explanation:
+    'By the law of total probability: P(E) = P(X=0)P(E|0) + P(X=1)P(E|1) = (3/4)(1/12) + (1/4)(1/4) = 3/48 + 1/16 = 1/16 + 1/16 = 2/16 = 1/8.',
+  explanationLatex:
+    'P(E) = \\frac{3}{4} \\cdot \\frac{1}{12} + \\frac{1}{4} \\cdot \\frac{1}{4} = \\frac{1}{16} + \\frac{1}{16} = \\frac{2}{16} = \\frac{1}{8} = 0.125',
+  sourceRef: {
+    id: 'SRC-P3-CH10-002',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 10: IID variables and transformations',
+    note: 'Total probability of error in noisy digital binary transmission channel.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000044: ExerciseContent = {
+  id: 'EX-000044',
+  title: 'Expectation of Product for Independent Random Variables',
+  moduleId: 'M21',
+  category: 'numerical',
+  linkedConceptIds: ['C-000041', 'C-000042'],
+  prompt:
+    'Let X and Y be two independent continuous random variables with expectations E[X] = 3/2 and E[Y] = 4/5. Using the independence factorization property of expectation, compute the expectation of their product E[XY]. Express your answer as a simplified fraction.',
+  promptLatex:
+    'X \\perp Y, \\quad E[X] = \\frac{3}{2}, \\quad E[Y] = \\frac{4}{5}.\\newline \\text{Compute } E[XY] = E[X] \\cdot E[Y].',
+  expectedRational: { num: 6n, den: 5n },
+  domain: 'real',
+  hints: [
+    'When two random variables are independent, E[XY] = E[X] · E[Y].',
+    'Multiply the fractions: (3/2) · (4/5).',
+    'Simplify 12/10 by dividing numerator and denominator by 2.',
+  ],
+  explanation:
+    'For any two independent random variables X and Y, the expectation of their product factors into the product of their individual expectations: E[XY] = E[X] E[Y]. Substituting gives (3/2) · (4/5) = 12/10 = 6/5.',
+  explanationLatex:
+    'E[XY] = E[X] \\cdot E[Y] = \\frac{3}{2} \\cdot \\frac{4}{5} = \\frac{12}{10} = \\frac{6}{5} = 1.20',
+  sourceRef: {
+    id: 'SRC-P3-CH10-004',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 10: IID variables and transformations',
+    note: 'Expectation factorization under statistical independence.',
+  },
+  classification: 'source_derived',
+};
+
+export const EXERCISE_EX000045: ExerciseContent = {
+  id: 'EX-000045',
+  title: 'Jacobian Determinant of Polar Coordinate Transformation',
+  moduleId: 'M22',
+  category: 'numerical',
+  linkedConceptIds: ['C-000043', 'C-000044'],
+  prompt:
+    'In converting Cartesian coordinates (X, Y) to polar coordinates (R, Θ) via X = R cos(Θ) and Y = R sin(Θ), the Jacobian matrix of partial derivatives is J = [[cos(Θ), -R sin(Θ)], [sin(Θ), R cos(Θ)]]. Evaluate the Jacobian determinant det J at radius R = 3. Express your answer as an exact integer.',
+  promptLatex:
+    'X = R \\cos \\Theta, \\; Y = R \\sin \\Theta \\implies J = \\begin{pmatrix} \\cos \\Theta & -R \\sin \\Theta \\\\ \\sin \\Theta & R \\cos \\Theta \\end{pmatrix}.\\newline \\text{Evaluate } \\det J \\text{ when } R = 3.',
+  expectedRational: { num: 3n, den: 1n },
+  domain: 'non_negative',
+  hints: [
+    'Calculate the 2x2 determinant: (cos Θ)(R cos Θ) - (-R sin Θ)(sin Θ).',
+    'Factor out R: R(cos² Θ + sin² Θ).',
+    'Recall the Pythagorean identity: cos² Θ + sin² Θ = 1.',
+  ],
+  explanation:
+    'The determinant of the polar Jacobian matrix is det J = (cos Θ)(R cos Θ) - (-R sin Θ)(sin Θ) = R cos² Θ + R sin² Θ = R (cos² Θ + sin² Θ) = R · 1 = R. At R = 3, det J = 3.',
+  explanationLatex:
+    '\\det J = R \\cos^2 \\Theta + R \\sin^2 \\Theta = R (\\cos^2 \\Theta + \\sin^2 \\Theta) = R = 3',
+  sourceRef: {
+    id: 'SRC-P3-CH10-005',
+    part: 'Part 3',
+    transcript_file: 'Review of Basic Probability 3.md',
+    chapter: 'Chapter 10: IID variables and transformations',
+    note: 'Polar coordinate transformation Jacobian determinant evaluation.',
+  },
+  classification: 'source_derived',
+};
+
 export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000001,
   EXERCISE_EX000002,
@@ -2019,6 +2499,20 @@ export const ALL_EXERCISES: readonly ExerciseContent[] = [
   EXERCISE_EX000029,
   EXERCISE_EX000030,
   EXERCISE_EX000031,
+  EXERCISE_EX000032,
+  EXERCISE_EX000033,
+  EXERCISE_EX000034,
+  EXERCISE_EX000035,
+  EXERCISE_EX000036,
+  EXERCISE_EX000037,
+  EXERCISE_EX000038,
+  EXERCISE_EX000039,
+  EXERCISE_EX000040,
+  EXERCISE_EX000041,
+  EXERCISE_EX000042,
+  EXERCISE_EX000043,
+  EXERCISE_EX000044,
+  EXERCISE_EX000045,
 ];
 
 export function getExerciseById(id: string): ExerciseContent | undefined {

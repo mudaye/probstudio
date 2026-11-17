@@ -254,14 +254,14 @@ export const PlaygroundScreen: React.FC<PlaygroundScreenProps> = ({
       <ErrorBoundary key={activeLab} fallbackTitle={`Lab ${activeLab} encountered an unexpected issue`}>
         {activeLab === 'PL-01' && <LabPL01 initialPreset={initialPreset} onNavigate={onNavigate} />}
         {activeLab === 'PL-02' && <LabPL02 initialPreset={initialPreset} onNavigate={onNavigate} />}
-        {activeLab === 'PL-03' && <LabPL03 />}
-        {activeLab === 'PL-04' && <LabPL04 />}
-        {activeLab === 'PL-05' && <LabPL05 />}
-        {activeLab === 'PL-06' && <LabPL06 />}
-        {activeLab === 'PL-07' && <LabPL07 />}
-        {activeLab === 'PL-08' && <LabPL08 />}
-        {activeLab === 'PL-09' && <LabPL09 />}
-        {activeLab === 'PL-10' && <LabPL10 />}
+        {activeLab === 'PL-03' && <LabPL03 initialPreset={initialPreset} onNavigate={onNavigate} />}
+        {activeLab === 'PL-04' && <LabPL04 initialPreset={initialPreset} onNavigate={onNavigate} />}
+        {activeLab === 'PL-05' && <LabPL05 initialPreset={initialPreset} onNavigate={onNavigate} />}
+        {activeLab === 'PL-06' && <LabPL06 initialPreset={initialPreset} onNavigate={onNavigate} />}
+        {activeLab === 'PL-07' && <LabPL07 initialPreset={initialPreset} onNavigate={onNavigate} />}
+        {activeLab === 'PL-08' && <LabPL08 initialPreset={initialPreset} onNavigate={onNavigate} />}
+        {activeLab === 'PL-09' && <LabPL09 initialPreset={initialPreset} onNavigate={onNavigate} />}
+        {activeLab === 'PL-10' && <LabPL10 initialPreset={initialPreset} onNavigate={onNavigate} />}
         {activeLab === 'PL-11' && <LabPL11 onNavigate={onNavigate} />}
         {activeLab === 'EXP-BUILDER' && <CustomExperimentBuilder onNavigate={onNavigate} />}
       </ErrorBoundary>
